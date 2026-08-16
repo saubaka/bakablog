@@ -1,0 +1,43 @@
+{% extends "layouts/admin.html" %}
+{% from "components/macros.html" import badge %}
+
+{% block title %}系统状态 · {{ site_name }}{% endblock %}
+{% block admin_title %}系统状态{% endblock %}
+{% block admin_actions %}<a class="button button--soft" href="{{ url_for('public.healthcheck') }}" target="_blank" rel="noopener">健康探针</a><a class="button button--primary" href="{{ url_for('public.readiness_check') }}" target="_blank" rel="noopener">就绪探针</a>{% endblock %}
+
+{% block admin_content %}
+<section class="admin-section card">
+  <div class="panel-heading"><div><h2>发布与运行环境</h2></div>{{ badge('运行中','mint') }}</div>
+  <div class="system-grid system-grid--host">
+    <div><span>应用版本</span><strong>{{ status.app_version }}</strong><small>{{ status.environment }}</small></div>
+    <div><span>宿主机系统</span><strong>{{ status.host.os }}</strong><small>{{ status.host.hostname }}</small></div>
+    <div><span>Python / SQLite</span><strong>{{ status.python }}</strong><small>SQLite {{ status.sqlite }}</small></div>
+    <div><span>迁移版本</span><strong>{{ status.migration }}</strong></div>
+    <div><span>启动时间</span><strong>{{ status.host.booted_at }}</strong><small>已运行 {{ status.host.uptime }}</small></div>
+  </div>
+</section>
+<section class="admin-section card runtime-resource-panel" data-runtime-metrics data-endpoint="{{ url_for('admin.runtime_metrics') }}">
+  <div class="panel-heading"><div><h2>实时资源占用</h2></div><span class="runtime-sampled-at">更新于 <b data-runtime-sampled-at>{{ metrics.sampled_at }}</b></span></div>
+  <div class="runtime-resource-grid">
+    {% for key,label,mark,tone in [('cpu','CPU','⌁','blue'),('memory','内存','◌','pink'),('disk','磁盘','▱','mint'),('network','网络','⇅','purple')] %}
+      {% set resource = metrics.resources[key] %}
+      <article class="runtime-resource-card runtime-resource-card--{{ tone }}" data-runtime-resource="{{ key }}">
+        <div class="runtime-resource-card__heading"><span>{{ mark }}</span><div><small>{{ label }}</small><strong data-runtime-percent>{{ resource.percent }}%</strong></div></div>
+        <p data-runtime-current>{{ resource.current }}</p>
+        <div class="runtime-progress" role="progressbar" aria-label="{{ label }}占用" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ resource.percent }}"><i data-runtime-progress style="--runtime-percent:{{ resource.percent }}%"></i></div>
+        <small data-runtime-total>{{ resource.total }}</small>
+      </article>
+    {% endfor %}
+  </div>
+  <div class="runtime-live-state" aria-live="polite" data-runtime-state>正在实时更新</div>
+</section>
+<section class="admin-section card">
+  <div class="panel-heading"><div><h2>本地存储</h2></div></div>
+  <div class="system-grid">
+    <div><span>数据库 / WAL</span><strong>{{ status.database_size }}</strong><small>WAL {{ status.wal_size }}</small></div>
+    <div><span>媒体文件</span><strong>{{ status.media_count }}</strong><small>共 {{ status.media_size }}</small></div>
+    <div><span>应用日志</span><strong>{{ status.log_size }}</strong></div>
+    <div><span>最近备份</span><strong>{{ status.latest_backup }}</strong><small>{{ status.latest_backup_size }}</small></div>
+  </div>
+</section>
+{% endblock %}

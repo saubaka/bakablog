@@ -1,0 +1,16 @@
+{% extends "layouts/admin.html" %}
+{% block title %}新建{{ taxonomy_label }} · {{ site_name }}{% endblock %}
+{% block admin_title %}新建{{ taxonomy_label }}{% endblock %}
+{% block admin_actions %}<a class="button button--soft" href="{{ url_for('admin.category_list' if taxonomy_type == 'category' else 'admin.tag_list') }}">返回{{ taxonomy_label }}列表</a>{% endblock %}
+{% block admin_content %}
+<form class="card admin-form taxonomy-create-page" method="post">
+  {{ form.hidden_tag() }}<div hidden>{{ form.taxonomy_type() }}</div>
+  <div class="section-heading"><div><span class="eyebrow">NEW {{ taxonomy_type|upper }}</span><h2>创建{{ taxonomy_label }}</h2></div><span class="badge badge--{{ 'blue' if taxonomy_type == 'category' else 'pink' }}">{{ taxonomy_label }}</span></div>
+  <div class="form-grid">
+    <label class="field"><span class="field__label">{{ form.name.label.text }}</span>{{ form.name() }}{% for error in form.name.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+    <label class="field"><span class="field__label">{{ form.slug.label.text }}</span>{{ form.slug() }}{% for error in form.slug.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+    <label class="field field--wide"><span class="field__label">{{ form.description.label.text }}</span>{{ form.description(rows=5) }}{% for error in form.description.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+  </div>
+  <div class="form-actions"><button class="button button--primary" type="submit">保存{{ taxonomy_label }}</button></div>
+</form>
+{% endblock %}

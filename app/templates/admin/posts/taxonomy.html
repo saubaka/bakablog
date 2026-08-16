@@ -1,0 +1,21 @@
+{% extends "layouts/admin.html" %}
+{% set taxonomy_label = '分类' if current_type == 'category' else '标签' %}
+{% block title %}{{ taxonomy_label }}列表 · {{ site_name }}{% endblock %}
+{% block admin_title %}{{ taxonomy_label }}列表{% endblock %}
+{% block admin_actions %}<a class="button button--soft" href="{{ url_for('admin.taxonomy', type='tag' if current_type == 'category' else 'category') }}">切换到{{ '标签' if current_type == 'category' else '分类' }}</a><a class="button button--soft" href="{{ url_for('admin.posts') }}">全部文章</a>{% endblock %}
+{% block admin_content %}
+<div class="taxonomy-layout taxonomy-layout--focused">
+  <form class="card admin-form" id="taxonomy-create" method="post">
+    {{ form.hidden_tag() }}<div hidden>{{ form.taxonomy_type() }}</div>
+    <div class="section-heading"><div><span class="eyebrow">{{ current_type|upper }}</span><h2>新建{{ taxonomy_label }}</h2></div><span class="badge badge--{{ 'blue' if current_type == 'category' else 'pink' }}">{{ taxonomy_label }}</span></div>
+    <label class="field"><span class="field__label">{{ form.name.label.text }}</span>{{ form.name() }}</label>
+    <label class="field"><span class="field__label">{{ form.slug.label.text }}</span>{{ form.slug() }}</label>
+    <label class="field"><span class="field__label">{{ form.description.label.text }}</span>{{ form.description() }}</label>
+    <button class="button button--primary" type="submit" data-save-action>保存{{ taxonomy_label }}</button>
+  </form>
+  <section class="card admin-section">
+    <div class="section-heading"><div><span class="eyebrow">LIBRARY</span><h2>{{ taxonomy_label }}列表</h2></div><span class="badge badge--mint">{{ categories|length if current_type == 'category' else tags|length }} 项</span></div>
+    <div class="taxonomy-items">{% for item in (categories if current_type == 'category' else tags) %}<div><span><strong>{% if current_type == 'tag' %}# {% endif %}{{ item.name }}</strong><small>/{{ item.slug }} · {{ item.posts.count() }} 篇</small></span><form action="{{ url_for('admin.delete_taxonomy', taxonomy_type=current_type, item_id=item.id) }}" method="post" data-confirm="删除{{ taxonomy_label }}吗？文章会保留。">{{ action_form.csrf_token }}<button class="text-button" type="submit">删除</button></form></div>{% else %}<div class="compact-empty"><strong>还没有{{ taxonomy_label }}</strong></div>{% endfor %}</div>
+  </section>
+</div>
+{% endblock %}

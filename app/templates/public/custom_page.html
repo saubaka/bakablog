@@ -1,0 +1,9 @@
+{% extends "layouts/site.html" %}
+{% block title %}{{ page.title }} {{ seo_settings.title_separator }} {{ seo_settings.site_title }}{% endblock %}
+{% block meta_description %}{{ page.summary }}{% endblock %}
+{% block content %}
+<div class="page-shell page-shell--article">
+  <header class="article-header"><span class="eyebrow">CUSTOM PAGE</span><h1>{{ page.title }}</h1>{% if page.summary %}<p>{{ page.summary }}</p>{% endif %}</header>
+  <article class="article article-content card">{{ page.content_html|linkify_external }}</article>
+</div>
+{% endblock %}

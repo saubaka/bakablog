@@ -1,0 +1,12 @@
+{% set customization = page_customizations.get(page_key) %}
+{% if customization and customization.blocks %}
+<section class="page-custom-blocks" aria-label="自定义页面板块">
+  {% for block in customization.blocks %}
+  <article class="page-custom-block page-custom-block--{{ block.style }} card">
+    <span class="eyebrow">CUSTOM BLOCK {{ loop.index }}</span>
+    {% if block.title %}<h2>{{ block.title }}</h2>{% endif %}
+    <div class="article-content">{{ block.html|linkify_external }}</div>
+  </article>
+  {% endfor %}
+</section>
+{% endif %}

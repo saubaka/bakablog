@@ -1,0 +1,39 @@
+{% extends "layouts/admin.html" %}
+{% from "components/macros.html" import icon %}
+{% block title %}站点标识 · {{ system_name }}{% endblock %}
+{% block admin_title %}站点标识{% endblock %}
+{% block admin_actions %}{% endblock %}
+{% block admin_content %}
+<div class="site-logo-workspace">
+  <section class="card site-logo-preview-card">
+    <div class="panel-heading"><div><span class="eyebrow">SITE IDENTITY</span><h2>当前网站Logo</h2></div></div>
+    <div class="site-logo-preview" data-site-logo-preview>
+      {% if current_logo %}
+        <img src="{{ url_for('public.media_file', filename=current_logo.filename) }}" alt="当前网站Logo">
+      {% else %}
+        <span class="site-logo-preview__fallback">{{ icon('cloud') }}</span>
+      {% endif %}
+      <strong>{{ site_name }}</strong>
+    </div>
+    {% if current_logo %}
+      <form method="post" action="{{ url_for('admin.remove_site_logo') }}" data-confirm="确定移除当前网站Logo并恢复默认图标吗？">
+        {{ remove_form.hidden_tag() }}
+        <button class="button button--danger" type="submit">移除网站Logo</button>
+      </form>
+    {% endif %}
+  </section>
+
+  <form class="card admin-form site-logo-upload-card" method="post" enctype="multipart/form-data" data-animated-upload>
+    {{ form.hidden_tag() }}
+    <div class="panel-heading"><div><span class="eyebrow">UPLOAD</span><h2>上传新Logo</h2></div></div>
+    <label class="site-logo-select button button--soft" for="site-logo-file-input">
+      {{ icon('image') }}
+      <span>选择图片</span>
+      {{ form.logo(id='site-logo-file-input', class_='site-logo-file-input', accept='image/jpeg,image/png,image/webp', data_image_crop='', data_logo_crop='', hidden=true) }}
+    </label>
+    {% for error in form.logo.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+    <span class="upload-progress" data-upload-progress hidden><i></i><small>准备上传</small></span>
+    {{ form.submit(class='button button--primary', data_save_action='') }}
+  </form>
+</div>
+{% endblock %}

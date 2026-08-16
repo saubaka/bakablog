@@ -1,0 +1,4 @@
+﻿{% extends "layouts/site.html" %}
+{% from "components/macros.html" import icon %}
+{% block title %}没有权限 {{ seo_settings.title_separator }} {{ seo_settings.site_title }}{% endblock %}
+{% block content %}<section class="error-state card"><span class="error-code">403</span><span class="empty-state__icon">{{ icon('alert') }}</span><h1>这里需要更多权限</h1><p>当前账号不能执行此操作。如需帮助，请联系站点管理员。</p><a class="button button--primary" href="{{ url_for('admin.dashboard') if current_user.is_authenticated else url_for('public.home') }}">返回安全页面</a></section>{% endblock %}

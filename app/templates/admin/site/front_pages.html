@@ -1,0 +1,32 @@
+{% extends "layouts/admin.html" %}
+{% block title %}前台页面 · {{ site_name }}{% endblock %}
+{% block admin_title %}前台页面{% endblock %}
+{% block admin_actions %}{% endblock %}
+
+{% block admin_content %}
+<section class="card admin-section page-copy-intro">
+  <span class="eyebrow">PUBLIC PAGE COPY</span>
+  <h2>导航中的页面</h2>
+  <p>这里会自动同步当前在前台菜单显示的页面。菜单的顺序、显示与跳转仍在“菜单”中管理。</p>
+</section>
+
+<section class="admin-page-copy-list" aria-label="前台页面标题与副标题">
+  {% for page in pages %}
+  <form class="card admin-page-copy-card" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="page_key" value="{{ page.key }}">
+    <header class="admin-page-copy-card__header">
+      <div><span class="eyebrow">{{ '%02d'|format(loop.index) }}</span><h2>{{ page.label }}</h2></div>
+      <a class="button button--soft" href="{{ url_for('public.' ~ page.key) if page.key != 'home' else url_for('public.home') }}" target="_blank" rel="noopener">查看页面</a>
+    </header>
+    <div class="form-grid">
+      <label class="field field--wide"><span class="field__label">页面标题</span><input name="title" maxlength="180" required value="{{ page.title }}"></label>
+      <label class="field field--wide"><span class="field__label">标题下副标题</span><textarea name="subtitle" rows="3" maxlength="500">{{ page.subtitle }}</textarea></label>
+    </div>
+    <footer class="sticky-form-actions"><button class="button button--primary" type="submit">保存此页面</button></footer>
+  </form>
+  {% else %}
+  <section class="card empty-state"><div><h2>还没有可编辑的前台页面</h2><p>请先在“菜单”中显示一个已启用的系统页面。</p></div></section>
+  {% endfor %}
+</section>
+{% endblock %}

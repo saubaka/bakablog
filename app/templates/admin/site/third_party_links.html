@@ -1,0 +1,70 @@
+{% extends "layouts/admin.html" %}
+{% from "components/macros.html" import icon %}
+{% block title %}第三方链接 · {{ site_name }}{% endblock %}
+{% block admin_title %}第三方链接{% endblock %}
+{% block admin_actions %}<a class="button button--soft" href="{{ url_for('public.external_link_notice', url='https://example.com/') }}" target="_blank" rel="noopener">预览未知提示页</a>{% endblock %}
+{% block admin_content %}
+<div class="external-link-admin">
+  <section class="external-link-admin__intro">
+    <div><span class="eyebrow">OUTBOUND SAFETY</span><h2>管理站外网址的风险状态</h2><p>这里只记录明确的安全或危险主机；没有记录的网址会自动显示为安全性未知。</p></div>
+    <div class="external-link-stat-grid" aria-label="第三方链接规则统计">
+      <div class="external-link-stat external-link-stat--safe"><span>安全站点</span><strong>{{ counts.safe }}</strong></div>
+      <div class="external-link-stat external-link-stat--dangerous"><span>危险站点</span><strong>{{ counts.dangerous }}</strong></div>
+      <div class="external-link-stat external-link-stat--unknown"><span>默认状态</span><strong>未知</strong></div>
+    </div>
+  </section>
+
+  <form class="card external-link-create" method="post">
+    {{ form.hidden_tag() }}
+    <div class="section-heading"><div><span class="eyebrow">NEW RULE</span><h2>添加站点状态</h2></div></div>
+    <div class="external-link-form-grid">
+      <label class="field external-link-form-grid__host"><span class="field__label">域名或完整网址</span><input name="hostname" maxlength="500" placeholder="例如 example.com" required autocomplete="off"></label>
+      <label class="field"><span class="field__label">站点状态</span><select name="classification" required><option value="safe">安全站点</option><option value="dangerous">危险站点</option></select></label>
+      <label class="field"><span class="field__label">显示名称</span><input name="display_name" maxlength="120" placeholder="可选"></label>
+      <label class="field external-link-form-grid__note"><span class="field__label">提示说明</span><textarea name="note" rows="3" maxlength="500" placeholder="可选，将显示在跳转提示页"></textarea></label>
+    </div>
+    <footer class="external-link-create__actions"><button class="button button--primary" type="submit">保存站点状态</button></footer>
+  </form>
+
+  <section class="card external-link-rule-panel">
+    <div class="external-link-rule-panel__head">
+      <div><span class="eyebrow">MANAGED HOSTS</span><h2>已管理的第三方站点</h2></div>
+      <form class="external-link-filter" method="get" role="search">
+        <label><span class="sr-only">搜索规则</span><input type="search" name="q" value="{{ query }}" placeholder="搜索域名、名称或说明"></label>
+        <select name="status" aria-label="按状态筛选"><option value="all" {{ 'selected' if selected == 'all' }}>全部状态</option><option value="safe" {{ 'selected' if selected == 'safe' }}>安全</option><option value="dangerous" {{ 'selected' if selected == 'dangerous' }}>危险</option></select>
+        <button class="button button--soft" type="submit">筛选</button>
+      </form>
+    </div>
+    {% if rules %}
+      <div class="external-link-rule-list">
+        {% for rule in rules %}
+        <article class="external-link-rule external-link-rule--{{ rule.classification }}" data-external-rule>
+          <div class="external-link-rule__summary">
+            <span class="external-link-rule__status" aria-label="{{ '安全站点' if rule.classification == 'safe' else '危险站点' }}">{{ '安全' if rule.classification == 'safe' else '危险' }}</span>
+            <div class="external-link-rule__identity"><strong>{{ rule.display_name or rule.hostname }}</strong><code>{{ rule.hostname }}</code>{% if rule.note %}<p>{{ rule.note }}</p>{% endif %}</div>
+            <div class="external-link-rule__actions">
+              <a class="icon-button icon-button--small" href="{{ url_for('public.external_link_notice', url='https://' ~ rule.hostname ~ '/') }}" target="_blank" rel="noopener" aria-label="预览{{ rule.hostname }}的提示页">↗</a>
+              <button class="button button--soft button--small" type="button" data-external-rule-toggle aria-expanded="false">编辑</button>
+              <form method="post" action="{{ url_for('admin.delete_third_party_link', rule_id=rule.id) }}" data-confirm="删除后，{{ rule.hostname }}将恢复为安全性未知。确定删除吗？">{{ form.hidden_tag() }}<button class="icon-button icon-button--small external-link-rule__delete" type="submit" aria-label="删除{{ rule.hostname }}">×</button></form>
+            </div>
+          </div>
+          <div class="external-link-rule__editor" data-external-rule-editor hidden><div>
+            <form method="post" class="external-link-edit-form">
+              {{ form.hidden_tag() }}<input type="hidden" name="rule_id" value="{{ rule.id }}">
+              <label class="field"><span class="field__label">域名</span><input name="hostname" value="{{ rule.hostname }}" maxlength="500" required></label>
+              <label class="field"><span class="field__label">状态</span><select name="classification"><option value="safe" {{ 'selected' if rule.classification == 'safe' }}>安全站点</option><option value="dangerous" {{ 'selected' if rule.classification == 'dangerous' }}>危险站点</option></select></label>
+              <label class="field"><span class="field__label">显示名称</span><input name="display_name" value="{{ rule.display_name }}" maxlength="120"></label>
+              <label class="field external-link-edit-form__note"><span class="field__label">提示说明</span><textarea name="note" rows="3" maxlength="500">{{ rule.note }}</textarea></label>
+              <div class="external-link-edit-form__actions"><button class="button button--primary button--small" type="submit">保存修改</button><button class="button button--soft button--small" type="button" data-external-rule-toggle>收起</button></div>
+            </form>
+          </div></div>
+        </article>
+        {% endfor %}
+      </div>
+      {% if page.pages > 1 %}<nav class="pagination external-link-pagination" aria-label="第三方链接分页">{% if page.has_prev %}<a class="button button--soft" href="{{ url_for('admin.third_party_links', page=page.prev_num, q=query, status=selected) }}">上一页</a>{% endif %}<span>{{ page.page }} / {{ page.pages }}</span>{% if page.has_next %}<a class="button button--soft" href="{{ url_for('admin.third_party_links', page=page.next_num, q=query, status=selected) }}">下一页</a>{% endif %}</nav>{% endif %}
+    {% else %}
+      <div class="external-link-empty"><span aria-hidden="true">↗</span><strong>还没有已管理站点</strong><p>所有未登记的第三方网址都会使用“安全性未知”提示。</p></div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

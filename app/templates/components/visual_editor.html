@@ -1,0 +1,47 @@
+{% from "components/macros.html" import icon %}
+<section class="visual-editor" data-visual-editor data-editor-entity="{{ editor_entity_name }}" data-upload-url="{{ editor_upload_url }}" aria-labelledby="visual-editor-title">
+  <header class="visual-editor__header">
+    <div><span class="eyebrow">LOCAL VISUAL EDITOR</span><h2 id="visual-editor-title">可视化正文编辑器</h2></div>
+    <div class="editor-mode-switch" role="group" aria-label="编辑器视图">
+      <button class="is-active" type="button" data-editor-mode="visual" aria-pressed="true">可视化</button>
+      <button type="button" data-editor-mode="source" aria-pressed="false">源码</button>
+      <button type="button" data-editor-mode="preview" aria-pressed="false">预览</button>
+    </div>
+  </header>
+
+  <div class="visual-editor__toolbar" role="toolbar" aria-label="{{ editor_entity_name }}格式工具栏">
+    <div class="editor-tool-group" aria-label="历史操作"><button type="button" data-editor-command="undo" title="撤销">↶</button><button type="button" data-editor-command="redo" title="重做">↷</button></div>
+    <div class="editor-tool-group"><label><span class="sr-only">段落类型</span><select data-editor-block title="段落类型"><option value="p">正文</option><option value="h2">二级标题</option><option value="h3">三级标题</option><option value="h4">四级标题</option><option value="blockquote">引用</option><option value="pre">代码块</option></select></label><label><span class="sr-only">字号</span><select data-editor-font-size title="字号"><option value="3">标准字号</option><option value="2">小字号</option><option value="4">大字号</option><option value="5">特大字号</option><option value="6">展示字号</option></select></label></div>
+    <div class="editor-tool-group" aria-label="文字格式"><button type="button" data-editor-command="bold" title="加粗"><strong>B</strong></button><button type="button" data-editor-command="italic" title="斜体"><em>I</em></button><button type="button" data-editor-command="underline" title="下划线"><u>U</u></button><button type="button" data-editor-command="strikeThrough" title="删除线"><s>S</s></button><label class="editor-color-tool" title="文字颜色"><span>A</span><input type="color" value="#46556a" data-editor-color aria-label="文字颜色"></label><label class="editor-color-tool" title="高亮颜色"><span>▰</span><input type="color" value="#fff0b8" data-editor-highlight aria-label="高亮颜色"></label></div>
+    <div class="editor-tool-group" aria-label="列表与对齐"><button type="button" data-editor-command="insertUnorderedList" title="无序列表">• 列表</button><button type="button" data-editor-command="insertOrderedList" title="有序列表">1. 列表</button><button type="button" data-editor-command="justifyLeft" title="左对齐">左</button><button type="button" data-editor-command="justifyCenter" title="居中">中</button><button type="button" data-editor-command="justifyRight" title="右对齐">右</button><button type="button" data-editor-command="justifyFull" title="两端对齐">齐</button></div>
+    <div class="editor-tool-group" aria-label="插入内容"><button type="button" data-editor-action="link" title="插入链接">链接</button><button type="button" data-editor-command="unlink" title="取消链接">取消链接</button><button type="button" data-editor-command="removeFormat" title="清除所选文字格式">清除格式</button><button type="button" data-editor-action="divider" title="分隔线">分隔线</button><button type="button" data-editor-action="callout" title="提示卡片">提示块</button><button type="button" data-editor-action="table" title="三列表格">表格</button><label class="editor-upload-button" for="editor-image">{{ icon('image') }} 插入图片</label><input id="editor-image" type="file" accept="image/jpeg,image/png,image/webp" data-visual-editor-image data-image-crop hidden></div>
+    <div class="editor-tool-group editor-tool-group--end"><button type="button" data-open-dialog="editor-media-dialog">媒体库选图</button><a class="editor-tool-link" href="{{ url_for('admin.media_library') }}" target="_blank">管理媒体</a><button type="button" data-editor-fullscreen aria-pressed="false">全屏</button></div>
+  </div>
+
+  <div class="editor-statusbar"><span class="editor-upload-status" data-upload-status role="status" aria-live="polite"></span><span data-editor-stats>0 字 · 0 图 · 约 1 分钟</span></div>
+  <div class="visual-editor__workbench" data-editor-workbench data-mode="visual">
+    <div class="visual-editor__canvas article" data-rich-editor contenteditable="true" role="textbox" aria-multiline="true" aria-label="{{ editor_entity_name }}正文可视化编辑区域">{{ editor_content_html|safe }}</div>
+    <label class="sr-only" for="{{ form.content_markdown.id }}">{{ editor_entity_name }}HTML源码</label>{{ form.content_markdown(class='visual-editor__source', rows=30, data_editor_source='true', spellcheck='false') }}
+    <div class="visual-editor__preview article" data-editor-preview aria-label="{{ editor_entity_name }}实时预览"></div>
+  </div>
+  {% for error in form.content_markdown.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+
+  <section class="image-layout-inspector" data-image-inspector hidden role="dialog" aria-labelledby="image-inspector-title">
+    <header><strong id="image-inspector-title">图片设置</strong><button class="icon-button icon-button--small" type="button" data-image-deselect aria-label="关闭图片设置">×</button></header>
+    <div class="image-inspector-grid">
+      <fieldset><legend>预览尺寸</legend><div class="editor-segmented"><button type="button" data-image-size="small">小</button><button type="button" data-image-size="medium">中</button><button type="button" data-image-size="large">大</button><button type="button" data-image-size="full">通栏</button></div></fieldset>
+      <label class="field image-width-control"><span class="field__label">连续缩放 <output data-image-width-output>62%</output></span><input type="range" min="30" max="100" step="1" value="62" data-image-width aria-label="图片显示宽度"></label>
+      <fieldset><legend>水平位置</legend><div class="editor-segmented"><button type="button" data-image-align="left">左</button><button type="button" data-image-align="center">中</button><button type="button" data-image-align="right">右</button></div></fieldset>
+      <fieldset><legend>旋转方向</legend><div class="editor-segmented"><button type="button" data-image-rotate="left">↶ 左转</button><button type="button" data-image-rotate="none">不旋转</button><button type="button" data-image-rotate="right">右转 ↷</button></div></fieldset>
+      <fieldset><legend>裁切比例</legend><div class="editor-segmented"><button type="button" data-image-ratio="original">原图</button><button type="button" data-image-ratio="square">1:1</button><button type="button" data-image-ratio="landscape">4:3</button><button type="button" data-image-ratio="wide">16:9</button></div></fieldset>
+      <label class="field"><span class="field__label">无障碍描述</span><input type="text" maxlength="160" data-image-alt></label>
+      <label class="field"><span class="field__label">图片说明</span><input type="text" maxlength="240" data-image-caption></label>
+    </div>
+    <div class="image-inspector-actions"><div class="button-row"><button class="button button--soft button--small" type="button" data-image-move="up">上移</button><button class="button button--soft button--small" type="button" data-image-move="down">下移</button><button class="button button--danger button--small" type="button" data-image-remove>移除</button></div></div>
+  </section>
+
+  <dialog class="modal editor-media-dialog" id="editor-media-dialog" aria-labelledby="editor-media-dialog-title">
+    <div class="modal__header"><div><span class="eyebrow">LOCAL MEDIA</span><h2 id="editor-media-dialog-title">从媒体库插入图片</h2></div><button class="icon-button" type="button" data-close-dialog aria-label="关闭媒体库选择">×</button></div>
+    {% if editor_media %}<div class="editor-media-picker">{% for media in editor_media %}<button type="button" data-editor-media-item data-url="{{ url_for('public.media_file', filename=media.filename) }}" data-alt="{{ media.alt_text or media.original_filename }}" data-width="{{ media.width }}" data-height="{{ media.height }}"><img src="{{ url_for('public.media_file', filename=media.thumbnail_filename) }}" alt="" width="160" height="120" loading="lazy" decoding="async"><span>{{ media.original_filename }}</span><small>{{ media.width }}×{{ media.height }}</small></button>{% endfor %}</div>{% else %}<div class="compact-empty"><span class="soft-icon soft-icon--pink">{{ icon('image') }}</span><strong>媒体库为空</strong></div>{% endif %}
+  </dialog>
+</section>

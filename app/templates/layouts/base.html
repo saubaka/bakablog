@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN" data-motion="system" data-font-style="{{ font_style|default('cloud-rounded', true) }}" data-page-transition="{{ page_transition_style|default('stretch', true) }}" data-transition-duration="{{ page_transition_duration|default(720, true) }}" data-transition-color-start="{{ page_transition_color_start|default('#eaf6ff', true) }}" data-transition-color-middle="{{ page_transition_color_middle|default('#f9fbff', true) }}" data-transition-color-end="{{ page_transition_color_end|default('#fceef6', true) }}" data-dialog-style="{{ dialog_style|default('soft', true) }}" data-dialog-color-start="{{ dialog_color_start|default('#ffffff', true) }}" data-dialog-color-end="{{ dialog_color_end|default('#fff1f7', true) }}" data-dialog-accent="{{ dialog_accent|default('#7eaed0', true) }}" data-dialog-radius="{{ dialog_radius|default(30, true) }}" data-dialog-width="{{ dialog_width|default(510, true) }}" data-dialog-backdrop-blur="{{ dialog_backdrop_blur|default(6) }}" data-dialog-shadow="{{ dialog_shadow|default('soft', true) }}" data-panel-descriptions="{{ 'visible' if panel_descriptions_visible|default(true) else 'hidden' }}" data-card-descriptions="{{ 'visible' if card_descriptions_visible|default(true) else 'hidden' }}" data-field-descriptions="{{ 'visible' if field_descriptions_visible|default(true) else 'hidden' }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#F7F9FC">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="description" content="{% block meta_description %}{{ seo_settings.default_description }}{% endblock %}">
+  <meta name="keywords" content="{{ seo_settings.default_keywords }}">
+  <meta name="author" content="{{ seo_settings.author_name }}">
+  <meta name="robots" content="{% block robots_meta %}{{ 'index' if seo_settings.index_site else 'noindex' }}, {{ 'follow' if seo_settings.follow_links else 'nofollow' }}{% endblock %}">
+  <link rel="canonical" href="{% block canonical_url %}{{ site_url }}{{ request.path }}{% endblock %}">
+  {% if seo_settings.enable_feed %}<link rel="alternate" type="application/atom+xml" title="{{ seo_settings.site_title }}" href="{{ url_for('public.feed') }}">{% endif %}
+  {% if site_logo %}<link rel="icon" href="{{ url_for('public.media_file', filename=site_logo.thumbnail_filename) }}">{% endif %}
+  <meta property="og:site_name" content="{{ seo_settings.site_title }}">
+  <meta property="og:locale" content="{{ seo_settings.og_locale }}">
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta property="og:title" content="{% block og_title %}{{ seo_settings.site_title }}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}{{ seo_settings.default_description }}{% endblock %}">
+  <meta property="og:url" content="{% block og_url %}{{ site_url }}{{ request.path }}{% endblock %}">
+  {% if seo_settings.default_og_image %}<meta property="og:image" content="{{ seo_settings.default_og_image }}">{% endif %}
+  <meta name="twitter:card" content="{{ seo_settings.twitter_card }}">
+  {% if seo_settings.social_handle %}<meta name="twitter:site" content="{{ seo_settings.social_handle }}">{% endif %}
+  {% if seo_settings.enable_structured_data %}<script type="application/ld+json">{{ seo_schema|tojson }}</script>{% endif %}
+  {% block extra_meta %}{% endblock %}
+  <title>{% block title %}{{ site_name }}{% endblock %}</title>
+  <script src="{{ url_for('static', filename='scripts/transition-bootstrap.js', v=app_version) }}"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/app.css', v=app_version) }}">
+  <script src="{{ url_for('static', filename='scripts/external-links.js', v=app_version) }}" defer></script>
+  <script src="{{ url_for('static', filename='scripts/app.js', v=app_version) }}" defer></script>
+  <script src="{{ url_for('static', filename='scripts/ui-global.js', v=app_version) }}" defer></script>
+  <script src="{{ url_for('static', filename='scripts/site-management.js', v=app_version) }}" defer></script>
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <a class="skip-link" href="#main-content">跳到主要内容</a>
+  {% block body %}{% endblock %}
+
+  <div class="toast-region" aria-live="polite" aria-atomic="true">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="toast toast--{{ category }}" data-toast>
+          <span class="toast__dot" aria-hidden="true"></span>
+          <span>{{ message }}</span>
+          <button class="icon-button icon-button--small" type="button" data-dismiss-toast aria-label="关闭通知">×</button>
+        </div>
+      {% endfor %}
+    {% endwith %}
+  </div>
+
+  <dialog class="modal" id="demo-modal" aria-labelledby="demo-modal-title">
+    <div class="modal__header">
+      <div><h2 id="demo-modal-title">弹窗预览</h2></div>
+      <button class="icon-button" type="button" data-close-dialog aria-label="关闭弹窗">×</button>
+    </div>
+    <div class="button-row button-row--end">
+      <button class="button button--soft" type="button" data-close-dialog>取消</button>
+      <button class="button button--primary" type="button" data-close-dialog data-demo-toast="设置已经保存在这次演示中。">确认</button>
+    </div>
+  </dialog>
+
+  <dialog class="image-lightbox global-image-lightbox" data-global-image-lightbox aria-label="图片预览">
+    <button class="icon-button" type="button" data-close-image-preview aria-label="关闭图片预览">×</button>
+    <figure><img alt=""><figcaption data-image-preview-caption hidden></figcaption></figure>
+  </dialog>
+
+  <dialog class="modal app-system-dialog" data-app-system-dialog aria-labelledby="app-system-dialog-title" aria-describedby="app-system-dialog-message">
+    <div class="app-system-dialog__icon" aria-hidden="true">✦</div>
+    <div class="app-system-dialog__content">
+      <div class="modal__header"><div><h2 id="app-system-dialog-title" data-app-dialog-title>确认操作</h2></div><button class="icon-button" type="button" data-app-dialog-cancel aria-label="关闭">×</button></div>
+      <p id="app-system-dialog-message" data-app-dialog-message></p>
+      <label class="field app-system-dialog__field" data-app-dialog-field hidden><span class="field__label" data-app-dialog-input-label>请输入内容</span><input type="text" data-app-dialog-input autocomplete="off"></label>
+      <div class="button-row button-row--end"><button class="button button--soft" type="button" data-app-dialog-cancel>取消</button><button class="button button--primary" type="button" data-app-dialog-confirm>确认</button></div>
+    </div>
+  </dialog>
+
+  <dialog class="image-crop-dialog" data-image-crop-dialog aria-labelledby="image-crop-title">
+    <div class="image-crop-dialog__head"><div><span class="eyebrow">IMAGE STUDIO</span><h2 id="image-crop-title">调整图片</h2></div><button class="icon-button" type="button" data-crop-cancel aria-label="取消调整">×</button></div>
+    <div class="image-crop-stage"><canvas data-crop-canvas aria-label="图片裁剪预览"></canvas><span class="image-crop-stage__hint">拖动图片调整位置</span></div>
+    <div class="image-crop-controls">
+      <div class="image-crop-control"><span>画面比例</span><div class="segmented-control"><button type="button" data-crop-ratio="free" class="is-active">自由</button><button type="button" data-crop-ratio="1">1:1</button><button type="button" data-crop-ratio="1.3333">4:3</button><button type="button" data-crop-ratio="1.7778">16:9</button></div></div>
+      <label class="image-crop-control image-crop-control--range"><span>缩放</span><input type="range" min="1" max="3" step="0.01" value="1" data-crop-zoom><output data-crop-zoom-value>100%</output></label>
+      <div class="image-crop-control"><span>方向</span><div class="button-row"><button class="button button--soft button--small" type="button" data-crop-rotate="-90">↶ 左转</button><button class="button button--soft button--small" type="button" data-crop-rotate="90">右转 ↷</button></div></div>
+    </div>
+    <div class="image-crop-dialog__actions"><button class="button button--soft" type="button" data-crop-skip>使用原图</button><button class="button button--primary" type="button" data-crop-apply>完成调整</button></div>
+  </dialog>
+</body>
+</html>

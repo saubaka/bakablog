@@ -1,0 +1,25 @@
+{% macro icon(name, class_name='') -%}
+  <svg class="icon {{ class_name }}" aria-hidden="true" focusable="false">
+    <use href="{{ url_for('static', filename='icons/sprite.svg', v=app_version) }}#icon-{{ name }}"></use>
+  </svg>
+{%- endmacro %}
+
+{% macro badge(label, tone='blue') -%}
+  <span class="badge badge--{{ tone }}">{{ label }}</span>
+{%- endmacro %}
+
+{% macro empty_state(title, description, action_label=None, action_url=None, icon_name='cloud') -%}
+  <section class="empty-state card" aria-labelledby="empty-state-title">
+    <span class="empty-state__icon">{{ icon(icon_name) }}</span>
+    <h2 id="empty-state-title">{{ title }}</h2>
+    <p>{{ description }}</p>
+    {% if action_label and action_url %}<a class="button button--primary" href="{{ action_url }}">{{ action_label }}</a>{% endif %}
+  </section>
+{%- endmacro %}
+
+{% macro field(label, name, required=false, type='text') -%}
+  <label class="field" for="{{ name }}">
+    <span class="field__label">{{ label }}{% if required %}<em aria-hidden="true">*</em><span class="sr-only">必填</span>{% endif %}</span>
+    <input id="{{ name }}" name="{{ name }}" type="{{ type }}" {% if required %}required{% endif %}>
+  </label>
+{%- endmacro %}

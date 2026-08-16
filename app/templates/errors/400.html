@@ -1,0 +1,4 @@
+﻿{% extends "layouts/site.html" %}
+{% from "components/macros.html" import icon %}
+{% block title %}请求无效 {{ seo_settings.title_separator }} {{ seo_settings.site_title }}{% endblock %}
+{% block content %}<section class="error-state card"><span class="error-code">400</span><span class="empty-state__icon">{{ icon('alert') }}</span><h1>这次请求没有通过检查</h1><p>{{ message or '请刷新页面后重新操作。' }}</p><a class="button button--primary" href="{{ request.referrer or url_for('public.home') }}">返回上一页</a></section>{% endblock %}

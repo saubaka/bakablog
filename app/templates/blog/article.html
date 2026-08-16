@@ -1,0 +1,74 @@
+{% extends "layouts/site.html" %}
+{% from "components/macros.html" import badge %}
+
+{% block title %}{{ post.seo_title or post.title }} {{ seo_settings.title_separator }} {{ seo_settings.site_title }}{% endblock %}
+{% block meta_description %}{{ post.seo_description or post.summary or site_tagline }}{% endblock %}
+{% block canonical_url %}{{ site_url }}{{ url_for('public.article', slug=post.slug) }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_title %}{{ post.seo_title or post.title }}{% endblock %}
+{% block og_description %}{{ post.seo_description or post.summary or site_tagline }}{% endblock %}
+{% block og_url %}{{ site_url }}{{ url_for('public.article', slug=post.slug) }}{% endblock %}
+
+{% block content %}
+<div class="reading-progress" data-reading-progress data-reading-minutes="{{ post.reading_minutes }}" aria-hidden="true"><span data-reading-progress-fill></span></div>
+<div class="page-shell page-shell--article">
+  {% if preview %}<div class="preview-banner">这是后台预览，草稿不会出现在公开页面。 <a href="{{ url_for('admin.edit_post', post_id=post.id) }}">返回编辑</a></div>{% endif %}
+  <header class="article-header">
+    {% if post.category %}{{ badge(post.category.name, 'blue') }}{% else %}{{ badge('随笔', 'pink') }}{% endif %}
+    <h1>{{ post.title }}</h1><p>{{ post.summary }}</p>
+    <div class="author-line"><span class="avatar avatar--small">{{ post.author.display_name[:1] }}</span><span><strong>{{ post.author.display_name }}</strong><small>{% if post.published_at %}{{ post.published_at.strftime('%Y.%m.%d') }} · {% endif %}约 {{ post.reading_minutes }} 分钟阅读</small></span></div>
+    {% if post.tags %}<div class="tag-cloud article-tags">{% for tag in post.tags %}<a href="{{ url_for('public.blog', tag=tag.slug) }}"># {{ tag.name }}</a>{% endfor %}</div>{% endif %}
+  </header>
+  <div class="article-layout">
+    <article class="article article-content card" data-article-content>{{ post.content_html|linkify_external }}</article>
+    {% if post.toc_html %}<aside class="toc card"><strong>这篇手记</strong>{{ post.toc_html|safe }}<div class="toc-progress" aria-label="阅读进度"><div><small>阅读进度</small><output data-reading-progress-value>0%</output></div><span class="toc-progress__track"><i data-reading-progress-fill></i></span><small data-reading-progress-remaining>约剩 {{ post.reading_minutes }} 分钟</small></div></aside>{% endif %}
+  </div>
+  {% if previous_post or next_post %}<nav class="article-neighbors" aria-label="上一篇与下一篇">
+    {% if previous_post %}<a class="article-card-link card card--interactive" href="{{ url_for('public.article', slug=previous_post.slug) }}"><small>上一篇</small><strong>{{ previous_post.title }}</strong></a>{% endif %}
+    {% if next_post %}<a class="article-card-link card card--interactive" href="{{ url_for('public.article', slug=next_post.slug) }}"><small>下一篇</small><strong>{{ next_post.title }}</strong></a>{% endif %}
+  </nav>{% endif %}
+  {% if related_posts %}<section class="section"><div class="section-heading"><h2>或许也会喜欢</h2></div><div class="post-grid">{% for related in related_posts %}<a class="corner-card article-card-link card card--interactive" href="{{ url_for('public.article', slug=related.slug) }}"><strong>{{ related.title }}</strong><small>{{ related.summary|truncate(72) }}</small></a>{% endfor %}</div></section>{% endif %}
+  {% if not preview %}
+  <section class="comments-section section" id="comments" aria-labelledby="comments-title">
+    <div class="section-heading"><div><span class="eyebrow">COMMENTS</span><h2 id="comments-title">评论小客厅 <small>{{ comments|length }}</small></h2></div></div>
+    <div class="comments-layout">
+      <div class="comment-list">
+        {% for comment in comments %}
+        <article class="comment-card card" id="comment-{{ comment.id }}">
+          <div class="comment-card__meta">
+            <span class="avatar avatar--small">{{ comment.author_name[:1] }}</span>
+            <span>
+              <strong>{% if comment.website %}<a href="{{ comment.website }}" rel="nofollow noopener">{{ comment.author_name }}</a>{% else %}{{ comment.author_name }}{% endif %}{% if comment.author_type == 'staff' %}<span class="badge badge--blue">站长</span>{% endif %}</strong>
+              <small>{{ comment.created_at.strftime('%Y.%m.%d %H:%M') }}{% if comment.is_pinned %} · ✦ 置顶{% endif %}</small>
+            </span>
+          </div>
+          <p>{{ comment.content|e|replace('\n','<br>')|safe }}</p>
+          <div class="comment-actions">
+            <button type="button" data-reply-to="{{ comment.id }}" data-reply-name="{{ comment.author_name }}">回复</button>
+            <form action="{{ url_for('public.like_comment', comment_id=comment.id) }}" method="post">{{ action_form.csrf_token }}<button type="submit">♡ {{ comment.like_count }}</button></form>
+          </div>
+          {% for reply in comment.replies if reply.status == 'approved' %}
+          <article class="comment-reply" id="comment-{{ reply.id }}"><strong>{{ reply.author_name }}{% if reply.author_type == 'staff' %}<span class="badge badge--blue">站长</span>{% endif %}</strong><p>{{ reply.content|e|replace('\n','<br>')|safe }}</p><small>{{ reply.created_at.strftime('%Y.%m.%d %H:%M') }}</small></article>
+          {% endfor %}
+        </article>
+        {% else %}
+        <div class="compact-empty"><div><strong>还没有评论</strong><small>来坐下说说这篇文章带给你的想法吧。</small></div></div>
+        {% endfor %}
+      </div>
+      <form class="comment-form card" action="{{ url_for('public.create_comment', slug=post.slug) }}" method="post">
+        {{ comment_form.hidden_tag() }}
+        <h3>留下一句话</h3>
+        <p data-reply-indicator hidden>正在回复 <strong></strong> <button type="button" data-cancel-reply>取消</button></p>
+        <label class="field"><span class="field__label">昵称</span>{{ comment_form.author_name() }}</label>
+        <label class="field"><span class="field__label">邮箱（不会公开）</span>{{ comment_form.email() }}</label>
+        <label class="field"><span class="field__label">个人网站</span>{{ comment_form.website() }}</label>
+        <label class="field"><span class="field__label">评论内容</span>{{ comment_form.content(rows=5) }}</label>
+        <div class="honeypot" aria-hidden="true">{{ comment_form.contact(tabindex='-1', autocomplete='off') }}</div>
+        <button class="button button--primary" type="submit">提交审核</button>
+      </form>
+    </div>
+  </section>
+  {% endif %}
+</div>
+<dialog class="image-lightbox" data-image-lightbox><button type="button" data-close-lightbox aria-label="关闭图片预览">×</button><img alt=""></dialog>
+{% endblock %}

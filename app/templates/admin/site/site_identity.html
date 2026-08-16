@@ -1,0 +1,44 @@
+{% extends "layouts/admin.html" %}
+{% from "components/macros.html" import icon %}
+{% block title %}标题与Logo · {{ site_name }}{% endblock %}
+{% block admin_title %}标题与Logo{% endblock %}
+{% block admin_actions %}{% endblock %}
+{% block admin_content %}
+<div class="site-identity-workspace">
+  <form class="card admin-form site-identity-form" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="action" value="identity">
+    <div class="panel-heading"><div><span class="eyebrow">SITE IDENTITY</span><h2>网站标题</h2></div></div>
+    <div class="form-grid">
+      <label class="field"><span>网站主标题</span><input name="site_display_name" value="{{ display_name }}" maxlength="100" required></label>
+      <label class="field"><span>网站副标题</span><input name="site_display_tagline" value="{{ tagline }}" maxlength="180"></label>
+    </div>
+    <button class="button button--primary is-save-action" type="submit">保存网站标题</button>
+  </form>
+
+  <section class="site-identity-logo">
+    <section class="card site-logo-preview-card">
+      <div class="panel-heading"><div><span class="eyebrow">CURRENT LOGO</span><h2>当前Logo</h2></div></div>
+      <div class="site-logo-preview" data-site-logo-preview>
+        {% if current_logo %}<img src="{{ url_for('public.media_file', filename=current_logo.filename) }}" alt="当前网站Logo">{% else %}<span class="site-logo-preview__fallback">{{ icon('cloud') }}</span>{% endif %}
+        <strong>{{ display_name }}</strong>
+      </div>
+      {% if current_logo %}
+        <form method="post" action="{{ url_for('admin.remove_site_logo') }}" data-confirm="确定移除当前网站Logo并恢复默认图标吗？">
+          {{ remove_form.hidden_tag() }}
+          <button class="button button--danger" type="submit">移除网站Logo</button>
+        </form>
+      {% endif %}
+    </section>
+    <form class="card admin-form site-logo-upload-card" method="post" enctype="multipart/form-data" data-animated-upload>
+      <input type="hidden" name="action" value="logo">
+      {{ logo_form.hidden_tag() }}
+      <div class="panel-heading"><div><span class="eyebrow">IMAGE STUDIO</span><h2>上传与裁剪Logo</h2></div></div>
+      <label class="site-logo-select button button--soft" for="site-identity-logo-input">{{ icon('image') }}<span>选择图片</span>{{ logo_form.logo(id='site-identity-logo-input', class_='site-logo-file-input', accept='image/jpeg,image/png,image/webp', data_image_crop='', data_logo_crop='', hidden=true) }}</label>
+      {% for error in logo_form.logo.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+      <span class="upload-progress" data-upload-progress hidden><i></i><small>准备上传</small></span>
+      {{ logo_form.submit(class='button button--primary is-save-action', data_save_action='') }}
+    </form>
+  </section>
+</div>
+{% endblock %}

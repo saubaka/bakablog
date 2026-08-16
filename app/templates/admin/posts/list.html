@@ -1,0 +1,12 @@
+{% extends "layouts/admin.html" %}
+{% set heading = '回收站' if include_deleted else {'all':'全部文章','published':'已发布文章','draft':'草稿文章','scheduled':'定时文章'}.get(current_status,'全部文章') %}
+{% block title %}{{ heading }} · {{ site_name }}{% endblock %}
+{% block admin_title %}{{ heading }}{% endblock %}
+{% block admin_actions %}<a class="button button--soft" href="{{ url_for('admin.posts', status='all') if include_deleted else url_for('admin.posts', deleted=1) }}">{{ '返回文章' if include_deleted else '回收站' }}</a>{% if current_user.has_permission('posts.manage') %}<a class="button button--primary" href="{{ url_for('admin.create_post') }}">＋ 新建文章</a>{% endif %}{% endblock %}
+{% block admin_content %}
+<section class="admin-section card"><div class="section-heading"><div><span class="eyebrow">ARTICLE DIRECTORY</span><h2>{{ heading }}</h2></div><span class="badge badge--blue">{{ post_items|length }} 篇</span></div>
+{% if post_items %}<div class="admin-post-list">{% for post in post_items %}<article class="admin-post-row"><div><div class="split-meta"><span class="status-pill status-pill--{{ post.status }}">{{ {'draft':'草稿','published':'已发布','scheduled':'定时发布'}[post.status] }}</span>{% if post.is_pinned %}<span>✦ 置顶</span>{% endif %}</div><h3>{{ post.title }}</h3><small>更新于 {{ post.updated_at.strftime('%Y-%m-%d %H:%M') }} · {{ post.category.name if post.category else '无分类' }}</small></div><div class="button-row">
+{% if not include_deleted %}<a class="button button--soft" href="{{ url_for('admin.preview_post', post_id=post.id) }}">预览</a>{% if current_user.has_permission('posts.manage') %}<a class="button button--soft" href="{{ url_for('admin.edit_post', post_id=post.id) }}">编辑</a><form action="{{ url_for('admin.delete_post', post_id=post.id) }}" method="post" data-confirm="确定移入回收站吗？">{{ action_form.csrf_token }}<button class="button button--danger" type="submit">删除</button></form>{% endif %}
+{% else %}<form action="{{ url_for('admin.restore_post', post_id=post.id) }}" method="post">{{ action_form.csrf_token }}<button class="button button--primary" type="submit">恢复</button></form>{% endif %}</div></article>{% endfor %}</div>
+{% else %}<div class="empty-state"><h3>{{ '回收站是空的' if include_deleted else '这个目录还是空的' }}</h3></div>{% endif %}</section>
+{% endblock %}

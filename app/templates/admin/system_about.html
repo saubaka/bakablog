@@ -1,0 +1,30 @@
+{% extends "layouts/admin.html" %}
+{% block title %}系统信息 · {{ system_name }}{% endblock %}
+{% block admin_title %}系统信息{% endblock %}
+{% block admin_content %}
+<div class="system-about-layout system-about-layout--cloudtrace">
+  <section class="card system-about-hero">
+    <div class="system-about-hero__orb">迹</div>
+    <div><span class="eyebrow">{{ system_name_en|upper }}</span><h2>{{ system_name }}</h2><p>把文字、生活与连接留在自己的设备上，清晰管理，也温柔呈现。</p></div>
+    <div class="system-version-lockup"><small>当前版本</small><strong>v{{ app_version }}</strong><span>LOCAL FIRST</span></div>
+  </section>
+
+  <section class="system-about-story">
+    <article class="card system-identity-card">
+      <span class="eyebrow">SYSTEM IDENTITY</span><h2>{{ system_name }} <small>{{ system_name_en }}</small></h2>
+      <p>“云”代表轻盈的内容与界面，“迹”代表每一次创作、互动和成长留下的痕迹。</p>
+      <div class="system-identity-tags"><span>本地优先</span><span>可爱而可靠</span><span>内容自主</span><span>响应式</span></div>
+    </article>
+    <article class="card system-developer-card"><span class="system-developer-card__mark">♡</span><div><small>开发者</small><strong>sau_baka</strong><p>设计、开发与长期维护</p></div></article>
+  </section>
+
+  <section class="card system-runtime-panel">
+    <div class="panel-heading"><div><span class="eyebrow">RUNTIME SNAPSHOT</span><h2>当前运行环境</h2></div><span class="status-dot"><i></i>正在运行</span></div>
+    <div class="system-fact-grid">
+      {% for mark,label,value in [('⌁','宿主机系统',host.os),('◌','主机名称',host.hostname),('☁','运行模式',host.environment),('✦','系统版本',app_version)] %}
+      <article class="system-fact-card"><span>{{ mark }}</span><small>{{ label }}</small><strong>{{ value }}</strong></article>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "layouts/admin.html" %}
+{% block title %}域名与协议 · {{ site_name }}{% endblock %}
+{% block admin_title %}域名与协议{% endblock %}
+{% block admin_actions %}<a class="button button--soft" href="{{ url_for('admin.seo_settings') }}">SEO设置</a>{% endblock %}
+{% block admin_content %}
+<div class="site-access-workspace">
+  <section class="card site-address-card"><span class="eyebrow">SITE ADDRESS</span><h2>当前网站网址</h2><strong>{{ site_url }}</strong><span class="badge badge--mint">当前访问：{{ current_host }}</span></section>
+  <form class="card admin-form site-access-form" method="post">
+    {{ form.hidden_tag() }}
+    <div class="section-heading"><div><span class="eyebrow">HOST POLICY</span><h2>域名与 IP</h2></div><span class="badge badge--mint">当前：{{ current_host }}</span></div>
+    <label class="field"><span class="field__label">{{ form.allowed_hosts.label.text }}</span>{{ form.allowed_hosts(rows=7) }}{% for error in form.allowed_hosts.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+    <label class="check-row">{{ form.require_https() }}<span><strong>{{ form.require_https.label.text }}</strong></span></label>
+    <label class="check-row">{{ form.confirm_https() }}<span><strong>{{ form.confirm_https.label.text }}</strong></span></label>
+    {% for error in form.confirm_https.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+    <button class="button button--primary" type="submit" data-save-action>保存域名与协议</button>
+  </form>
+</div>
+{% endblock %}

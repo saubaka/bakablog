@@ -1,0 +1,68 @@
+{% from "components/macros.html" import icon, badge %}
+<div class="dashboard-fixed-grid">
+  <article class="dashboard-widget dashboard-widget--hero dashboard-fixed-grid__hero">
+    <div class="dashboard-widget__hero-mark">迹</div>
+    <div>
+      <span class="eyebrow">BAKA BLOG DASHBOARD</span>
+      <h2>今天也在认真照看这座小小星球</h2>
+      <p>{{ counts.published }} 篇文章正在公开展示，{{ counts.pending_total }} 项互动等待处理。</p>
+    </div>
+    <span class="badge badge--blue">v{{ app_version }}</span>
+  </article>
+
+  {% for title, value, description, icon_name in [
+    ('全部文章', counts.posts, '未删除文章总数', 'document'),
+    ('已发布文章', counts.published, '当前公开文章数量', 'spark'),
+    ('草稿文章', counts.drafts, '等待继续完善', 'filter'),
+    ('待处理互动', counts.pending_total, '评论、留言与友链', 'alert')
+  ] %}
+  <article class="dashboard-widget dashboard-widget--metric">
+    <span class="soft-icon">{{ icon(icon_name) }}</span>
+    <div class="dashboard-widget__metric">
+      <small>{{ title }}</small>
+      <strong>{{ value }}</strong>
+      <em>{{ description }}</em>
+    </div>
+  </article>
+  {% endfor %}
+
+  <article class="dashboard-widget dashboard-widget--actions dashboard-fixed-grid__actions">
+    <div class="dashboard-widget__heading"><span><small>QUICK CREATE</small><strong>快捷创作</strong></span></div>
+    <div class="dashboard-widget__actions">
+      <a href="{{ url_for('admin.create_post') }}">{{ icon('document') }}写文章</a>
+      <a href="{{ url_for('admin.edit_moment') }}">{{ icon('moment') }}写动态</a>
+      <a href="{{ url_for('admin.media_library') }}">{{ icon('image') }}传图片</a>
+      <a href="{{ url_for('admin.moderation', view='comments') }}">{{ icon('heart') }}看评论</a>
+    </div>
+  </article>
+
+  <article class="dashboard-widget dashboard-widget--list dashboard-fixed-grid__activity">
+    <div class="dashboard-widget__heading">
+      <span><small>AUDIT STREAM</small><strong>最近操作</strong></span>
+      <a href="{{ url_for('admin.audit_logs') }}">全部记录</a>
+    </div>
+    <div class="dashboard-widget__timeline">
+      {% for log in recent_logs %}
+      <div><i></i><span><strong>{{ log.action }}</strong><small>{{ log.summary or log.target_type }}</small></span><time>{{ log.created_at.strftime('%m-%d %H:%M') }}</time></div>
+      {% else %}
+      <div class="compact-empty"><strong>还没有操作记录</strong></div>
+      {% endfor %}
+    </div>
+  </article>
+
+  <article class="dashboard-widget dashboard-widget--status dashboard-fixed-grid__status">
+    <div class="dashboard-widget__heading"><span><small>LOCAL STATUS</small><strong>本地系统状态</strong></span>{{ badge('运行正常','mint') }}</div>
+    <div class="dashboard-widget__status">
+      <div><span>Flask</span><strong>{{ app_version }}</strong></div>
+      <div><span>本地资源</span><strong>100%</strong></div>
+      <div><span>数据库</span><strong>SQLite</strong></div>
+      <a href="{{ url_for('admin.system_status') }}">查看完整状态 →</a>
+    </div>
+  </article>
+
+  <article class="dashboard-widget dashboard-widget--progress dashboard-fixed-grid__progress">
+    <div class="dashboard-widget__heading"><span><small>PUBLISHING</small><strong>发布完成度</strong></span><b>{{ counts.publish_percent }}%</b></div>
+    <div class="dashboard-widget__progress"><i style="width:{{ counts.publish_percent }}%"></i></div>
+    <p>{{ counts.published }} / {{ counts.posts }} 篇文章已发布</p>
+  </article>
+</div>

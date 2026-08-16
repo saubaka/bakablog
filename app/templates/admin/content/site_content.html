@@ -1,0 +1,154 @@
+{% extends "layouts/admin.html" %}
+{% block title %}{{ '导航菜单' if site_section == 'navigation' else '首页内容' }} · {{ site_name }}{% endblock %}
+{% block admin_title %}{{ '导航菜单' if site_section == 'navigation' else '首页内容' }}{% endblock %}
+{% block admin_actions %}<a class="button button--soft" href="{{ url_for('public.home') }}" target="_blank" rel="noopener">在新窗口查看首页</a>{% endblock %}
+
+{% macro setting_field(field, wide=false, rows=0) -%}
+<label class="field{% if wide %} field--wide{% endif %}">
+  <span class="field__label">{{ field.label.text }}</span>
+  {% if rows %}{{ field(rows=rows) }}{% else %}{{ field() }}{% endif %}
+  {% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+</label>
+{%- endmacro %}
+
+{% macro action_editor(index, title, position, label_field, url_field) -%}
+<article class="home-action-editor">
+  <header><span>{{ index }}</span><div><strong>{{ title }}</strong><small>{{ position }}</small></div></header>
+  <div class="form-grid">
+    {{ setting_field(label_field) }}
+    {{ setting_field(url_field) }}
+  </div>
+</article>
+{%- endmacro %}
+
+{% block admin_content %}
+{% if site_section == 'content' %}
+<section class="home-admin-overview card">
+  <div><span class="eyebrow">HOME CONTROL CENTER</span><h2>首页内容控制台</h2></div>
+  <div class="home-admin-overview__stats">
+    <span><strong>{{ modules|length }}</strong><small>实际首页模块</small></span>
+    <span><strong>{{ modules|selectattr('is_enabled')|list|length }}</strong><small>当前已启用</small></span>
+    <span><strong>{{ navigation|length }}</strong><small>自定义导航</small></span>
+  </div>
+</section>
+
+<nav class="home-admin-jumpbar" aria-label="首页设置页内导航">
+  <a href="#home-copy">首页文案</a><a href="#home-actions">首屏按钮</a><a href="#home-about">关于拼贴</a><a href="#home-footer">页尾与页脚</a><a href="#home-modules">模块编排</a>
+</nav>
+
+<form class="card admin-section home-config-v3" id="home-copy" method="post">
+  {{ form.hidden_tag() }}
+  <div class="panel-heading"><div><span class="eyebrow">VISIBLE COPY</span><h2>首页可见文案</h2></div></div>
+
+  <section class="home-editor-section" id="home-hero-copy">
+    <header class="home-editor-section__heading"><span>01</span><div><h3>首屏内容</h3></div></header>
+    <div class="home-editor-section__body form-grid">
+      {{ setting_field(form.hero_title, true) }}
+      {{ setting_field(form.hero_subtitle, true, 3) }}
+      {{ setting_field(form.hero_tags, true) }}
+      {{ setting_field(form.hero_status, true) }}
+    </div>
+  </section>
+
+  <section class="home-editor-section" id="home-actions">
+    <header class="home-editor-section__heading"><span>02</span><div><h3>首屏行动按钮</h3></div></header>
+    <div class="home-action-editor-grid">
+      {{ action_editor('A','主行动按钮','浅蓝按钮',form.hero_primary_label,form.hero_primary_url) }}
+      {{ action_editor('B','次行动按钮','白色按钮',form.hero_secondary_label,form.hero_secondary_url) }}
+      {{ action_editor('C','探索按钮','文字按钮',form.hero_explore_label,form.hero_explore_url) }}
+    </div>
+  </section>
+
+  <section class="home-editor-section" id="home-about">
+    <header class="home-editor-section__heading"><span>03</span><div><h3>关于我拼贴状态</h3></div></header>
+    <div class="home-state-editor-grid">
+      {{ setting_field(form.about_now) }}
+      {{ setting_field(form.about_tools) }}
+      {{ setting_field(form.about_learning) }}
+    </div>
+  </section>
+
+  <section class="home-editor-section" id="home-footer">
+    <header class="home-editor-section__heading"><span>04</span><div><h3>页尾邀请与全站页脚</h3></div></header>
+    <div class="form-grid">
+      {{ setting_field(form.cta_title, true) }}
+      {{ setting_field(form.cta_text, true, 3) }}
+      {{ setting_field(form.cta_button_label) }}
+      {{ setting_field(form.cta_button_url) }}
+      {{ setting_field(form.footer_text, true) }}
+    </div>
+  </section>
+
+  <div class="sticky-form-actions"><button class="button button--primary" type="submit">保存全部首页文案</button></div>
+</form>
+
+<section class="card admin-section home-module-admin-v3" id="home-modules">
+  <div class="panel-heading"><div><span class="eyebrow">PAGE STRUCTURE</span><h2>首页模块编排</h2></div></div>
+  <div class="home-module-card-list">
+  {% for module in modules %}
+    {% set meta = module_meta.get(module.module_key, {}) %}
+    {% set styles = meta.get('styles') or [] %}
+    {% set style_values = styles|map(attribute=0)|list %}
+    <form class="home-module-card-v3 {{ 'is-disabled' if not module.is_enabled }}" action="{{ url_for('admin.update_home_module', item_id=module.id) }}" method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <header>
+        <span class="home-module-card-v3__index">{{ '%02d'|format(loop.index) }}</span>
+        <div><h3>{{ module_labels.get(module.module_key, module.module_key) }}</h3></div>
+        <span class="home-module-card-v3__state {{ 'is-on' if module.is_enabled }}">{{ '启用中' if module.is_enabled else '已隐藏' }}</span>
+      </header>
+      <div class="home-module-card-v3__facts"><span><small>内容来源</small><strong>{{ meta.get('source','站点内容') }}</strong></span><span><small>前台布局</small><strong>{{ meta.get('layout','固定布局') }}</strong></span><span><small>模块标识</small><code>{{ module.module_key }}</code></span></div>
+      <div class="home-module-card-v3__fields">
+        {% if meta.get('title_editable') %}<label class="field"><span class="field__label">区域标题</span><input name="title" maxlength="100" value="{{ module.title }}"></label>{% else %}<input type="hidden" name="title" value="{{ module.title }}"><div class="home-module-fixed-field"><small>区域标题</small><strong>{{ '首屏标题' if module.module_key == 'hero' else '页尾邀请标题' }}</strong></div>{% endif %}
+        <label class="field"><span class="field__label">页面顺序</span><input name="sort_order" type="number" value="{{ module.sort_order }}"></label>
+        {% if meta.get('quantity_label') %}<label class="field"><span class="field__label">{{ meta.get('quantity_label') }}</span><input name="item_limit" type="number" min="1" max="12" value="{{ module.item_limit }}"></label>{% else %}<input type="hidden" name="item_limit" value="{{ module.item_limit }}">{% endif %}
+        {% if styles %}<label class="field"><span class="field__label">项目布局</span><select name="style_variant">{% for value,label in styles %}<option value="{{ value }}" {{ 'selected' if module.style_variant == value or (loop.first and module.style_variant not in style_values) }}>{{ label }}</option>{% endfor %}</select></label>{% else %}<input type="hidden" name="style_variant" value="{{ module.style_variant }}">{% endif %}
+      </div>
+      <footer><label class="home-module-switch"><input name="is_enabled" type="checkbox" value="y" {{ 'checked' if module.is_enabled }}><span><strong>在首页显示</strong></span></label><button class="button button--soft" type="submit">保存此模块</button></footer>
+    </form>
+  {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if site_section == 'navigation' %}
+<section class="home-navigation-admin" id="home-navigation">
+  <div class="home-navigation-admin__intro card"><span class="eyebrow">CUSTOM NAVIGATION</span><h2>自定义导航链接</h2></div>
+  <form class="card admin-form home-navigation-create" action="{{ url_for('admin.create_navigation') }}" method="post">
+    {{ navigation_form.hidden_tag() }}
+    <div class="panel-heading"><div><h2>添加一条导航</h2></div><span class="badge badge--mint">新增</span></div>
+    <div class="form-grid">
+      {{ setting_field(navigation_form.label) }}
+      {{ setting_field(navigation_form.url) }}
+      {{ setting_field(navigation_form.location) }}
+      {{ setting_field(navigation_form.sort_order) }}
+    </div>
+    <div class="home-navigation-create__flags"><label class="check-row">{{ navigation_form.is_visible() }}<span>添加后立即显示</span></label><label class="check-row">{{ navigation_form.open_new_tab() }}<span>在新窗口打开</span></label></div>
+    <button class="button button--primary" type="submit">添加导航链接</button>
+  </form>
+
+  <section class="card admin-section home-navigation-list">
+    <div class="panel-heading"><div><h2>现有自定义导航</h2></div><span class="badge badge--blue">{{ navigation|length }} 条</span></div>
+    <div class="home-navigation-card-list">
+    {% for item in navigation %}
+      <article class="home-navigation-card {{ 'is-hidden' if not item.is_visible }}">
+        <header><div><span class="home-navigation-card__state">{{ '显示中' if item.is_visible else '已隐藏' }}</span><h3>{{ item.label }}</h3><code>{{ item.url }}</code></div><small>排序 {{ item.sort_order }}</small></header>
+        <form class="home-navigation-card__editor" action="{{ url_for('admin.update_navigation', item_id=item.id) }}" method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="home-navigation-card__fields">
+            <label class="field"><span class="field__label">导航名称</span><input name="label" maxlength="80" required value="{{ item.label }}"></label>
+            <label class="field field--wide"><span class="field__label">目标链接</span><input name="url" maxlength="500" required value="{{ item.url }}"></label>
+            <label class="field"><span class="field__label">显示位置</span><select name="location"><option value="header" {{ 'selected' if item.location == 'header' }}>仅顶部</option><option value="footer" {{ 'selected' if item.location == 'footer' }}>仅页脚</option><option value="both" {{ 'selected' if item.location == 'both' }}>顶部和页脚</option></select></label>
+            <label class="field"><span class="field__label">排序数字</span><input name="sort_order" type="number" value="{{ item.sort_order }}"></label>
+          </div>
+          <div class="home-navigation-card__actions"><div><label class="check-row"><input name="is_visible" type="checkbox" value="y" {{ 'checked' if item.is_visible }}><span>显示</span></label><label class="check-row"><input name="open_new_tab" type="checkbox" value="y" {{ 'checked' if item.open_new_tab }}><span>新窗口</span></label></div><button class="button button--soft" type="submit">保存这条导航</button></div>
+        </form>
+        <form class="home-navigation-card__delete" action="{{ url_for('admin.delete_navigation', item_id=item.id) }}" method="post" data-confirm="确定删除导航“{{ item.label }}”吗？此操作不会删除目标页面。"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="text-button" type="submit">删除这条导航</button></form>
+      </article>
+    {% else %}
+      <div class="empty-state"><span class="empty-state__icon">＋</span><div><h3>还没有自定义导航</h3><p>内置导航仍会正常显示；需要补充说明页或外部链接时再添加即可。</p></div></div>
+    {% endfor %}
+    </div>
+  </section>
+</section>
+{% endif %}
+{% endblock %}

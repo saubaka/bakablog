@@ -1,0 +1,21 @@
+.env
+.env.*.local
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Runtime state is kept outside versioned releases in production.
+instance/config.py
+instance/data/
+instance/uploads/
+instance/backups/
+instance/cache/
+instance/logs/
+instance/tmp/
+
+# Local validation artifacts.
+.stage*/
+*.pid
+*.log

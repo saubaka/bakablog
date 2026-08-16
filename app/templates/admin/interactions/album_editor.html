@@ -1,0 +1,17 @@
+{% extends "layouts/admin.html" %}
+{% block title %}{{ '编辑相册' if album else '新建相册' }} · {{ site_name }}{% endblock %}
+{% block admin_title %}{{ '编辑相册' if album else '新建相册' }}{% endblock %}
+{% block admin_actions %}<a class="button button--soft" href="{{ url_for('admin.albums') }}">返回相册</a>{% endblock %}
+{% block admin_content %}
+<section class="card admin-section">
+  <form class="admin-form" method="post">{{ form.hidden_tag() }}
+    {% for field in [form.title,form.slug,form.description,form.status,form.sort_order] %}<label class="field"><span class="field__label">{{ field.label.text }}</span>{{ field(rows=4) if field.name == 'description' else field() }}{% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>{% endfor %}
+    <button class="button button--primary" data-save-action>保存相册</button>
+  </form>
+</section>
+{% if album %}<section class="card admin-section">
+  <div class="section-heading"><h2>照片</h2></div>
+  <form class="upload-row" method="post" enctype="multipart/form-data" action="{{ url_for('admin.upload_album_photos', item_id=album.id) }}" data-animated-upload>{{ upload_form.hidden_tag() }}{{ upload_form.images(multiple=true,accept='image/jpeg,image/png,image/webp',data_image_crop='') }}<span class="upload-progress" data-upload-progress hidden><i></i><small>准备上传</small></span><button class="button button--primary">批量上传</button></form>
+  <div class="media-grid">{% for photo in album.photos %}<article class="media-card"><button class="media-card__preview" type="button" data-image-preview data-full-src="{{ url_for('public.media_file', filename=photo.media.filename) }}" data-alt="{{ photo.caption or album.title }}" data-caption="{{ photo.caption }}"><img src="{{ url_for('public.media_file', filename=photo.media.thumbnail_filename) }}" alt="{{ photo.caption or album.title }}" loading="lazy"></button><form class="form-stack" method="post" action="{{ url_for('admin.update_photo', photo_id=photo.id) }}">{{ action_form.hidden_tag() }}<label class="field"><span class="field__label">照片说明</span><input name="caption" value="{{ photo.caption }}" maxlength="300"></label><label class="field"><span class="field__label">排序</span><input name="sort_order" type="number" value="{{ photo.sort_order }}"></label><label class="check-row"><input type="checkbox" name="is_featured" value="1" {% if photo.is_featured %}checked{% endif %}>精选</label><button class="button button--soft button--small" data-save-action>更新</button></form><form method="post" action="{{ url_for('admin.delete_photo', photo_id=photo.id) }}" data-confirm="从相册移除这张照片吗？">{{ action_form.hidden_tag() }}<button class="button button--danger button--small">移除</button></form></article>{% endfor %}</div>
+</section>{% endif %}
+{% endblock %}

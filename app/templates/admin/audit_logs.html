@@ -1,0 +1,44 @@
+{% extends "layouts/admin.html" %}
+{% block title %}操作日志 · {{ site_name }}{% endblock %}
+{% block admin_title %}操作日志{% endblock %}
+{% block admin_actions %}{% endblock %}
+{% block admin_content %}
+<section class="audit-summary-grid">
+  <article class="card audit-summary-card"><span>全部记录</span><strong>{{ storage.total_count }}</strong><small>操作 {{ storage.audit_count }} · 登录 {{ storage.login_count }}</small></article>
+  <article class="card audit-summary-card"><span>估算占用</span><strong>{{ storage.estimated_size }}</strong><small>按日志字段实际字符量估算</small></article>
+  <article class="card audit-summary-card"><span>保留策略</span><strong>{{ {'all':'全部保留','count':'按条数','days':'按时间'}[retention.mode] }}</strong><small>{% if retention.mode == 'count' %}每类最多 {{ retention.count }} 条{% elif retention.mode == 'days' %}保留最近 {{ retention.days }} 天{% else %}不会自动清理{% endif %}</small></article>
+</section>
+
+<form class="card audit-filter-panel" method="get">
+  <div class="section-heading"><div><span class="eyebrow">FILTER LOGS</span><h2>筛选完整日志</h2></div><button class="button button--primary" type="submit">应用筛选</button></div>
+  <div class="audit-filter-grid">
+    <label class="field"><span>用户</span><select name="user"><option value="all">全部用户</option><option value="system" {{ 'selected' if selected_user == 'system' }}>系统或未知用户</option>{% for user in users %}<option value="{{ user.id }}" {{ 'selected' if selected_user == user.id|string }}>{{ user.display_name }} · {{ user.username }}</option>{% endfor %}</select></label>
+    <label class="field"><span>功能</span><select name="function"><option value="all">全部功能</option><option value="login" {{ 'selected' if selected_function == 'login' }}>登录与验证</option>{% for prefix in action_prefixes %}<option value="{{ prefix }}" {{ 'selected' if selected_function == prefix }}>{{ prefix }}</option>{% endfor %}</select></label>
+    <label class="field"><span>开始日期</span><input type="date" name="date_from" value="{{ selected_from }}"></label>
+    <label class="field"><span>结束日期</span><input type="date" name="date_to" value="{{ selected_to }}"></label>
+    <label class="field"><span>每页显示</span><select name="per_page">{% for value in (20,50,100,200) %}<option value="{{ value }}" {{ 'selected' if per_page == value }}>{{ value }} 条</option>{% endfor %}</select></label>
+  </div>
+</form>
+
+<section class="card admin-panel audit-log-panel">
+  <div class="panel-heading"><div><span class="eyebrow">COMPLETE STREAM</span><h2>日志记录</h2><p>共 {{ log_page.total }} 条匹配记录，展开“完整信息”可查看请求标识、地址指纹或设备信息。</p></div></div>
+  <div class="table-scroll"><table class="admin-table audit-table"><thead><tr><th>时间</th><th>功能</th><th>用户</th><th>目标</th><th>说明</th><th>完整信息</th></tr></thead><tbody>
+    {% for item in log_page.items %}<tr><td>{{ item.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td><td><code>{{ item.action }}</code></td><td>{{ item.user_name }}</td><td>{{ item.target }}</td><td>{{ item.summary or '—' }}</td><td><details><summary>查看</summary><p>{{ item.details or '没有额外信息' }}</p></details></td></tr>{% else %}<tr><td colspan="6">当前筛选条件下没有日志</td></tr>{% endfor %}
+  </tbody></table></div>
+  {% if log_page.pages > 1 %}<nav class="audit-pagination" aria-label="日志分页">{% if log_page.has_prev %}<a class="button button--soft button--small" href="{{ url_for('admin.audit_logs', user=selected_user, function=selected_function, date_from=selected_from, date_to=selected_to, per_page=per_page, page=log_page.prev_num) }}">上一页</a>{% endif %}<span>第 {{ log_page.page }} / {{ log_page.pages }} 页</span>{% if log_page.has_next %}<a class="button button--soft button--small" href="{{ url_for('admin.audit_logs', user=selected_user, function=selected_function, date_from=selected_from, date_to=selected_to, per_page=per_page, page=log_page.next_num) }}">下一页</a>{% endif %}</nav>{% endif %}
+</section>
+
+<section class="audit-management-grid">
+  <form class="card admin-section audit-retention-card" method="post" action="{{ url_for('admin.update_audit_retention') }}">
+    {{ action_form.hidden_tag() }}<div class="panel-heading"><div><span class="eyebrow">RETENTION</span><h2>保留与自动清理</h2><p>保存时会立即按所选策略清理，选择全部保留则不删除任何记录。</p></div></div>
+    <div class="choice-grid">
+      {% for value,label,description in [('all','全部保留','长期保存所有操作与登录记录'),('count','按条数保留','每类日志仅保留最新指定条数'),('days','按时间保留','删除超过指定天数的旧记录')] %}<label class="choice-card"><input type="radio" name="retention_mode" value="{{ value }}" {{ 'checked' if retention.mode == value }}><span><strong>{{ label }}</strong><small>{{ description }}</small></span></label>{% endfor %}
+    </div>
+    <div class="form-grid audit-retention-fields"><label class="field"><span>每类保留条数</span><input type="number" name="retention_count" min="100" max="100000" value="{{ retention.count }}"></label><label class="field"><span>保留天数</span><input type="number" name="retention_days" min="1" max="3650" value="{{ retention.days }}"></label></div>
+    <div class="form-actions"><button class="button button--primary" type="submit">保存并执行清理</button></div>
+  </form>
+  <form class="card admin-section audit-delete-card" method="post" action="{{ url_for('admin.delete_audit_logs') }}" data-confirm="确定删除全部操作日志和登录日志吗？此操作无法撤销。">
+    {{ action_form.hidden_tag() }}<div><span class="eyebrow">DELETE LOGS</span><h2>删除全部日志</h2><p>只删除审计与登录记录，不影响用户、文章、设置或媒体。</p></div><button class="button button--danger" type="submit">删除全部日志</button>
+  </form>
+</section>
+{% endblock %}

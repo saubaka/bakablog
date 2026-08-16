@@ -1,0 +1,37 @@
+{% extends "layouts/admin.html" %}
+{% block title %}{{ '编辑页面' if page else '新建页面' }} · {{ site_name }}{% endblock %}
+{% block head %}
+<script src="{{ url_for('static', filename='scripts/editor.js', v=app_version) }}" defer></script>
+<noscript><style>.visual-editor__canvas,.visual-editor__preview,.visual-editor__toolbar,.editor-mode-switch,.editor-statusbar,.image-layout-inspector{display:none!important}.visual-editor__source{display:block!important}</style></noscript>
+{% endblock %}
+{% block admin_title %}{{ '编辑独立页面' if page else '新建独立页面' }}{% endblock %}
+{% block admin_actions %}{% if page %}<span class="autosave-status" data-autosave-status role="status" aria-live="polite">等待输入</span>{% if page.status == 'published' %}<a class="button button--soft" href="{{ url_for('public.custom_page', slug=page.slug) }}" target="_blank">查看前台</a>{% endif %}{% endif %}{% endblock %}
+{% block admin_content %}
+<form class="post-editor post-editor--visual" id="page-editor" method="post" data-content-editor-form {% if page %}data-autosave-url="{{ url_for('admin.autosave_page', item_id=page.id) }}"{% endif %}>
+  {{ form.hidden_tag() }}
+  <section class="editor-main visual-editor-shell card">
+    <div class="editor-document-meta">
+      <label class="field"><span class="field__label">{{ form.title.label.text }}</span>{{ form.title() }}{% for error in form.title.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+      <label class="field"><span class="field__label">{{ form.summary.label.text }}</span>{{ form.summary(rows=3) }}{% for error in form.summary.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+    </div>
+
+    {% with editor_entity_name='页面', editor_upload_url=url_for('admin.editor_image') %}{% include "components/visual_editor.html" %}{% endwith %}
+  </section>
+
+  <aside class="editor-sidebar" data-editor-sidebar>
+    <section class="card editor-sidebar-widget is-open" data-editor-widget>
+      <button class="editor-sidebar-widget__toggle" type="button" data-editor-widget-toggle aria-expanded="true"><span>发布与导航</span><i aria-hidden="true">⌄</i></button>
+      <div class="editor-sidebar-widget__body"><div><label class="field"><span class="field__label">{{ form.status.label.text }}</span>{{ form.status() }}</label><label class="check-row">{{ form.show_in_navigation() }}<span>显示在顶部导航与手机菜单</span></label></div></div>
+    </section>
+    <section class="card editor-sidebar-widget is-open" data-editor-widget>
+      <button class="editor-sidebar-widget__toggle" type="button" data-editor-widget-toggle aria-expanded="true"><span>地址与排序</span><i aria-hidden="true">⌄</i></button>
+      <div class="editor-sidebar-widget__body"><div><label class="field"><span class="field__label">{{ form.slug.label.text }}</span>{{ form.slug() }}{% for error in form.slug.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label><label class="field"><span class="field__label">{{ form.sort_order.label.text }}</span>{{ form.sort_order() }}{% for error in form.sort_order.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label></div></div>
+    </section>
+    <section class="card editor-sidebar-widget editor-insight-card" data-editor-widget>
+      <button class="editor-sidebar-widget__toggle" type="button" data-editor-widget-toggle aria-expanded="false"><span>页面大纲</span><i aria-hidden="true">⌄</i></button>
+      <div class="editor-sidebar-widget__body"><div><ol data-editor-outline><li class="is-empty">添加二至四级标题后会自动生成。</li></ol></div></div>
+    </section>
+    <button class="button button--primary button--wide" type="submit">保存独立页面</button>
+  </aside>
+</form>
+{% endblock %}

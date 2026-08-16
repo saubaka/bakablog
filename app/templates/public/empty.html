@@ -1,0 +1,8 @@
+﻿{% extends "layouts/site.html" %}
+{% from "components/macros.html" import empty_state %}
+
+{% block title %}这里还没有内容 {{ seo_settings.title_separator }} {{ seo_settings.site_title }}{% endblock %}
+
+{% block content %}
+<div class="page-shell narrow-shell"><h1 class="sr-only">这里还没有内容</h1>{{ empty_state('这里还是一片软绵绵的空白','对应业务内容将在后续阶段接入。现在可以先浏览已经完成的组件与页面骨架。','查看组件展示',url_for('public.components'),'cloud') }}</div>
+{% endblock %}

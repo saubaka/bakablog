@@ -1,0 +1,5 @@
+﻿{% extends "layouts/site.html" %}
+{% from "components/macros.html" import icon %}
+
+{% block title %}页面走丢了 {{ seo_settings.title_separator }} {{ seo_settings.site_title }}{% endblock %}
+{% block content %}<div class="page-shell narrow-shell"><section class="error-state card"><span class="error-code">404</span><span class="empty-state__icon">{{ icon('cloud') }}</span><h1>这片云暂时飘走了</h1><p>页面可能被移动、删除，或者地址里藏着一个小小的拼写错误。</p><div class="button-row"><a class="button button--primary" href="{{ url_for('public.home') }}">返回首页</a><a class="button button--soft" href="{{ url_for('public.blog') }}">浏览博客</a></div></section></div>{% endblock %}

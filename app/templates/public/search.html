@@ -1,0 +1,63 @@
+{% extends "layouts/site.html" %}
+{% from "components/macros.html" import icon %}
+
+{% block title %}全站搜索 {{ seo_settings.title_separator }} {{ seo_settings.site_title }}{% endblock %}
+{% block robots_meta %}noindex, follow{% endblock %}
+{% block body_class %}search-body{% endblock %}
+{% block head %}<script src="{{ url_for('static', filename='scripts/search.js', v=app_version) }}" defer></script>{% endblock %}
+
+{% block content %}
+<div class="page-shell search-page" data-global-search data-search-endpoint="{{ url_for('public.search_api') }}">
+  <header class="search-hero">
+    <span class="eyebrow">SEARCH THE WHOLE PLANET</span>
+    <h1>搜索整座小小星球</h1>
+    <p>从博客、项目、动态、友链与公开留言中找到正在寻找的片段。</p>
+    <form class="global-search-form" method="get" action="{{ url_for('public.search') }}" data-global-search-form>
+      <label class="global-search-box" for="global-search-input">
+        {{ icon('search') }}
+        <input id="global-search-input" name="q" type="search" value="{{ results.query }}" maxlength="100" autocomplete="off" placeholder="输入标题、内容、技术或名字…" data-global-search-input>
+        <button class="button button--primary" type="submit">搜索</button>
+      </label>
+      <fieldset class="search-mode-picker" aria-label="匹配方式">
+        <label class="search-mode-option">
+          <input type="radio" name="mode" value="strict" {{ 'checked' if results.mode == 'strict' }} data-search-mode>
+          <span class="search-mode-option__dot" aria-hidden="true"></span>
+          <span><strong>严格匹配</strong><small>完整、连续出现的词语</small></span>
+        </label>
+        <label class="search-mode-option">
+          <input type="radio" name="mode" value="free" {{ 'checked' if results.mode == 'free' }} data-search-mode>
+          <span class="search-mode-option__dot" aria-hidden="true"></span>
+          <span><strong>自由匹配</strong><small>所有关键词同时出现</small></span>
+        </label>
+      </fieldset>
+    </form>
+  </header>
+
+  <section class="global-search-panel{{ ' is-visible' if results.query }}" data-search-panel {% if not results.query %}hidden{% endif %} aria-live="polite" aria-busy="false">
+    <header class="global-search-panel__head">
+      <div>
+        <span class="eyebrow">SEARCH RESULTS</span>
+        <h2 data-search-heading>{% if results.total %}找到 {{ results.total }} 条结果{% elif results.query %}没有找到结果{% else %}搜索结果{% endif %}</h2>
+      </div>
+      <span class="search-request-state" data-search-state>{% if results.query %}已检索五类公开内容{% endif %}</span>
+    </header>
+    <div class="search-result-list" data-search-results>
+      {% for item in results.items %}
+      <a class="search-result-card search-result-card--{{ item.source }}" href="{{ item.url }}" style="--search-order:{{ loop.index0 }}">
+        <span class="search-result-card__source">{{ item.source_label }}</span>
+        <span class="search-result-card__copy"><strong>{{ item.title }}</strong><small>{{ item.excerpt }}</small></span>
+        {% if item.date %}<time>{{ item.date }}</time>{% endif %}
+        <span class="search-result-card__arrow" aria-hidden="true">→</span>
+      </a>
+      {% else %}
+        {% if results.query %}<div class="search-empty-state"><span aria-hidden="true">✦</span><strong>暂时没有找到相同的星光</strong></div>{% endif %}
+      {% endfor %}
+    </div>
+    <nav class="search-pagination" data-search-pagination aria-label="搜索结果分页" {% if results.pages <= 1 %}hidden{% endif %}>
+      {% for number in range(1, results.pages + 1) %}
+      <a href="{{ url_for('public.search', q=results.query, mode=results.mode, page=number) }}" class="{{ 'is-current' if number == results.page }}" aria-label="第 {{ number }} 页" {% if number == results.page %}aria-current="page"{% endif %} data-search-page="{{ number }}">{{ number }}</a>
+      {% endfor %}
+    </nav>
+  </section>
+</div>
+{% endblock %}

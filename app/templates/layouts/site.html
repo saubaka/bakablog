@@ -1,0 +1,12 @@
+{% extends "layouts/base.html" %}
+{% from "components/macros.html" import icon %}
+
+{% block body %}
+  {% include "components/site_nav.html" %}
+  <main id="main-content" class="site-main" tabindex="-1">
+    {% block content %}{% endblock %}
+  </main>
+  {% include "components/site_footer.html" %}
+  {% include "components/mobile_nav.html" %}
+  {% include "components/mobile_drawer.html" %}
+{% endblock %}

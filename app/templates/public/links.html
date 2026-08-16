@@ -1,0 +1,65 @@
+﻿{% extends "layouts/site.html" %}
+{% from "components/macros.html" import badge, icon %}
+{% block title %}友链星球 {{ seo_settings.title_separator }} {{ seo_settings.site_title }}{% endblock %}
+{% block content %}
+<div class="page-shell interaction-page">
+  <header class="page-hero">
+    <span class="eyebrow">FRIENDS IN THE UNIVERSE</span>
+    <h1>{{ page_customizations.links.title }}</h1>
+    <p>{{ page_customizations.links.subtitle }}</p>
+  </header>
+  {% set page_key='links' %}{% include "components/page_custom_blocks.html" %}
+
+  <section class="friend-board card" aria-labelledby="friend-board-title">
+    <header class="friend-board__header">
+      <div>
+        <span class="eyebrow">PLANET DIRECTORY</span>
+        <h2 id="friend-board-title">友链星球地图</h2>
+      </div>
+      <button class="button button--primary friend-board__apply" type="button" data-open-dialog="friend-application-modal">申请友链 {{ icon('arrow') }}</button>
+    </header>
+
+    {% if friend_links %}
+    <div class="friend-grid" aria-label="友链列表">
+      {% for item in friend_links %}
+      <a class="friend-card card card--interactive" id="friend-link-{{ item.id }}" href="{{ item.url|external_notice_url }}" rel="nofollow noopener noreferrer">
+        <span class="friend-avatar wash--{{ ('pink','blue','purple','mint')[loop.index0 % 4] }}">{{ item.name[:1] }}</span>
+        <span class="friend-card__copy"><strong>{{ item.name }}</strong><small>{{ item.description }}</small>{% if item.category %}{{ badge(item.category.name, 'blue') }}{% endif %}</span>
+        <span class="friend-status friend-status--{{ item.health_status }}"><i></i>{{ '可访问' if item.health_status == 'ok' else ('暂时失联' if item.health_status == 'error' else '未检查') }}</span>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="friend-board__empty">
+      <span class="friend-board__orbit" aria-hidden="true"><i></i></span>
+      <span class="empty-state__icon">{{ icon('link') }}</span>
+      <h3>星球地图还空着</h3>
+    </div>
+    {% endif %}
+  </section>
+
+  <dialog class="modal friend-application-modal" id="friend-application-modal" aria-labelledby="friend-application-title" {% if application_code or form.errors %}data-open-on-load{% endif %}>
+    <div class="modal__header">
+      <div><span class="eyebrow">BECOME A FRIEND</span><h2 id="friend-application-title">交换一颗小星球</h2></div>
+      <button class="icon-button" type="button" data-close-dialog aria-label="关闭友链申请弹窗">×</button>
+    </div>
+    <div class="friend-application-modal__body">
+      <section class="friend-application-status" aria-labelledby="friend-status-title">
+        <h3 id="friend-status-title">申请与审核进度</h3>
+        {% if application_code %}<div class="application-success"><strong>申请已收到</strong><p>查询编号：<code>{{ application_code }}</code></p><a class="button button--soft" href="{{ url_for('public.friend_application_status', code=application_code) }}">查看申请状态</a></div>{% endif %}
+        <form class="status-lookup" method="get" action="{{ url_for('public.friend_status_lookup') }}">
+          <label for="application-code">查询已有申请</label>
+          <input id="application-code" name="code" required maxlength="40">
+          <button class="button button--soft" type="submit">查询审核进度</button>
+        </form>
+      </section>
+      <form class="form-grid friend-application-form" method="post">
+        {{ form.hidden_tag() }}
+        {% for field in [form.name,form.url,form.description,form.avatar_url,form.applicant_email] %}<label class="field {{ 'field--wide' if field.name == 'description' }}"><span class="field__label">{{ field.label.text }}</span>{{ field(rows=4) if field.name == 'description' else field() }}{% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>{% endfor %}
+        <div class="honeypot" aria-hidden="true">{{ form.website(tabindex='-1',autocomplete='off') }}</div>
+        <button class="button button--primary field--wide" type="submit">提交友链申请</button>
+      </form>
+    </div>
+  </dialog>
+</div>
+{% endblock %}
