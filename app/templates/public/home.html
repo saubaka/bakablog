@@ -25,7 +25,7 @@
       </div>
       <div class="hero-planet-wrap" data-tilt>
         <span class="planet-orbit" aria-hidden="true"><i></i></span>
-        <div class="avatar-planet hero-avatar" aria-label="个人头像">{% if site_profile and site_profile.avatar_media %}<img src="{{ url_for('public.media_file', filename=site_profile.avatar_media.thumbnail_filename) }}" alt="{{ site_profile.display_name }}">{% else %}<span>{{ (site_profile.display_name if site_profile else '屿')[:1] }}</span>{% endif %}</div>
+        <div class="avatar-planet hero-avatar{{ ' avatar-planet--wild' if not (site_profile and site_profile.avatar_media) }}" aria-label="个人头像">{% if site_profile and site_profile.avatar_media %}<img src="{{ url_for('public.media_file', filename=site_profile.avatar_media.thumbnail_filename) }}" alt="{{ site_profile.display_name }}">{% endif %}</div>
         <span class="planet-status"><i></i> ONLINE</span>
       </div>
     </article>
@@ -82,7 +82,7 @@
   {% elif module.module_key == 'about' %}
   <section class="section home-module home-about-collage home-module--{{ module.style_variant }}" data-reveal>
     <div class="about-paper card"><span class="eyebrow">A LITTLE ABOUT ME</span><h2>{{ module.title }}</h2><p>{{ site_profile.short_bio if site_profile and site_profile.short_bio else '白天写代码，晚上做一点设计，认真收集生活里的小小闪光。' }}</p><a class="button button--soft" href="{{ url_for('public.about') }}">查看完整档案 {{ icon('arrow') }}</a></div>
-    <div class="about-profile card"><div class="avatar about-avatar">{% if site_profile and site_profile.avatar_media %}<img src="{{ url_for('public.media_file', filename=site_profile.avatar_media.thumbnail_filename) }}" alt="{{ site_profile.display_name }}">{% else %}{{ (site_profile.display_name if site_profile else '屿')[:1] }}{% endif %}</div><strong>{{ site_profile.display_name if site_profile else '小屿' }}</strong><small>{{ site_profile.headline if site_profile else '独立开发者 / 设计爱好者' }}</small>{% if socials %}<div class="about-socials">{% for social in socials %}<a href="{{ social.url }}" {% if social.url.startswith('http') %}target="_blank" rel="noopener noreferrer"{% endif %}>{{ social.label }}</a>{% endfor %}</div>{% endif %}</div>
+    <div class="about-profile card"><div class="avatar about-avatar{{ ' about-avatar--planet' if not (site_profile and site_profile.avatar_media) }}">{% if site_profile and site_profile.avatar_media %}<img src="{{ url_for('public.media_file', filename=site_profile.avatar_media.thumbnail_filename) }}" alt="{{ site_profile.display_name }}">{% endif %}</div><strong>{{ site_profile.display_name if site_profile else '小屿' }}</strong><small>{{ site_profile.headline if site_profile else '独立开发者 / 设计爱好者' }}</small>{% if socials %}<div class="about-socials">{% for social in socials %}<a href="{{ social.url }}" {% if social.url.startswith('http') %}target="_blank" rel="noopener noreferrer"{% endif %}>{{ social.label }}</a>{% endfor %}</div>{% endif %}</div>
     <div class="about-now-grid">{% for label,value in [('现在',home_settings.about_now),('使用中',home_settings.about_tools),('正在学习',home_settings.about_learning)] %}<article class="card"><small>{{ label }}</small><strong>{{ value }}</strong></article>{% endfor %}</div>
     <div class="about-skills card"><span class="eyebrow">FAVORITE TOOLS</span>{% if skills %}<div class="about-skills__list">{% for skill in skills[:module.item_limit] %}<span><strong>{{ skill.name }}</strong><i><b style="--skill-level:{{ skill.level }}%"></b></i></span>{% endfor %}</div>{% else %}<p>技能贴纸还没有贴上来。</p>{% endif %}</div>
   </section>

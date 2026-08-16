@@ -978,14 +978,26 @@
       revealItems.forEach((item) => item.classList.add('is-revealed'));
     } else {
       root.classList.add('is-motion-ready');
-      const revealObserver = new IntersectionObserver((entries, observer) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          entry.target.classList.add('is-revealed');
-          observer.unobserve(entry.target);
-        });
-      }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
-      revealItems.forEach((item) => revealObserver.observe(item));
+      // Home cards stay observed forever: scrolling into a region staggers the
+      // cards in, and leaving it staggers them out again.
+      const homeItems = revealItems.filter((item) => item.closest('.home-modules'));
+      const onceItems = revealItems.filter((item) => !item.closest('.home-modules'));
+      if (homeItems.length) {
+        const homeObserver = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => entry.target.classList.toggle('is-revealed', entry.isIntersecting));
+        }, { rootMargin: '-8% 0px -8% 0px', threshold: 0.05 });
+        homeItems.forEach((item) => homeObserver.observe(item));
+      }
+      if (onceItems.length) {
+        const revealObserver = new IntersectionObserver((entries, observer) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('is-revealed');
+            observer.unobserve(entry.target);
+          });
+        }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+        onceItems.forEach((item) => revealObserver.observe(item));
+      }
     }
   }
 
