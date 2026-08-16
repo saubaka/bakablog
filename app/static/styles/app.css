@@ -553,6 +553,7 @@ html.is-motion-ready [data-reveal].is-revealed { opacity:1; transform:none; }
 .avatar-planet--wild::after { content:""; position:absolute; left:50%; top:50%; width:168%; height:36%; transform:translate(-50%,-50%) rotate(-14deg); border:3px solid rgba(150,180,208,.6); border-radius:50%; box-shadow:none; pointer-events:none; }
 .about-avatar--planet { position:relative; border:2px solid rgba(150,180,208,.6); background:transparent; box-shadow:none; }
 .about-avatar--planet::before { content:""; position:absolute; left:18%; top:36%; width:40%; height:14%; border:2px solid rgba(150,180,208,.4); border-radius:999px; transform:rotate(-10deg); background:none; }
+.hero-planet-wrap .avatar-planet { position:relative; right:auto; bottom:auto; opacity:1; }
 .hero-doodle { position:absolute; z-index:1; pointer-events:none; }.hero-doodle--cloud { right:8%; bottom:-28px; width:170px; height:75px; border-radius:60px 70px 0 0; background:rgba(221,238,255,.7); filter:blur(.2px); }.hero-doodle--spark { top:14%; right:7%; color:var(--pink-400); font-size:28px; animation:spark-pulse 3.8s ease-in-out infinite; }
 /* v1.30.0: the two coloured hero side cards merge into one card with two rows. */
 .hero-side { display:grid; }
