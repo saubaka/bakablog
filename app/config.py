@@ -6,7 +6,7 @@ from datetime import timedelta
 
 
 class BaseConfig:
-    APP_VERSION = "1.30.7"  # Mobile hero planet re-centered on its orbit backdrop.
+    APP_VERSION = "1.30.8"  # Card scroll enter/leave motion shared across every page.
     SYSTEM_NAME = "sau_bakaの博客"
     SYSTEM_NAME_EN = "baka blog"
     SITE_NAME = "sau_bakaの博客"

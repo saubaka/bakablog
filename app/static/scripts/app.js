@@ -970,16 +970,18 @@
   }, { passive: true });
   window.addEventListener('blur', () => releaseControl(true));
 
-  const revealItems = [...doc.querySelectorAll('[data-reveal]')];
+  const revealItems = [...doc.querySelectorAll('[data-reveal]')].filter((item) => !item.classList.contains('card'));
+  const cardItems = [...doc.querySelectorAll('.card')];
   const restoredNavigation = performance.getEntriesByType('navigation')[0]?.type === 'back_forward';
+  const skipScrollReveal = motionIsReduced() || root.dataset.performance === 'low' || restoredNavigation || !('IntersectionObserver' in window);
   if (revealItems.length) {
     revealItems.forEach((item) => item.style.setProperty('--reveal-order', item.dataset.revealOrder || '0'));
-    if (motionIsReduced() || root.dataset.performance === 'low' || restoredNavigation || !('IntersectionObserver' in window)) {
+    if (skipScrollReveal) {
       revealItems.forEach((item) => item.classList.add('is-revealed'));
     } else {
       root.classList.add('is-motion-ready');
-      // Home cards stay observed forever: scrolling into a region staggers the
-      // cards in, and leaving it staggers them out again.
+      // Home content stays observed forever: scrolling into a region staggers
+      // items in, and leaving it staggers them out again.
       const homeItems = revealItems.filter((item) => item.closest('.home-modules'));
       const onceItems = revealItems.filter((item) => !item.closest('.home-modules'));
       if (homeItems.length) {
@@ -998,6 +1000,46 @@
         }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
         onceItems.forEach((item) => revealObserver.observe(item));
       }
+    }
+  }
+
+  // Every card on every page shares one persistent observer: scrolling into
+  // a card region staggers the cards in, and leaving it staggers them back out.
+  if (cardItems.length) {
+    const cardOrderGroups = new Map();
+    cardItems.forEach((card) => {
+      const parent = card.parentElement || doc.body;
+      const order = cardOrderGroups.get(parent) || 0;
+      card.style.setProperty('--reveal-order', card.dataset.revealOrder || String(order));
+      cardOrderGroups.set(parent, order + 1);
+    });
+    if (skipScrollReveal) {
+      cardItems.forEach((card) => card.classList.add('is-revealed'));
+    } else {
+      root.classList.add('is-motion-ready');
+      const cardObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => entry.target.classList.toggle('is-revealed', entry.isIntersecting));
+      }, { rootMargin: '-8% 0px -8% 0px', threshold: 0 });
+      cardItems.forEach((card) => {
+        card.dataset.scrollReveal = 'card';
+        cardObserver.observe(card);
+      });
+      // Cards inserted later (dialogs, editors, previews) appear settled
+      // instead of staying trapped in the pre-reveal hidden state.
+      const observeFreshCards = (node) => {
+        if (!(node instanceof Element)) return;
+        const added = node.matches('.card') ? [node, ...node.querySelectorAll('.card')] : [...node.querySelectorAll('.card')];
+        added.forEach((card) => {
+          if (card.dataset.scrollReveal) return;
+          card.dataset.scrollReveal = 'card';
+          card.classList.add('is-revealed');
+          cardObserver.observe(card);
+        });
+      };
+      const cardMutation = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => mutation.addedNodes.forEach(observeFreshCards));
+      });
+      cardMutation.observe(doc.body, { childList: true, subtree: true });
     }
   }
 

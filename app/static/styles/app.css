@@ -361,10 +361,10 @@ html[data-performance="low"] .site-nav,html[data-performance="low"] .mobile-bott
   .site-nav,.mobile-bottom-nav { background:#fff; }
   .drawer-backdrop,dialog::backdrop { background:rgba(36,48,66,.56); }
 }
-@media (hover:none) { .button:hover,.icon-button:hover,.card--interactive:hover { transform:none; } }
+@media (hover:none) { .button:hover,.icon-button:hover,.card--interactive:hover,.card:hover { transform:none; } }
 @media (prefers-contrast:more) { :root { --border:#c4cedb; --border-strong:#9cabbf; }.card,.site-nav { border-width:2px; } }
 @media (forced-colors:active) { .card,.site-nav,.button,.icon-button { border:1px solid CanvasText; }.online-dot,.friend-status i { forced-color-adjust:none; } }
-@media print { .site-header,.site-footer,.mobile-bottom-nav,.mobile-drawer,.reading-progress,.comment-form { display:none!important; }.page-shell { width:100%; padding:0; }.card { box-shadow:none; } }
+@media print { .site-header,.site-footer,.mobile-bottom-nav,.mobile-drawer,.reading-progress,.comment-form { display:none!important; }.page-shell { width:100%; padding:0; }.card { box-shadow:none; }.card,[data-reveal] { opacity:1!important; transform:none!important; } }
 
 /* UI 2.0 foundation: soft scrapbook surfaces and consistent control geometry */
 :root {
@@ -405,6 +405,12 @@ body {
   .card--interactive:hover { transform:translateY(-5px); border-color:var(--blue-200); background:linear-gradient(155deg,#fff,var(--blue-50)); box-shadow:inset 0 1px 0 #fff,var(--shadow-card-hover); }
 }
 .card--interactive:active { transform:translateY(2px) scale(.982); box-shadow:inset 0 1px 0 rgba(255,255,255,.8),var(--shadow-pressed); transition-duration:90ms; }
+/* Base card motion: silky hover lift for every card; interactive variants keep
+   their stronger effect through higher specificity (:where keeps this at 0,1,0). */
+.card { transition:transform 260ms var(--spring),box-shadow 260ms var(--ease),border-color 240ms var(--ease),background 240ms var(--ease),opacity var(--reveal-duration) var(--ease); }
+@media (hover:hover) {
+  :where(.card):hover { transform:translateY(-3px); border-color:var(--blue-200); box-shadow:inset 0 1px 0 rgba(255,255,255,.95),var(--shadow-card-hover); }
+}
 
 .button {
   position:relative;
@@ -530,7 +536,12 @@ body {
 @keyframes control-release { 45% { transform:translateY(-1px) scale(1.012); } to { transform:none; } }
 
 html.is-motion-ready [data-reveal] { opacity:0; transform:translateY(16px) scale(.992); transition:opacity var(--reveal-duration) var(--ease),transform var(--reveal-duration) var(--ease-release); transition-delay:min(calc(var(--reveal-order,0) * 45ms),220ms); }
-html.is-motion-ready [data-reveal].is-revealed { opacity:1; transform:none; }
+html.is-motion-ready [data-reveal].is-revealed { opacity:1; }
+/* Every card on every page shares one motion vocabulary: staggered scroll
+   enter/leave (driven by --reveal-order) plus an instant spring hover/press. */
+html.is-motion-ready .card { transition:opacity var(--reveal-duration) var(--ease),transform 260ms var(--spring),box-shadow 260ms var(--ease),border-color 240ms var(--ease),background 240ms var(--ease); transition-delay:min(calc(var(--reveal-order,0) * 45ms),220ms),min(calc(var(--reveal-order,0) * 45ms),220ms),0s,0s,0s; }
+html.is-motion-ready .card:not(.is-revealed) { opacity:0; transform:translateY(16px) scale(.992); }
+html.is-motion-ready .card:hover,html.is-motion-ready .card:active { transition-delay:0s; }
 [data-tilt] { --tilt-x:0deg; --tilt-y:0deg; transform:perspective(900px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y)); transform-style:preserve-3d; transition:transform 240ms var(--ease-release),box-shadow 220ms var(--ease); }
 [data-tilt].is-tilting { transition:box-shadow 180ms var(--ease); }
 
@@ -659,12 +670,12 @@ html.is-motion-ready [data-reveal].is-revealed { opacity:1; transform:none; }
 
 html[data-motion="reduce"] .avatar-planet,html[data-motion="reduce"] .planet-orbit,html[data-motion="reduce"] .hero-doodle--spark,
 html[data-performance="low"] .avatar-planet,html[data-performance="low"] .planet-orbit,html[data-performance="low"] .hero-doodle--spark { animation:none; }
-html[data-motion="reduce"] [data-reveal],html[data-performance="low"] [data-reveal] { opacity:1!important; transform:none!important; transition:none!important; }
+html[data-motion="reduce"] [data-reveal],html[data-performance="low"] [data-reveal],html[data-motion="reduce"] .card,html[data-performance="low"] .card { opacity:1!important; transform:none!important; transition:none!important; }
 html[data-motion="reduce"] [data-tilt],html[data-performance="low"] [data-tilt] { --tilt-x:0deg!important; --tilt-y:0deg!important; transform:none!important; transition:none!important; }
 html[data-motion="reduce"] .nav-indicator,html[data-performance="low"] .nav-indicator { transition:none; }
 html[data-motion="reduce"] .site-header,html[data-performance="low"] .site-header { transition:none; }
 html[data-motion="reduce"] .site-header.is-nav-arriving .site-nav,html[data-performance="low"] .site-header.is-nav-arriving .site-nav { animation:none; }
-@media (prefers-reduced-motion:reduce) { [data-reveal] { opacity:1!important; transform:none!important; transition:none!important; }.avatar-planet,.planet-orbit,.hero-doodle--spark { animation:none!important; } }
+@media (prefers-reduced-motion:reduce) { [data-reveal],.card { opacity:1!important; transform:none!important; transition:none!important; }.avatar-planet,.planet-orbit,.hero-doodle--spark { animation:none!important; } }
 
 /* Article cards, stacked interaction forms and friend application board */
 .article-card-link {

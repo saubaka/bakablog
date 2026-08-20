@@ -1,6 +1,6 @@
 [project]
 name = "baka-blog"
-version = "1.30.7"
+version = "1.30.8"
 description = "A local-first cute personal website built with Flask."
 requires-python = ">=3.12,<3.15"
 
