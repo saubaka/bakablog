@@ -48,7 +48,7 @@ if not exist "%CLOUDTRACE_PYTHON%" (
   ) else (
     where python >nul 2>&1
     if errorlevel 1 (
-      echo [ERROR] Python was not found. Install Python 3.12, 3.13, or 3.14 first.
+      echo [ERROR] Python was not found. Install Python 3.11, 3.12, 3.13, or 3.14 first.
       set "CLOUDTRACE_EXIT=1"
       goto :finish
     )
@@ -61,9 +61,9 @@ if not exist "%CLOUDTRACE_PYTHON%" (
   )
 )
 
-"%CLOUDTRACE_PYTHON%" -c "import sys; raise SystemExit(0 if (3, 12) <= sys.version_info[:2] < (3, 15) else 1)"
+"%CLOUDTRACE_PYTHON%" -c "import sys; raise SystemExit(0 if (3, 11) <= sys.version_info[:2] < (3, 15) else 1)"
 if errorlevel 1 (
-  echo [ERROR] baka blog requires Python 3.12, 3.13, or 3.14.
+  echo [ERROR] baka blog requires Python 3.11, 3.12, 3.13, or 3.14.
   set "CLOUDTRACE_EXIT=1"
   goto :finish
 )

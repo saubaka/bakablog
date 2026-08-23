@@ -7,8 +7,8 @@ set -eu
 
 export CLOUD_DIARY_ENV=production
 export CLOUD_DIARY_TRUST_PROXY_HEADERS="${CLOUD_DIARY_TRUST_PROXY_HEADERS:-1}"
-PORT="${PORT:-8080}"
 WORKERS="${WORKERS:-2}"
 THREADS="${THREADS:-4}"
+PORT="${PORT:-8080}"
 
 exec .venv/bin/gunicorn --bind "127.0.0.1:${PORT}" --workers "${WORKERS}" --threads "${THREADS}" --timeout 120 --access-logfile - --error-logfile - wsgi:app

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ipaddress
 import os
 from pathlib import Path
 
@@ -13,6 +14,11 @@ from flask_migrate import upgrade
 from app.extensions import db
 from app.models import Permission, Role, User
 from app.security import normalize_admin_username, validate_admin_password
+from app.services.access import (
+    normalize_host,
+    save_bound_urls,
+    save_security_policy,
+)
 from app.services.backup import (
     BackupError,
     check_database,
@@ -63,6 +69,30 @@ def register_commands(app: Flask) -> None:
     app.cli.add_command(site_restore)
     app.cli.add_command(system_check)
     app.cli.add_command(local_recovery_link)
+    app.cli.add_command(configure_deployment_domain)
+
+
+@click.command("configure-deployment-domain")
+@click.argument("domain")
+@with_appcontext
+def configure_deployment_domain(domain: str) -> None:
+    """Bind production access to one exact HTTPS domain."""
+
+    try:
+        host = normalize_host(domain)
+        if "." not in host:
+            raise ValueError("部署域名必须是至少包含两个标签的完整域名。")
+        try:
+            ipaddress.ip_address(host)
+        except ValueError:
+            pass
+        else:
+            raise ValueError("部署域名不能使用 IP 地址。")
+    except ValueError as error:
+        raise click.ClickException(str(error)) from error
+    policy = save_bound_urls(f"https://{host}")
+    save_security_policy(require_https=True, hotlink_protection=policy.hotlink_protection)
+    click.echo(f"生产访问域名已绑定：https://{host}")
 
 
 @click.command("local-recovery-link")

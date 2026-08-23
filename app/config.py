@@ -6,7 +6,7 @@ from datetime import timedelta
 
 
 class BaseConfig:
-    APP_VERSION = "1.30.8"  # Card scroll enter/leave motion shared across every page.
+    APP_VERSION = "1.31.1"  # Linux bootstrap and dynamic loopback port management.
     SYSTEM_NAME = "sau_bakaの博客"
     SYSTEM_NAME_EN = "baka blog"
     SITE_NAME = "sau_bakaの博客"
