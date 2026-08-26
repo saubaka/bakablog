@@ -1,9 +1,9 @@
 #!/bin/sh
 set -eu
 
-REPOSITORY_URL="https://github.com/saubaka/bakagateway.git"
+REPOSITORY_URL="https://github.com/saubaka/bakablog.git"
 BRANCH="main"
-PROJECT_DIRECTORY="/opt/bakagateway/current"
+PROJECT_DIRECTORY="/opt/bakablog/current"
 MANAGER_ONLY=0
 
 usage() {
@@ -13,7 +13,7 @@ usage() {
         "  --repo URL          Git repository (default: ${REPOSITORY_URL})" \
         "  --branch NAME       Git branch (default: ${BRANCH})" \
         "  --project-dir PATH  Absolute deployment path (default: ${PROJECT_DIRECTORY})" \
-        "  --manager-only      Install bakagate without starting interactive deployment" \
+        "  --manager-only      Install bakablog without starting interactive deployment" \
         "  --help              Show this help"
 }
 
@@ -129,20 +129,22 @@ else
     git clone --branch "$BRANCH" --single-branch "$REPOSITORY_URL" "$PROJECT_DIRECTORY"
 fi
 
-MANAGER_BINARY="$PROJECT_DIRECTORY/dist/bakagate/$RUNTIME/bakagate"
+MANAGER_BINARY="$PROJECT_DIRECTORY/dist/bakablog/$RUNTIME/bakablog"
+[ -f "$MANAGER_BINARY" ] || MANAGER_BINARY="$PROJECT_DIRECTORY/dist/bakagate/$RUNTIME/bakagate"
 [ -f "$MANAGER_BINARY" ] || {
     printf 'Missing manager binary in repository: %s\n' "$MANAGER_BINARY" >&2
     exit 1
 }
-install -o root -g root -m 0755 "$MANAGER_BINARY" /usr/local/bin/bakagate
+install -o root -g root -m 0755 "$MANAGER_BINARY" /usr/local/bin/bakablog
+ln -sfn /usr/local/bin/bakablog /usr/local/bin/bakagate
 
-printf '%s\n' "bakagate installed: /usr/local/bin/bakagate"
+printf '%s\n' "bakablog installed: /usr/local/bin/bakablog"
 printf 'Project checkout: %s\n' "$PROJECT_DIRECTORY"
 
 if [ "$MANAGER_ONLY" -eq 1 ]; then
-    printf '%s\n' "Run 'sudo bakagate' to open the management menu."
+    printf '%s\n' "Run 'sudo bakablog' to open the management menu."
     exit 0
 fi
 
 cd "$PROJECT_DIRECTORY"
-exec /usr/local/bin/bakagate --install
+exec /usr/local/bin/bakablog --install

@@ -26,14 +26,17 @@ internal sealed record CommandResult(int ExitCode, string Output, string Error);
 internal static class Program
 {
     private const string ServiceName = "bakablog.service";
-    private const string ManagerName = "bakagate";
+    private const string ManagerName = "bakablog";
     private const string ConfigDirectory = "/etc/bakagate";
     private const string ConfigPath = "/etc/bakagate/bakagate.conf";
     private const string EnvironmentPath = "/etc/bakablog.env";
-    private const string InstalledBinaryPath = "/usr/local/bin/bakagate";
+    private const string InstalledBinaryPath = "/usr/local/bin/bakablog";
+    private const string LegacyBinaryPath = "/usr/local/bin/bakagate";
     private const string ServicePath = "/etc/systemd/system/bakablog.service";
     private const string TimerPath = "/etc/systemd/system/bakagate-log-maintenance.timer";
     private const string TimerServicePath = "/etc/systemd/system/bakagate-log-maintenance.service";
+    private const string UpdatePathUnitPath = "/etc/systemd/system/bakablog-update.path";
+    private const string UpdateServicePath = "/etc/systemd/system/bakablog-update.service";
     private const string NginxSitePath = "/etc/nginx/conf.d/bakablog.conf";
     private const string LogrotatePath = "/etc/logrotate.d/bakablog";
     private const string CertificatePath = "/etc/bakagate/tls/cloudflare-origin.pem";
@@ -129,6 +132,31 @@ internal static class Program
             {
                 return await Doctor() ? 0 : 1;
             }
+            if (args.Contains("--update-check", StringComparer.OrdinalIgnoreCase))
+            {
+                RequireRoot();
+                return await SystemUpdateManager.CheckAsync(download: false) ? 0 : 1;
+            }
+            if (args.Contains("--update-download", StringComparer.OrdinalIgnoreCase))
+            {
+                RequireRoot();
+                return await SystemUpdateManager.CheckAsync(download: true) ? 0 : 1;
+            }
+            if (args.Contains("--update-install", StringComparer.OrdinalIgnoreCase))
+            {
+                RequireRoot();
+                return await SystemUpdateManager.InstallAsync() ? 0 : 1;
+            }
+            if (args.Contains("--update-rollback", StringComparer.OrdinalIgnoreCase))
+            {
+                RequireRoot();
+                return await SystemUpdateManager.RollbackAsync() ? 0 : 1;
+            }
+            if (args.Contains("--process-update-request", StringComparer.OrdinalIgnoreCase))
+            {
+                RequireRoot();
+                return await SystemUpdateManager.ProcessRequestAsync() ? 0 : 1;
+            }
 
             await RunMenu();
             return 0;
@@ -191,6 +219,21 @@ internal static class Program
                 case "9":
                     await Doctor();
                     break;
+                case "10":
+                    RequireRoot();
+                    if (await SystemUpdateManager.CheckAsync(download: true))
+                    {
+                        Console.Write("更新包已就绪，立即安装？[y/N]：");
+                        if ((Console.ReadLine() ?? "").Trim().Equals("y", StringComparison.OrdinalIgnoreCase))
+                        {
+                            await SystemUpdateManager.InstallAsync();
+                        }
+                    }
+                    break;
+                case "11":
+                    RequireRoot();
+                    await SystemUpdateManager.RollbackAsync();
+                    break;
                 case "0":
                     return;
                 default:
@@ -212,7 +255,7 @@ internal static class Program
         string portState = running ? "由 bakablog 使用" : IsPortAvailable(config.LocalPort) ? "可用" : "被其他进程占用，启动时将自动切换";
 
         WriteColor("╭────────────────────────────────────────────────────────╮", ConsoleColor.Cyan);
-        WriteColor("│  bakagate · Linux 部署与服务管理器                      │", ConsoleColor.Cyan);
+        WriteColor("│  bakablog · Debian 12 部署与服务管理器                  │", ConsoleColor.Cyan);
         WriteColor("╰────────────────────────────────────────────────────────╯", ConsoleColor.Cyan);
         Console.WriteLine($"系统版本：{LinuxDescription()}");
         Console.WriteLine($"管理版本：{ManagerVersion()}");
@@ -243,6 +286,8 @@ internal static class Program
         MenuLine("7", "查看本地服务日志");
         MenuLine("8", "设置日志保留与定时清理");
         MenuLine("9", "执行部署与安全检查");
+        MenuLine("10", "检查、下载并安装安全更新");
+        MenuLine("11", "回退到更新前的代码与数据");
         MenuLine("0", "退出", ConsoleColor.DarkGray);
         Console.WriteLine();
     }
@@ -299,7 +344,6 @@ internal static class Program
                 return false;
             }
         }
-
         WriteManagedFiles(config);
 
         CommandResult daemonReload = await Systemctl("daemon-reload");
@@ -309,7 +353,14 @@ internal static class Program
             return false;
         }
         await Run("systemctl", ["enable", "--now", "bakagate-log-maintenance.timer"]);
+        await Run("systemctl", ["enable", "--now", "bakablog-update.path"]);
         await Run("systemctl", ["enable", ServiceName]);
+        CommandResult nginxStart = await Run("systemctl", ["enable", "--now", "nginx.service"]);
+        if (nginxStart.ExitCode != 0)
+        {
+            ShowFailure("Nginx 启动失败", nginxStart);
+            return false;
+        }
         if (!await ValidateNginx())
         {
             return false;
@@ -394,23 +445,6 @@ internal static class Program
             return true;
         }
         GateConfig config = ReadConfig();
-        bool changed = EnsureAvailablePort(config, showMessages);
-        if (changed)
-        {
-            WriteConfig(config);
-            WriteManagedFiles(config);
-            await Systemctl("daemon-reload");
-            if (!await ValidateNginx())
-            {
-                return false;
-            }
-            CommandResult nginxReload = await Run("systemctl", ["reload", "nginx.service"]);
-            if (nginxReload.ExitCode != 0)
-            {
-                ShowFailure("本地端口改变后 Nginx 重新加载失败", nginxReload);
-                return false;
-            }
-        }
         CommandResult start = await Systemctl("start", ServiceName);
         if (start.ExitCode != 0)
         {
@@ -422,7 +456,7 @@ internal static class Program
         if (showMessages)
         {
             WriteColor(
-                healthy ? $"服务已启动，本地端口为 127.0.0.1:{config.LocalPort}。" : $"服务已启动但端口 {config.LocalPort} 尚未通过健康检查。",
+                healthy ? $"服务已启动，本地端口为 127.0.0.1:{config.LocalPort}。" : $"服务已启动，但端口 {config.LocalPort} 尚未通过健康检查。",
                 healthy ? ConsoleColor.Green : ConsoleColor.Red
             );
         }
@@ -443,6 +477,7 @@ internal static class Program
     private static async Task<bool> PreparePortForService()
     {
         GateConfig config = ReadConfig();
+        ValidateProjectRoot(config.ProjectRoot);
         EnsureAvailablePort(config, showMessages: true);
         WriteConfig(config);
         Directory.CreateDirectory(Path.GetDirectoryName(RuntimePortPath)!);
@@ -811,6 +846,9 @@ internal static class Program
         good &= Check("应用服务", service.ExitCode == 0);
         CommandResult localPort = await Run("curl", ["--silent", "--show-error", "--fail", $"http://127.0.0.1:{config.LocalPort}/healthz"]);
         good &= Check($"本地端口 {config.LocalPort}", localPort.ExitCode == 0 && localPort.Output.Contains("cloudtrace", StringComparison.OrdinalIgnoreCase));
+        bool loopbackOnly = File.Exists(RuntimeLaunchPath)
+            && File.ReadAllText(RuntimeLaunchPath).Contains($"--bind 127.0.0.1:{config.LocalPort}", StringComparison.Ordinal);
+        good &= Check("仅监听本机回环", loopbackOnly);
         CommandResult enabled = await Run("systemctl", ["is-enabled", "--quiet", ServiceName]);
         good &= Check("开机自启", enabled.ExitCode == 0);
         CommandResult timer = await Run("systemctl", ["is-active", "--quiet", "bakagate-log-maintenance.timer"]);
@@ -860,6 +898,8 @@ internal static class Program
         AtomicWrite(ServicePath, RenderService(config), "0644");
         AtomicWrite(TimerServicePath, RenderTimerService(), "0644");
         AtomicWrite(TimerPath, RenderTimer(), "0644");
+        AtomicWrite(UpdatePathUnitPath, RenderUpdatePathUnit(), "0644");
+        AtomicWrite(UpdateServicePath, RenderUpdateService(), "0644");
         AtomicWrite(NginxSitePath, RenderNginx(config), "0644");
         AtomicWrite(LogrotatePath, RenderLogrotate(config), "0644");
         string legacySite = "/etc/nginx/sites-enabled/bakablog.conf";
@@ -882,7 +922,7 @@ internal static class Program
         string root = SystemdQuote(config.ProjectRoot);
         return $"""
 [Unit]
-Description=baka blog (managed by bakagate)
+Description=baka blog (managed by bakablog)
 After=network-online.target nginx.service
 Wants=network-online.target nginx.service
 
@@ -897,7 +937,7 @@ RuntimeDirectory=bakablog
 RuntimeDirectoryMode=0750
 ExecStartPre=+{InstalledBinaryPath} --prepare-port
 ExecStart=/bin/sh {RuntimeLaunchPath}
-Restart=on-failure
+Restart=always
 RestartSec=5s
 TimeoutStopSec=30s
 NoNewPrivileges=true
@@ -920,7 +960,7 @@ WantedBy=multi-user.target
     }
 
     private static string RenderNginx(GateConfig config) => $$"""
-# Managed by bakagate. Manual edits are overwritten.
+# Managed by bakablog. Manual edits are overwritten.
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
@@ -1006,6 +1046,36 @@ Unit=bakagate-log-maintenance.service
 WantedBy=timers.target
 """;
 
+    private static string RenderUpdatePathUnit() => """
+[Unit]
+Description=Watch for validated baka blog update requests
+
+[Path]
+PathExists=/var/lib/bakablog/updates/request.json
+Unit=bakablog-update.service
+
+[Install]
+WantedBy=multi-user.target
+""";
+
+    private static string RenderUpdateService() => $"""
+[Unit]
+Description=Apply a validated baka blog update or rollback request
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+ExecStart={InstalledBinaryPath} --process-update-request
+TimeoutStartSec=30min
+Nice=5
+IOSchedulingClass=best-effort
+IOSchedulingPriority=6
+PrivateTmp=true
+ProtectHome=true
+NoNewPrivileges=false
+""";
+
     private static void WriteEnvironment(GateConfig config, bool preserveSecret)
     {
         string? existingSecret = preserveSecret ? ReadEnvironmentValue("CLOUD_DIARY_SECRET_KEY") : null;
@@ -1062,7 +1132,7 @@ CLOUD_DIARY_TEXT_COMPRESSION=0
     private static void WriteConfig(GateConfig config)
     {
         string content = $"""
-# Managed by bakagate.
+# Managed by bakablog.
 DOMAIN={config.Domain}
 PROJECT_ROOT={config.ProjectRoot}
 INSTANCE_ROOT={config.InstanceRoot}
@@ -1096,6 +1166,8 @@ MAX_LOG_SIZE_MB={config.MaxLogSizeMb}
         File.WriteAllText(Path.Combine(output!, "bakablog.logrotate"), RenderLogrotate(config), Utf8NoBom);
         File.WriteAllText(Path.Combine(output!, "bakagate-log-maintenance.service"), RenderTimerService(), Utf8NoBom);
         File.WriteAllText(Path.Combine(output!, "bakagate-log-maintenance.timer"), RenderTimer(), Utf8NoBom);
+        File.WriteAllText(Path.Combine(output!, "bakablog-update.path"), RenderUpdatePathUnit(), Utf8NoBom);
+        File.WriteAllText(Path.Combine(output!, "bakablog-update.service"), RenderUpdateService(), Utf8NoBom);
         Console.WriteLine(output);
         return 0;
     }
@@ -1108,6 +1180,11 @@ MAX_LOG_SIZE_MB={config.MaxLogSizeMb}
             AtomicCopy(source, InstalledBinaryPath);
         }
         Chmod("0755", InstalledBinaryPath);
+        CommandResult link = Run("ln", ["-sfn", InstalledBinaryPath, LegacyBinaryPath]).GetAwaiter().GetResult();
+        if (link.ExitCode != 0)
+        {
+            throw new InvalidOperationException("无法创建 bakagate 兼容命令：" + LastLines(link.Error, 3));
+        }
     }
 
     private static async Task<bool> ValidateNginx()
@@ -1256,7 +1333,7 @@ MAX_LOG_SIZE_MB={config.MaxLogSizeMb}
     {
         if (!OperatingSystem.IsLinux())
         {
-            throw new InvalidOperationException("bakagate 的部署与管理功能只能在 Linux 上运行；Windows 可使用 --render-test 验证模板。");
+            throw new InvalidOperationException("bakablog 的部署与管理功能只能在 Linux 上运行；Windows 可使用 --render-test 验证模板。");
         }
     }
 
@@ -1264,7 +1341,7 @@ MAX_LOG_SIZE_MB={config.MaxLogSizeMb}
     {
         if (Environment.UserName != "root" && GetEffectiveUserId() != "0")
         {
-            throw new InvalidOperationException("此操作需要 root 权限，请使用 sudo bakagate。");
+            throw new InvalidOperationException("此操作需要 root 权限，请使用 sudo bakablog。");
         }
     }
 

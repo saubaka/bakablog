@@ -1,5 +1,5 @@
-# Reference only. `sudo bakagate --install` writes the live configuration and
-# replaces BLOG.EXAMPLE.COM with a strictly validated single domain.
+# Reference only. `sudo bakablog --install` writes the live configuration,
+# exact domain and current conflict-safe loopback port.
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
@@ -25,7 +25,7 @@ server {
     client_max_body_size 16m;
 
     location / {
-        # bakagate writes the selected loopback port here. 8080 is an example.
+        # 8080 is an example. bakablog rewrites this when the local port changes.
         proxy_pass http://127.0.0.1:8080;
         proxy_http_version 1.1;
         proxy_set_header Host BLOG.EXAMPLE.COM;

@@ -107,7 +107,7 @@ def _register_template_filters(app: Flask) -> None:
 
 
 def _ensure_instance_directories(app: Flask) -> None:
-    for name in ("data", "uploads", "cache", "logs", "backups", "tmp"):
+    for name in ("data", "uploads", "cache", "logs", "backups", "tmp", "updates"):
         (Path(app.instance_path) / name).mkdir(parents=True, exist_ok=True)
 
 
@@ -152,32 +152,59 @@ def _register_request_hooks(app: Flask) -> None:
         g.request_started_at = perf_counter()
 
     @app.before_request
+    def validate_gateway_identity():  # type: ignore[no-untyped-def]
+        from app.services.gateway import current_gateway_session
+
+        g.gateway_session = current_gateway_session(validate_remote=True)
+        return None
+
+    @app.before_request
     def validate_account_session():  # type: ignore[no-untyped-def]
         from flask_login import current_user, logout_user
 
-        from app.services.auth import current_user_session, session_is_valid, touch_user_session
+        from app.models import utc_now
+        from app.services.auth import (
+            AUTH_SOURCE_GATEWAY,
+            AUTH_SOURCE_RECOVERY,
+            AUTH_SOURCE_TESTING,
+            current_user_session,
+            current_user_session_source,
+            linked_gateway_session_id,
+            session_is_valid,
+            touch_user_session,
+        )
 
         if not current_user.is_authenticated:
             return None
         item = current_user_session()
-        if item is None:
-            logout_user()
-            session.clear()
-            return redirect(url_for("admin.login", next=request.path))
-        if item.user_id != current_user.id or not session_is_valid(item):
+        source = current_user_session_source()
+        gateway_session = g.get("gateway_session")
+        source_is_valid = source == AUTH_SOURCE_RECOVERY
+        if source == AUTH_SOURCE_TESTING:
+            source_is_valid = current_app.testing
+        elif source == AUTH_SOURCE_GATEWAY:
+            source_is_valid = bool(
+                gateway_session is not None
+                and gateway_session.id == linked_gateway_session_id()
+                and gateway_session.linked_user_id == current_user.id
+                and gateway_session.gateway_subject == current_user.gateway_subject
+            )
+        session_is_current = bool(
+            item is not None
+            and item.user_id == current_user.id
+            and session_is_valid(item)
+            and source_is_valid
+        )
+        if not session_is_current:
+            if item is not None and item.revoked_at is None:
+                item.revoked_at = utc_now()
+                db.session.commit()
             logout_user()
             session.clear()
             return redirect(url_for("admin.login", next=request.path))
         if touch_user_session(item):
             current_user.last_seen_at = item.last_seen_at
             db.session.commit()
-        return None
-
-    @app.before_request
-    def validate_gateway_identity():  # type: ignore[no-untyped-def]
-        from app.services.gateway import current_gateway_session
-
-        g.gateway_session = current_gateway_session(validate_remote=True)
         return None
 
     @app.before_request
@@ -189,6 +216,10 @@ def _register_request_hooks(app: Flask) -> None:
             request_hostname,
         )
 
+        production_https = current_app.config.get("ENV_NAME") == "production"
+        g.require_https = production_https
+        if production_https and not request.is_secure:
+            return redirect(request.url.replace("http://", "https://", 1), code=308)
         if request.endpoint in {"public.healthcheck", "public.readiness_check"}:
             return None
         if request.endpoint == "gateway.local_recovery":
@@ -206,7 +237,9 @@ def _register_request_hooks(app: Flask) -> None:
             abort(400)
         if not origin_is_allowed(request.scheme, request.host, policy.bound_urls):
             abort(400)
-        if policy.require_https and not request.is_secure:
+        require_https = bool(production_https or policy.require_https)
+        g.require_https = require_https
+        if require_https and not request.is_secure:
             return redirect(request.url.replace("http://", "https://", 1), code=308)
         return None
 
@@ -263,11 +296,11 @@ def _register_request_hooks(app: Flask) -> None:
             "manifest-src 'self'; object-src 'none'; script-src 'self'; "
             "style-src 'self' 'unsafe-inline'"
         )
-        access_policy = g.get("access_policy")
-        if access_policy and access_policy.require_https:
+        require_https = bool(g.get("require_https"))
+        if require_https:
             csp += "; upgrade-insecure-requests"
         response.headers["Content-Security-Policy"] = csp
-        if access_policy and access_policy.require_https and request.is_secure:
+        if require_https and request.is_secure:
             response.headers["Strict-Transport-Security"] = (
                 f"max-age={int(current_app.config['HSTS_MAX_AGE'])}; includeSubDomains"
             )
@@ -402,7 +435,7 @@ def _validate_production_config(app: Flask) -> None:
         raise RuntimeError("Production requires a unique 32-byte CLOUD_DIARY_SECRET_KEY.")
     site_url = urlsplit(str(app.config.get("SITE_URL", "")))
     if (
-        site_url.scheme not in {"http", "https"}
+        site_url.scheme != "https"
         or not site_url.hostname
         or site_url.username
         or site_url.password
@@ -410,7 +443,7 @@ def _validate_production_config(app: Flask) -> None:
         or site_url.fragment
         or site_url.path not in {"", "/"}
     ):
-        raise RuntimeError("Production requires an HTTP or HTTPS CLOUD_DIARY_SITE_URL origin.")
+        raise RuntimeError("Production requires an HTTPS CLOUD_DIARY_SITE_URL origin.")
 
 
 def _environment_flag(name: str, default: bool = False) -> bool:

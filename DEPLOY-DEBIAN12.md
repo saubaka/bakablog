@@ -1,18 +1,18 @@
-# Debian 12 与其他 Linux 部署教程
+# Cloudtrace Debian 12与Linux部署教程
 
-本教程对应 baka blog `1.31.1` 和 `bakagate 1.1.0`。默认仓库：
-
-```text
-https://github.com/saubaka/bakagateway.git
-```
-
-正式结构：
+本教程对应Cloudtrace `1.31.6`、`bakablog 1.3.2`和仓库：
 
 ```text
-浏览器 → HTTPS 443 → Nginx → 127.0.0.1:动态端口 → Gunicorn → Flask
+https://github.com/saubaka/bakablog
 ```
 
-Gunicorn不会监听公网地址。`bakagate`默认尝试本地8080端口；发现占用时自动选择其他端口，保存并展示当前端口，同时重写、检查和重新加载Nginx。
+生产链路：
+
+```text
+浏览器 → Cloudflare HTTPS → Nginx 443 → 127.0.0.1:动态端口 → Gunicorn → Flask/SQLite
+```
+
+Gunicorn不会监听公网地址。默认尝试8080；如果端口被其他程序占用，管理器会选择下一空闲端口、保存状态、重写Nginx并重新加载，再启动应用。
 
 ## 1. 支持范围
 
@@ -20,178 +20,191 @@ Gunicorn不会监听公网地址。`bakagate`默认尝试本地8080端口；发�
 - Fedora、RHEL、CentOS Stream、Rocky Linux、AlmaLinux：DNF。
 - Arch Linux、Manjaro：Pacman。
 - openSUSE Leap/Tumbleweed、SLES：Zypper。
-- x86-64或ARM64、glibc、systemd。
-- Python 3.11–3.14。发行版默认Python过旧时，需先从该发行版可信软件源安装兼容版本。
+- x86-64或ARM64、glibc、systemd和Python 3.11–3.14。
 
-Alpine/musl、非systemd系统和其他CPU架构不会被自动部署脚本接受。
+Alpine/musl、非systemd系统和其他CPU架构不会被自动脚本接受。
 
-## 2. 一键部署脚本
+## 2. Cloudflare准备
 
-仓库根目录提供`deploy-linux.sh`。首次部署：
+1. 将域名接入Cloudflare，在DNS中添加指向服务器的记录并按需要开启代理。
+2. 在Cloudflare的“SSL/TLS → 源服务器”创建覆盖唯一业务域名的Origin CA PEM证书和私钥。
+3. 使用SCP或SFTP把两份文件上传到服务器临时目录，禁止提交到Git。
+4. Cloudflare SSL/TLS模式建议设为“完全（严格）”。
+
+本项目只验证上传的Origin CA证书，不下载、检测或限制Cloudflare IPv4/IPv6网段，也不安装Authenticated Origin Pull客户端CA。
+
+## 3. 一键部署
 
 ```sh
-curl -fsSLo deploy-linux.sh https://raw.githubusercontent.com/saubaka/bakagateway/main/deploy-linux.sh
+curl -fsSLo deploy-linux.sh https://raw.githubusercontent.com/saubaka/bakablog/main/deploy-linux.sh
 sudo sh deploy-linux.sh
+```
+
+默认配置：
+
+```text
+仓库：https://github.com/saubaka/bakablog.git
+分支：main
+目录：/opt/bakablog/current
+命令：/usr/local/bin/bakablog
 ```
 
 脚本会：
 
-1. 检查root权限、Linux发行版和CPU架构。
-2. 使用当前发行版包管理器安装Git和CA证书包。
-3. 将仓库克隆到`/opt/bakagateway/current`；已有仓库只允许无本地改动的fast-forward更新。
-4. 从仓库选择`linux-x64`或`linux-arm64`自包含二进制。
-5. 安装`/usr/local/bin/bakagate`，随后进入交互部署。
+1. 校验root权限、HTTPS仓库、分支、目标目录、发行版与CPU架构。
+2. 安装Git和CA基础包。
+3. 克隆仓库；已有仓库仅允许干净工作树的fast-forward更新，不会hard reset。
+4. 选择`linux-x64`或`linux-arm64`自包含二进制。
+5. 安装`bakablog`并创建`bakagate`兼容链接。
+6. 进入安装流程，安装Python/Nginx/日志依赖、迁移数据库、配置证书、systemd和Nginx。
 
-只安装管理程序而不立即部署：
+只安装管理程序：
 
 ```sh
 sudo sh deploy-linux.sh --manager-only
+sudo bakablog
 ```
 
-自定义分支、仓库和目录：
+自定义部署：
 
 ```sh
 sudo sh deploy-linux.sh \
-  --repo https://github.com/saubaka/bakagateway.git \
+  --repo https://github.com/saubaka/bakablog.git \
   --branch main \
-  --project-dir /opt/bakagateway/current
+  --project-dir /opt/bakablog/current
 ```
 
-脚本拒绝HTTP仓库、危险的宽泛系统目录、无效分支以及包含本地改动的已有工作树，不会使用强制重置覆盖服务器文件。
-
-## 3. 手工安装bakagate
-
-发行文件：
-
-```text
-dist/bakagate/linux-x64/bakagate
-dist/bakagate/linux-arm64/bakagate
-```
-
-手工安装：
+## 4. bakablog管理菜单
 
 ```sh
-sudo install -o root -g root -m 0755 ./bakagate /usr/local/bin/bakagate
-cd /opt/bakagateway/current
-sudo bakagate --install
+sudo bakablog
 ```
 
-安装流程会创建`bakablog`系统账户、Python虚拟环境、生产配置、数据库迁移、systemd服务、Nginx配置、日志轮转和定时清理任务。
+菜单首页会显示：
 
-## 4. 本地端口自动切换
+- 应用是否安装、运行；
+- 开机自启是否启用；
+- Nginx状态；
+- 当前`127.0.0.1`端口及其占用状态；
+- 唯一域名和源站证书有效期；
+- Cloudflare来源mTLS状态；
+- 项目目录与日志保留策略。
+
+直接命令：
+
+```sh
+sudo bakablog --install
+sudo bakablog --start
+sudo bakablog --stop
+sudo bakablog --restart
+sudo bakablog --toggle-startup
+sudo bakablog --configure-edge
+sudo bakablog --maintain-logs
+sudo bakablog --doctor
+bakablog --status-json
+```
+
+## 5. 动态本地端口
 
 当前端口保存在：
 
 ```text
 /etc/bakagate/bakagate.conf   LOCAL_PORT=...
-/run/bakablog/port            当前启动使用的端口
+/run/bakablog/port            当前启动端口
 ```
 
-端口范围为1024–65535。系统每次启动`bakablog.service`前，会由`bakagate --prepare-port`执行以下操作：
+每次启动`bakablog.service`前，systemd调用`bakablog --prepare-port`：
 
-1. 尝试绑定`127.0.0.1:当前端口`。
-2. 若被占用，从下一个端口开始寻找可用端口。
-3. 原子更新管理配置、运行时端口文件、Gunicorn启动文件和Nginx upstream。
-4. 运行`nginx -t`，通过后重新加载Nginx。
+1. 尝试绑定当前`127.0.0.1`端口。
+2. 若被占用，从下一个端口开始寻找1024–65535范围内的空闲端口。
+3. 原子更新管理配置、运行时端口、Gunicorn启动文件和Nginx代理端口。
+4. 执行`nginx -t`，通过后重新加载Nginx。
 5. 以`bakablog`低权限账户启动Gunicorn。
 
-因此手动启动、重启、开机自启及systemd故障恢复都不会因旧端口被其他程序占用而永久失败。
+因此手工启动、重启、开机启动和systemd故障恢复都会重新确认端口，不会因旧端口被占用而永久启动失败。机器可读状态示例：
 
-执行`sudo bakagate`后，面板会显示：
-
-```text
-本地端口：127.0.0.1:8080（由 bakablog 使用）
+```json
+{"local_host":"127.0.0.1","local_port":8080,"port_state":"service"}
 ```
 
-服务停止时若端口被其他进程占用，会显示“启动时将自动切换”。机器可读状态：
+## 6. 唯一域名与Origin CA证书
 
 ```sh
-bakagate --status-json
+sudo bakablog --configure-edge
 ```
 
-返回`local_host`、`local_port`和`port_state`。
+输入唯一域名、证书绝对路径和私钥绝对路径。管理器拒绝协议、端口、路径、通配符、IP和单段主机名，并验证：
 
-## 5. 域名和Cloudflare Origin CA证书
-
-在Cloudflare控制台为唯一业务域名创建Origin CA证书，将PEM证书与私钥上传到服务器。运行：
-
-```sh
-sudo bakagate --configure-edge
-```
-
-管理器验证：
-
-- 精确域名，不接受协议、端口、路径、通配符、IP或单段主机名。
-- 证书签发者必须是Cloudflare Origin CA。
-- 证书必须覆盖当前域名并至少还有七天有效期。
-- 私钥必须完整并与证书公钥匹配。
+- 签发者文字为Cloudflare Origin CA；
+- 证书覆盖当前域名；
+- 至少还有七天有效期；
+- 私钥完整并与证书公钥匹配。
 
 通过后保存：
 
 ```text
-/etc/bakagate/tls/cloudflare-origin.pem   0644
-/etc/bakagate/tls/cloudflare-origin.key   0600
+/etc/bakagate/tls/cloudflare-origin.pem  0644 root:root
+/etc/bakagate/tls/cloudflare-origin.key  0600 root:root
 ```
 
-本版本按要求不下载、不检查也不限制Cloudflare IPv4/IPv6网段。Origin CA证书是服务端证书，不是客户端身份证明，因此它本身不能证明请求一定来自Cloudflare；如果服务器443端口对公网开放，知道源站地址的客户端仍可能尝试直接连接，只是普通浏览器不会信任Origin CA证书。需要更严格来源控制时，应另行使用防火墙或Authenticated Origin Pulls。
+Nginx的80端口直接返回444，未知TLS主机名拒绝握手，业务server只接受配置域名；Flask生产策略也会同步绑定到该HTTPS域名。
 
-Nginx仍会拒绝80端口业务页面、未知TLS Host和非配置域名。应用SQLite访问策略也会同步绑定为唯一HTTPS域名。
+Origin CA是服务端证书，不是客户端来源证明。因为本版本按要求不检查Cloudflare网段、也不启用Authenticated Origin Pulls，所以知道源站IP的客户端仍可能构造直连请求；普通浏览器会因不信任Origin CA而报错。
 
-## 6. 服务与开机自启
+## 7. 持久运行与开机自启
+
+systemd使用`Restart=always`，进程异常或正常退出后都会恢复；`systemctl stop`仍能正常停止。
 
 ```sh
-sudo bakagate --start
-sudo bakagate --stop
-sudo bakagate --restart
-sudo bakagate --toggle-startup
-sudo bakagate --doctor
+sudo bakablog --toggle-startup
+systemctl is-enabled bakablog.service
+systemctl status bakablog.service --no-pager
 ```
 
-systemd服务启用`Restart=on-failure`。关闭开机自启不影响当前进程；停止当前服务也不会自动改变开机自启设置。
+关闭开机自启不会停止当前进程，停止服务也不会自动更改自启设置。
 
-## 7. 日志保存与清理
+## 8. 日志保存与清理
 
 日志位于`/var/log/bakablog/`：
 
-- `access.log`、`error.log`：Gunicorn。
-- `service.log`：systemd服务输出。
+- `access.log`、`error.log`：Gunicorn；
+- `service.log`：systemd服务；
 - `nginx-access.log`、`nginx-error.log`：Nginx。
 
-默认每天轮转、单文件最大50MiB、保留14份和14天，并由`bakagate-log-maintenance.timer`每天补充清理。菜单第8项可调整天数、份数和单文件上限。
+默认每天轮转，单文件达到50MiB也会轮转，最多保留14份和14天，并压缩旧日志。`bakagate-log-maintenance.timer`每天执行补充清理，`Persistent=true`保证关机期间错过的任务在下次开机补跑。
+
+菜单第8项可调整天数、份数和文件大小。清理只匹配项目已轮转日志，不删除活动日志、SQLite、上传或备份。
+
+## 9. 验收
 
 ```sh
-sudo bakagate --maintain-logs
-```
-
-只清理本服务的已轮转日志，不删除活动日志、数据库、上传或备份。
-
-## 8. 验收
-
-```sh
-sudo bakagate --doctor
-sudo systemctl status bakablog --no-pager
+sudo bakablog --doctor
+sudo systemctl status bakablog.service --no-pager
 sudo systemctl status bakagate-log-maintenance.timer --no-pager
 sudo nginx -t
-sudo bakagate --status-json
+bakablog --status-json
 ```
 
-用状态JSON中的端口执行本机健康检查：
+读取当前端口后检查：
 
 ```sh
-curl http://127.0.0.1:当前端口/healthz
+PORT=$(sudo awk -F= '/^LOCAL_PORT=/{print $2}' /etc/bakagate/bakagate.conf)
+curl "http://127.0.0.1:${PORT}/healthz"
+sudo ss -lntp | grep "127.0.0.1:${PORT}"
 curl -I https://你的域名/
 ```
 
-确认`ss -lntp`中的Gunicorn只监听`127.0.0.1`，不得监听`0.0.0.0`或`::`。
+Gunicorn不得监听`0.0.0.0`或`::`。
 
-## 9. 更新
+## 10. 更新与排错
 
-再次运行：
+再次运行`sudo sh deploy-linux.sh`会安全更新仓库并刷新管理器、依赖、迁移和服务配置，同时保留生产密钥、SQLite实例数据和日志策略。
 
 ```sh
-sudo sh deploy-linux.sh
+sudo bakablog --doctor
+sudo journalctl -u bakablog.service -n 100 --no-pager
+sudo tail -n 100 /var/log/bakablog/error.log
+sudo nginx -T
 ```
 
-脚本只执行安全的fast-forward更新；随后`bakagate --install`会保留生产密钥、数据库和日志策略，更新依赖、迁移、服务和代理配置。如果仓库存在本地修改，脚本会停止并要求维护者先处理，不会覆盖。
-
-更新前仍应创建并验证站点备份。真实证书、私钥、生产密钥和Cookie不得提交到仓库。
+真实证书、私钥、生产密钥、Cookie、数据库和上传内容不得提交到仓库。

@@ -150,7 +150,7 @@ def origin_is_allowed(scheme: str, host_header: str, urls: tuple[str, ...]) -> b
 
 
 def get_access_policy() -> AccessPolicy:
-    """Return the cached policy; missing tables safely mean open access."""
+    """Return the cached policy, failing closed to the configured site origin."""
 
     def load() -> AccessPolicy:
         try:
@@ -179,14 +179,35 @@ def get_access_policy() -> AccessPolicy:
             return AccessPolicy(rules, require_https, bound_urls, hotlink)
         except (SQLAlchemyError, ValueError):
             db.session.rollback()
-            current_app.logger.exception("access policy load failed; using open defaults")
-            return AccessPolicy()
+            current_app.logger.exception(
+                "access policy load failed; restricting access to configured site origin"
+            )
+            return _configured_origin_policy()
 
     return site_context_cache.get_or_set(
         f"access-policy:{current_app.instance_path}",
         int(current_app.config["ACCESS_POLICY_CACHE_SECONDS"]),
         load,
     )
+
+
+def _configured_origin_policy() -> AccessPolicy:
+    """Build a restrictive fallback without consulting the unavailable database."""
+
+    try:
+        urls = parse_bound_urls(str(current_app.config["SITE_URL"]))
+        if len(urls) != 1:
+            raise ValueError("SITE_URL must contain exactly one origin")
+        hosts = bound_url_hosts(urls)
+    except (KeyError, TypeError, ValueError):
+        current_app.logger.critical(
+            "configured site origin is invalid; denying all ordinary request hosts"
+        )
+        return AccessPolicy(("invalid.invalid",), True, (), True)
+    require_https = current_app.config.get("ENV_NAME") == "production" or urls[0].startswith(
+        "https://"
+    )
+    return AccessPolicy(hosts, require_https, urls, True)
 
 
 def save_access_policy(allowed_hosts: str, require_https: bool) -> AccessPolicy:

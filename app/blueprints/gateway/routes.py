@@ -61,7 +61,7 @@ def local_recovery(token: str):
     session.clear()
     session.permanent = True
     login_user(user, remember=False, fresh=True)
-    establish_user_session(user)
+    establish_user_session(user, source="local_recovery")
     user.last_login_at = datetime.now(UTC)
     db.session.add(
         LoginLog(
@@ -200,7 +200,11 @@ def callback():
             session[GATEWAY_SESSION_KEY] = raw_gateway_session
         session.permanent = True
         login_user(user, remember=False)
-        establish_user_session(user)
+        establish_user_session(
+            user,
+            source="gateway",
+            gateway_session_id=gateway_session.id,
+        )
         gateway_session.linked_user_id = user.id
         user.last_login_at = datetime.now(UTC)
         db.session.commit()
@@ -223,7 +227,11 @@ def callback():
             session[GATEWAY_SESSION_KEY] = raw_gateway_session
         session.permanent = True
         login_user(linked_admin, remember=False)
-        establish_user_session(linked_admin)
+        establish_user_session(
+            linked_admin,
+            source="gateway",
+            gateway_session_id=gateway_session.id,
+        )
         gateway_session.linked_user_id = linked_admin.id
         linked_admin.last_login_at = datetime.now(UTC)
         db.session.add(

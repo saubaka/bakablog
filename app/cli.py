@@ -19,6 +19,7 @@ from app.services.access import (
     save_bound_urls,
     save_security_policy,
 )
+from app.services.auth import revoke_all_user_sessions
 from app.services.backup import (
     BackupError,
     check_database,
@@ -135,6 +136,7 @@ def create_or_update_admin(username: str, password: str, display_name: str) -> U
     username = normalize_admin_username(username)
     role = ensure_permissions()
     user = db.session.scalar(db.select(User).where(User.username == username))
+    existing_user = user is not None
     if user is None:
         user = User(username=username, display_name=display_name)
         db.session.add(user)
@@ -142,6 +144,8 @@ def create_or_update_admin(username: str, password: str, display_name: str) -> U
     user.is_active = True
     user.set_password(password)
     user.roles = [role]
+    if existing_user:
+        revoke_all_user_sessions(user.id)
     db.session.commit()
     return user
 

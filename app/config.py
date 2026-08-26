@@ -6,7 +6,7 @@ from datetime import timedelta
 
 
 class BaseConfig:
-    APP_VERSION = "1.31.1"  # Linux bootstrap and dynamic loopback port management.
+    APP_VERSION = "1.32.0"  # About and protected repository update center.
     SYSTEM_NAME = "sau_bakaの博客"
     SYSTEM_NAME_EN = "baka blog"
     SITE_NAME = "sau_bakaの博客"
@@ -72,6 +72,7 @@ class BaseConfig:
     HSTS_MAX_AGE = 31_536_000
     MAX_BACKUP_UNCOMPRESSED_BYTES = 10 * 1024 * 1024 * 1024
     MAX_BACKUP_FILES = 100_000
+    UPDATE_MANIFEST_URL = "https://raw.githubusercontent.com/saubaka/bakablog/main/updates/stable.json"
 
 
 class DevelopmentConfig(BaseConfig):
@@ -93,9 +94,9 @@ class TestingConfig(BaseConfig):
 class ProductionConfig(BaseConfig):
     ENV_NAME = "production"
     DEBUG = False
-    SESSION_COOKIE_SECURE = False
-    REMEMBER_COOKIE_SECURE = False
-    PREFERRED_URL_SCHEME = "http"
+    SESSION_COOKIE_SECURE = True
+    REMEMBER_COOKIE_SECURE = True
+    PREFERRED_URL_SCHEME = "https"
     SEND_FILE_MAX_AGE_DEFAULT = 31_536_000
     LOG_TO_FILE = True
     LOG_REQUESTS = True

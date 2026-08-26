@@ -427,6 +427,113 @@
     });
   });
 
+  const updateCenter = doc.querySelector('[data-update-center]');
+  if (updateCenter) {
+    const updateForms = [...updateCenter.querySelectorAll('[data-update-action]')];
+    const updateProgress = updateCenter.querySelector('[data-update-progress]');
+    const progressTrack = updateProgress?.parentElement;
+    let updatePollTimer = 0;
+    let updateFailures = 0;
+
+    const renderUpdateState = (state) => {
+      if (!state) return;
+      const busy = ['checking', 'downloading', 'queued', 'installing', 'rolling_back'].includes(state.status);
+      updateCenter.dataset.updateStatus = state.status || 'idle';
+      updateCenter.querySelector('[data-update-state]').textContent = state.message || '等待操作';
+      updateCenter.querySelector('[data-update-message]').textContent = state.message || '等待操作';
+      updateCenter.querySelector('[data-update-time]').textContent = state.updated_at || '等待操作';
+      updateCenter.querySelector('[data-update-current]').textContent = `v${state.current_version}`;
+      updateCenter.querySelector('[data-update-latest]').textContent = `v${state.latest_version}`;
+      updateCenter.querySelector('[data-update-free]').textContent = state.disk?.free_label || '—';
+      updateCenter.querySelector('[data-update-rollback]').textContent = state.can_rollback ? '可以回退' : '暂无备份';
+      const percent = Math.max(0, Math.min(100, Number(state.progress) || 0));
+      updateProgress?.style.setProperty('--update-progress', `${percent}%`);
+      progressTrack?.setAttribute('aria-valuenow', String(percent));
+      const notes = updateCenter.querySelector('[data-update-notes]');
+      if (notes) {
+        const value = state.release?.notes || '';
+        notes.hidden = !value;
+        notes.querySelector('p').textContent = value;
+      }
+      const events = updateCenter.querySelector('[data-update-events]');
+      if (events) {
+        events.replaceChildren(...(state.events || []).slice().reverse().map((item) => {
+          const row = doc.createElement('li');
+          const marker = doc.createElement('i');
+          const body = doc.createElement('div');
+          const message = doc.createElement('strong');
+          const time = doc.createElement('small');
+          message.textContent = item.message;
+          time.textContent = item.at;
+          body.append(message, time);
+          row.append(marker, body);
+          return row;
+        }));
+      }
+      updateForms.forEach((form) => {
+        const action = form.dataset.updateAction;
+        const button = form.querySelector('button');
+        button.disabled = busy
+          || (action === 'download' && !state.available)
+          || (action === 'install' && !state.can_install)
+          || (action === 'rollback' && !state.can_rollback);
+        button.classList.toggle('button--loading', busy && (
+          action === state.status || (state.status === 'queued' && ['install', 'rollback'].includes(action))
+        ));
+      });
+      if (busy) scheduleUpdatePoll(700);
+    };
+
+    const pollUpdateState = async () => {
+      window.clearTimeout(updatePollTimer);
+      try {
+        const response = await fetch(updateCenter.dataset.statusUrl, {
+          headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+          cache: 'no-store'
+        });
+        if (!response.ok) throw new Error('暂时无法读取更新状态');
+        const payload = await response.json();
+        updateFailures = 0;
+        renderUpdateState(payload.data);
+        if (['queued', 'installing', 'rolling_back'].includes(payload.data.status)) scheduleUpdatePoll(900);
+      } catch (_) {
+        updateFailures += 1;
+        if (updateFailures < 45) scheduleUpdatePoll(Math.min(5000, 800 + updateFailures * 180));
+      }
+    };
+    function scheduleUpdatePoll(delay) {
+      window.clearTimeout(updatePollTimer);
+      updatePollTimer = window.setTimeout(pollUpdateState, delay);
+    }
+
+    updateForms.forEach((form) => form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const button = event.submitter || form.querySelector('button');
+      if (button.disabled) return;
+      if (form.dataset.confirm && !await themedConfirm(form.dataset.confirm)) return;
+      button.disabled = true;
+      button.classList.add('button--loading');
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+          body: new FormData(form)
+        });
+        const payload = await response.json();
+        if (!response.ok || !payload.ok) throw new Error(payload.message || payload.data?.message || '更新操作未能开始');
+        renderUpdateState(payload.data);
+        showToast(payload.data.message || '更新任务已经开始。', 'success');
+        scheduleUpdatePoll(500);
+      } catch (error) {
+        button.disabled = false;
+        button.classList.remove('button--loading');
+        showToast(error.message, 'error');
+      }
+    }));
+    scheduleUpdatePoll(250);
+  }
+
   doc.querySelectorAll('form[data-confirm]').forEach((form) => form.addEventListener('submit', (event) => {
     if (form.dataset.confirmApproved === 'true') return;
     event.preventDefault();

@@ -58,8 +58,8 @@ def request_fingerprint(scope: str, *, include_user_agent: bool = False) -> str:
     return hmac.new(secret, "|".join(parts).encode(), hashlib.sha256).hexdigest()
 
 
-def login_is_rate_limited(username: str) -> bool:
-    """Limit failed sign-in attempts by both normalized username and requester fingerprint."""
+def login_is_rate_limited(_username: str) -> bool:
+    """Limit failures by requester without letting strangers lock a known account."""
 
     from app.models import LoginLog
 
@@ -73,7 +73,7 @@ def login_is_rate_limited(username: str) -> bool:
         .where(
             LoginLog.success.is_(False),
             LoginLog.created_at >= window,
-            db.or_(LoginLog.username == username, LoginLog.ip_address == identity),
+            LoginLog.ip_address == identity,
         )
     )
     return (failed or 0) >= int(current_app.config["LOGIN_RATE_LIMIT"])

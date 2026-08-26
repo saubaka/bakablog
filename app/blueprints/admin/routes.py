@@ -40,6 +40,7 @@ from app.models import (
     Project,
     User,
 )
+from app.release import SYSTEM_AUTHOR, SYSTEM_RELEASED_AT, SYSTEM_REPOSITORY
 from app.security import (
     login_is_rate_limited,
     permission_required,
@@ -51,6 +52,13 @@ from app.services.backup import database_path
 from app.services.content import get_setting, set_setting
 from app.services.media import MediaValidationError, delete_stored_image, store_image
 from app.services.system_metrics import collect_runtime_metrics, host_snapshot
+from app.services.system_update import (
+    UpdateError,
+    check_for_updates,
+    queue_privileged_action,
+    read_update_state,
+    start_download,
+)
 
 DUMMY_PASSWORD_HASH = generate_password_hash("not-the-password-being-checked")
 
@@ -73,7 +81,7 @@ def protect_admin():
 def login():
     if current_user.is_authenticated:
         return redirect(url_for("admin.dashboard"))
-    if request.method == "GET" and not current_app.testing:
+    if not current_app.testing:
         return redirect(
             url_for(
                 "gateway.login",
@@ -112,7 +120,7 @@ def login():
             session.clear()
             session.permanent = bool(form.remember.data)
             login_user(user, remember=False)
-            establish_user_session(user)
+            establish_user_session(user, source="testing")
             db.session.commit()
             flash("欢迎回来，后台已经准备好了。", "success")
             return redirect(_safe_next_url(request.args.get("next")) or url_for("admin.dashboard"))
@@ -551,10 +559,88 @@ def runtime_metrics():
 @admin_bp.get("/system/about/")
 @permission_required("system.maintain")
 def system_about():
+    state = read_update_state(current_app.instance_path, current_app.config["APP_VERSION"])
     return render_template(
         "admin/system_about.html",
         host=host_snapshot(current_app.config["ENV_NAME"]),
+        release={
+            "author": SYSTEM_AUTHOR,
+            "repository": SYSTEM_REPOSITORY,
+            "released_at": SYSTEM_RELEASED_AT,
+        },
+        update_state=state,
     )
+
+
+@admin_bp.get("/system/update/status/")
+@permission_required("system.maintain")
+def system_update_status():
+    response = jsonify(
+        {
+            "ok": True,
+            "data": read_update_state(
+                current_app.instance_path, current_app.config["APP_VERSION"]
+            ),
+        }
+    )
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@admin_bp.post("/system/update/check/")
+@permission_required("system.maintain")
+def system_update_check():
+    if not EmptyForm().validate_on_submit():
+        abort(400)
+    state = check_for_updates(current_app.instance_path, current_app.config["APP_VERSION"])
+    record_audit("system.update.check", "system", "update", state["message"])
+    db.session.commit()
+    return jsonify({"ok": state["status"] != "error", "data": state})
+
+
+@admin_bp.post("/system/update/download/")
+@permission_required("system.maintain")
+def system_update_download():
+    if not EmptyForm().validate_on_submit():
+        abort(400)
+    try:
+        state = start_download(current_app.instance_path, current_app.config["APP_VERSION"])
+    except UpdateError as error:
+        return jsonify({"ok": False, "message": str(error)}), 409
+    record_audit("system.update.download", "system", "update", "开始下载并校验更新包")
+    db.session.commit()
+    return jsonify({"ok": True, "data": state}), 202
+
+
+@admin_bp.post("/system/update/install/")
+@permission_required("system.maintain")
+def system_update_install():
+    return _queue_system_update_action("install")
+
+
+@admin_bp.post("/system/update/rollback/")
+@permission_required("system.maintain")
+def system_update_rollback():
+    return _queue_system_update_action("rollback")
+
+
+def _queue_system_update_action(action: str):
+    if not EmptyForm().validate_on_submit():
+        abort(400)
+    try:
+        state = queue_privileged_action(
+            current_app.instance_path, current_app.config["APP_VERSION"], action
+        )
+    except UpdateError as error:
+        return jsonify({"ok": False, "message": str(error)}), 409
+    record_audit(
+        f"system.update.{action}",
+        "system",
+        "update",
+        "提交安装请求" if action == "install" else "提交完整回退请求",
+    )
+    db.session.commit()
+    return jsonify({"ok": True, "data": state}), 202
 
 
 @admin_bp.get("/api/status/")

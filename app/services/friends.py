@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
+import http.client
 import ipaddress
 import socket
+import ssl
 from dataclasses import dataclass
-from urllib.error import HTTPError, URLError
-from urllib.parse import urlsplit
-from urllib.request import HTTPRedirectHandler, Request, build_opener
+from urllib.parse import urljoin, urlsplit
 
 
 class FriendCheckError(ValueError):
@@ -24,7 +24,12 @@ class FriendCheckResult:
 def validate_public_http_url(value: str, resolve: bool = True) -> str:
     url = value.strip()
     parsed = urlsplit(url)
-    if parsed.scheme not in {"http", "https"} or not parsed.hostname or parsed.username:
+    if (
+        parsed.scheme not in {"http", "https"}
+        or not parsed.hostname
+        or parsed.username
+        or parsed.password
+    ):
         raise FriendCheckError("友链必须使用完整的公网 http 或 https 地址。")
     try:
         port = parsed.port
@@ -38,24 +43,117 @@ def validate_public_http_url(value: str, resolve: bool = True) -> str:
 
 
 def check_friend_url(value: str, timeout: float = 5.0) -> FriendCheckResult:
-    url = validate_public_http_url(value)
-    request = Request(url, method="HEAD", headers={"User-Agent": "CloudDiary-LinkCheck/1.0"})
-    try:
-        with build_opener(_SafeRedirectHandler()).open(request, timeout=timeout) as response:
-            status = response.status
-            return FriendCheckResult(status < 400, status, f"HTTP {status}")
-    except HTTPError as error:
-        return FriendCheckResult(False, error.code, f"HTTP {error.code}")
-    except (URLError, TimeoutError, OSError) as error:
-        raise FriendCheckError(f"连接失败：{str(error)[:160]}") from error
+    current_url = validate_public_http_url(value, resolve=False)
+    for redirect_count in range(6):
+        parsed = urlsplit(current_url)
+        hostname = parsed.hostname or ""
+        approved_ips = _resolve_public_ips(hostname)
+        try:
+            status, location = _request_pinned_head(
+                current_url,
+                approved_ips,
+                timeout=timeout,
+            )
+        except (TimeoutError, OSError, http.client.HTTPException, ssl.SSLError) as error:
+            raise FriendCheckError(f"连接失败：{str(error)[:160]}") from error
+        if status in {301, 302, 303, 307, 308} and location:
+            if redirect_count >= 5:
+                raise FriendCheckError("友链重定向次数过多。")
+            current_url = validate_public_http_url(
+                urljoin(current_url, location),
+                resolve=False,
+            )
+            continue
+        return FriendCheckResult(status < 400, status, f"HTTP {status}")
+    raise FriendCheckError("友链重定向次数过多。")
 
 
-class _SafeRedirectHandler(HTTPRedirectHandler):
-    """Revalidate redirects so a public URL cannot bounce to an internal host."""
+def _request_pinned_head(
+    url: str,
+    approved_ips: list[str],
+    *,
+    timeout: float,
+) -> tuple[int, str | None]:
+    """Connect only to an address from the validated DNS snapshot."""
 
-    def redirect_request(self, req, fp, code, msg, headers, newurl):  # type: ignore[no-untyped-def]
-        validate_public_http_url(newurl, resolve=True)
-        return super().redirect_request(req, fp, code, msg, headers, newurl)
+    parsed = urlsplit(url)
+    hostname = parsed.hostname or ""
+    port = parsed.port or (443 if parsed.scheme == "https" else 80)
+    target = parsed.path or "/"
+    if parsed.query:
+        target = f"{target}?{parsed.query}"
+    authority = hostname
+    if ":" in authority:
+        authority = f"[{authority}]"
+    if parsed.port:
+        authority = f"{authority}:{parsed.port}"
+    last_error: OSError | http.client.HTTPException | ssl.SSLError | None = None
+    for address in approved_ips:
+        connection: http.client.HTTPConnection
+        if parsed.scheme == "https":
+            connection = _PinnedHTTPSConnection(hostname, address, port, timeout=timeout)
+        else:
+            connection = _PinnedHTTPConnection(hostname, address, port, timeout=timeout)
+        try:
+            connection.request(
+                "HEAD",
+                target,
+                headers={
+                    "Host": authority,
+                    "User-Agent": "CloudDiary-LinkCheck/1.0",
+                    "Connection": "close",
+                },
+            )
+            response = connection.getresponse()
+            return response.status, response.getheader("Location")
+        except (OSError, http.client.HTTPException, ssl.SSLError) as error:
+            last_error = error
+        finally:
+            connection.close()
+    if last_error is not None:
+        raise last_error
+    raise FriendCheckError("域名没有可用地址。")
+
+
+class _PinnedHTTPConnection(http.client.HTTPConnection):
+    def __init__(
+        self,
+        hostname: str,
+        approved_ip: str,
+        port: int,
+        *,
+        timeout: float,
+    ) -> None:
+        super().__init__(hostname, port=port, timeout=timeout)
+        self.approved_ip = approved_ip
+
+    def connect(self) -> None:
+        self.sock = socket.create_connection(
+            (self.approved_ip, self.port),
+            self.timeout,
+            self.source_address,
+        )
+
+
+class _PinnedHTTPSConnection(http.client.HTTPSConnection):
+    def __init__(
+        self,
+        hostname: str,
+        approved_ip: str,
+        port: int,
+        *,
+        timeout: float,
+    ) -> None:
+        super().__init__(hostname, port=port, timeout=timeout)
+        self.approved_ip = approved_ip
+
+    def connect(self) -> None:
+        raw_socket = socket.create_connection(
+            (self.approved_ip, self.port),
+            self.timeout,
+            self.source_address,
+        )
+        self.sock = self._context.wrap_socket(raw_socket, server_hostname=self.host)
 
 
 def _resolve_public_ips(hostname: str) -> list[str]:

@@ -35,7 +35,7 @@
       {% set appearance_active = endpoint in ('admin.transition_settings','admin.dialog_appearance','admin.interface_appearance','admin.toggle_admin_menu_subtitles') %}
       {% set interface_section = request.args.get('section', 'font') %}
       {% set gateway_active = endpoint == 'admin.gateway_settings' %}
-      {% set system_active = endpoint in ('admin.audit_logs','admin.system_status','admin.runtime_metrics','admin.system_about') %}
+      {% set system_active = endpoint in ('admin.audit_logs','admin.system_status','admin.runtime_metrics','admin.system_about','admin.system_update_status','admin.system_update_check','admin.system_update_download','admin.system_update_install','admin.system_update_rollback') %}
       <nav class="admin-nav" aria-label="后台功能分类" data-admin-navigation>
         <section class="admin-nav-group admin-nav-direct {{ 'is-open' if dashboard_active }}" data-admin-menu-group data-menu-key="dashboard">
           <a class="admin-nav-group__toggle {{ 'is-current' if dashboard_active }}" href="{{ url_for('admin.dashboard') }}">{{ icon('home') }}<span><strong>仪表盘</strong><small>站点数据与运行摘要</small></span></a>
@@ -93,11 +93,11 @@
         </section>
 
         <section class="admin-nav-group {{ 'is-open' if system_active }}" data-admin-menu-group data-menu-key="system">
-          <button class="admin-nav-group__toggle" type="button" data-admin-menu-toggle aria-expanded="{{ 'true' if system_active else 'false' }}" aria-controls="admin-menu-system">{{ icon('settings') }}<span><strong>系统管理</strong><small>运行状态、日志与系统信息</small></span>{{ icon('arrow-down', 'admin-nav-group__chevron') }}</button>
+          <button class="admin-nav-group__toggle" type="button" data-admin-menu-toggle aria-expanded="{{ 'true' if system_active else 'false' }}" aria-controls="admin-menu-system">{{ icon('settings') }}<span><strong>系统管理</strong><small>运行状态、日志、关于与更新</small></span>{{ icon('arrow-down', 'admin-nav-group__chevron') }}</button>
           <div class="admin-nav-group__items" id="admin-menu-system"><div>
             {% if current_user.has_permission('system.maintain') %}<a class="{{ 'is-current' if endpoint in ('admin.system_status','admin.runtime_metrics') }}" href="{{ url_for('admin.system_status') }}"><span>系统状态</span><small>CPU、内存、磁盘、网络与数据库</small></a>{% endif %}
             {% if current_user.has_permission('audit.view') %}<a class="{{ 'is-current' if endpoint == 'admin.audit_logs' }}" href="{{ url_for('admin.audit_logs') }}"><span>操作日志</span><small>后台操作、登录与安全记录</small></a>{% endif %}
-            {% if current_user.has_permission('system.maintain') %}<a class="{{ 'is-current' if endpoint == 'admin.system_about' }}" href="{{ url_for('admin.system_about') }}"><span>系统信息</span><small>{{ system_name }}版本、开发者与宿主机</small></a>{% endif %}
+            {% if current_user.has_permission('system.maintain') %}<a class="{{ 'is-current' if endpoint in ('admin.system_about','admin.system_update_status','admin.system_update_check','admin.system_update_download','admin.system_update_install','admin.system_update_rollback') }}" href="{{ url_for('admin.system_about') }}"><span>关于</span><small>版本、作者、仓库与安全更新</small></a>{% endif %}
           </div></div>
         </section>
       </nav>
