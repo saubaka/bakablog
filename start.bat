@@ -95,8 +95,35 @@ if errorlevel 1 (
 
 if not defined CLOUD_DIARY_ENV set "CLOUD_DIARY_ENV=development"
 if not defined CLOUD_DIARY_HOST set "CLOUD_DIARY_HOST=127.0.0.1"
-if not defined CLOUD_DIARY_PORT set "CLOUD_DIARY_PORT=5000"
+if not defined CLOUD_DIARY_PORT set "CLOUD_DIARY_PORT=5010"
 set "PYTHONUTF8=1"
+
+"%CLOUDTRACE_PYTHON%" -c "import sys; p=sys.argv[1]; raise SystemExit(0 if p.isascii() and p.isdigit() and p == str(int(p)) and 1024 <= int(p) <= 65535 else 2)" "%CLOUD_DIARY_PORT%" >nul 2>&1
+if errorlevel 1 (
+  echo [ERROR] CLOUD_DIARY_PORT must be a number from 1024 to 65535.
+  set "CLOUDTRACE_EXIT=2"
+  goto :finish
+)
+
+if "%CLOUDTRACE_CHECK_ONLY%"=="1" goto :port_ready
+set "CLOUDTRACE_INITIAL_PORT=%CLOUD_DIARY_PORT%"
+set /a CLOUDTRACE_PORT_LIMIT=CLOUD_DIARY_PORT+20 >nul
+if %CLOUDTRACE_PORT_LIMIT% GTR 65535 set "CLOUDTRACE_PORT_LIMIT=65535"
+
+:probe_port
+"%CLOUDTRACE_PYTHON%" -c "import socket,sys; sock=socket.socket(); sock.bind((sys.argv[1], int(sys.argv[2]))); sock.close()" "%CLOUD_DIARY_HOST%" "%CLOUD_DIARY_PORT%" >nul 2>&1
+if not errorlevel 1 goto :port_ready
+if %CLOUD_DIARY_PORT% GEQ %CLOUDTRACE_PORT_LIMIT% (
+  echo [ERROR] No available local port near %CLOUDTRACE_INITIAL_PORT%.
+  set "CLOUDTRACE_EXIT=1"
+  goto :finish
+)
+set /a CLOUD_DIARY_PORT+=1 >nul
+goto :probe_port
+
+:port_ready
+if not "%CLOUDTRACE_CHECK_ONLY%"=="1" if not "%CLOUD_DIARY_PORT%"=="%CLOUDTRACE_INITIAL_PORT%" echo [INFO] Preferred port is busy. Using port %CLOUD_DIARY_PORT%.
+set "CLOUD_DIARY_SITE_URL=http://%CLOUD_DIARY_HOST%:%CLOUD_DIARY_PORT%"
 
 echo.
 echo [1/3] Applying local SQLite migrations...
@@ -122,7 +149,8 @@ if "%CLOUDTRACE_CHECK_ONLY%"=="1" (
 
 echo.
 echo [3/3] Starting baka blog...
-echo URL: http://%CLOUD_DIARY_HOST%:%CLOUD_DIARY_PORT%
+echo URL: %CLOUD_DIARY_SITE_URL%
+echo First visit: open this URL and create the administrator in the browser.
 echo Press Ctrl+C to stop the local server.
 echo.
 "%CLOUDTRACE_PYTHON%" -m flask --app wsgi:app run --host "%CLOUD_DIARY_HOST%" --port "%CLOUD_DIARY_PORT%" --no-debug --no-debugger --no-reload

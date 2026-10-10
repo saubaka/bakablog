@@ -18,6 +18,7 @@ from wtforms import (
 )
 from wtforms.validators import (
     DataRequired,
+    EqualTo,
     Length,
     NumberRange,
     Optional,
@@ -34,17 +35,24 @@ HEX_COLOR_VALIDATORS = [
 class LoginForm(FlaskForm):
     username = StringField("用户名", validators=[DataRequired(), Length(min=3, max=50)])
     password = PasswordField("密码", validators=[DataRequired(), Length(min=8, max=256)])
+    human_nonce = HiddenField("验证码标识", validators=[Optional()])
+    human_answer = StringField("图中字符", validators=[Optional(), Length(min=4, max=4)])
     remember = BooleanField("在这台设备上保持登录")
-    submit = SubmitField("进入后台")
+    submit = SubmitField("登录")
 
 
-class GatewayConnectionForm(FlaskForm):
-    issuer = StringField("发行者地址", validators=[DataRequired(), Length(max=500)])
-    client_id = StringField("Client ID", validators=[DataRequired(), Length(max=200)])
-    client_secret = PasswordField(
-        "Client Secret", validators=[Optional(), Length(min=8, max=512)]
+class SuperadminSetupForm(FlaskForm):
+    username = StringField("管理员用户名", validators=[DataRequired(), Length(min=3, max=50)])
+    display_name = StringField("显示名称", validators=[DataRequired(), Length(min=1, max=80)])
+    password = PasswordField("管理员密码", validators=[DataRequired(), Length(min=14, max=256)])
+    password_confirm = PasswordField(
+        "再次输入密码",
+        validators=[DataRequired(), EqualTo("password", message="两次输入的密码不一致。")],
     )
-    submit = SubmitField("保存并验证连接")
+    setup_code = PasswordField("一次性初始化口令", validators=[Optional(), Length(max=128)])
+    human_nonce = HiddenField("验证码标识", validators=[Optional()])
+    human_answer = StringField("图中字符", validators=[Optional(), Length(min=4, max=4)])
+    submit = SubmitField("创建管理员并进入后台")
 
 
 class MediaUploadForm(FlaskForm):
@@ -76,6 +84,7 @@ class PostForm(FlaskForm):
     published_at = DateTimeLocalField("发布时间", format="%Y-%m-%dT%H:%M", validators=[Optional()])
     is_pinned = BooleanField("置顶")
     is_featured = BooleanField("推荐")
+    allow_comments = BooleanField("允许访客评论")
     seo_title = StringField("SEO标题", validators=[Optional(), Length(max=180)])
     seo_description = TextAreaField("SEO描述", validators=[Optional(), Length(max=300)])
     submit = SubmitField("保存文章")
@@ -149,6 +158,7 @@ class MomentForm(FlaskForm):
     location = StringField("地点", validators=[Optional(), Length(max=120)])
     status = SelectField("状态", choices=[("draft", "草稿"), ("published", "发布")])
     is_pinned = BooleanField("置顶")
+    allow_comments = BooleanField("允许访客评论")
     submit = SubmitField("保存动态")
 
 
@@ -167,19 +177,19 @@ class NavigationForm(FlaskForm):
 class SiteSettingsForm(FlaskForm):
     hero_title = StringField("首页标题", validators=[DataRequired(), Length(max=180)])
     hero_subtitle = TextAreaField("首页说明", validators=[Optional(), Length(max=500)])
-    hero_tags = StringField("首屏短标签", validators=[Optional(), Length(max=240)])
-    hero_status = StringField("此刻状态", validators=[Optional(), Length(max=160)])
+    hero_tags = StringField("首屏主题词", validators=[Optional(), Length(max=240)])
+    hero_status = StringField("当前重点", validators=[Optional(), Length(max=160)])
     hero_primary_label = StringField("主按钮文字", validators=[Optional(), Length(max=40)])
     hero_primary_url = StringField("主按钮链接", validators=[Optional(), Length(max=500)])
     hero_secondary_label = StringField("次按钮文字", validators=[Optional(), Length(max=40)])
     hero_secondary_url = StringField("次按钮链接", validators=[Optional(), Length(max=500)])
-    hero_explore_label = StringField("漫游按钮文字", validators=[Optional(), Length(max=40)])
-    hero_explore_url = StringField("漫游按钮链接", validators=[Optional(), Length(max=500)])
+    hero_explore_label = StringField("相册文字链接", validators=[Optional(), Length(max=40)])
+    hero_explore_url = StringField("相册目标链接", validators=[Optional(), Length(max=500)])
     about_now = StringField("现在", validators=[Optional(), Length(max=120)])
     about_tools = StringField("使用中", validators=[Optional(), Length(max=120)])
     about_learning = StringField("正在学习", validators=[Optional(), Length(max=120)])
-    cta_title = StringField("页尾邀请标题", validators=[Optional(), Length(max=120)])
-    cta_text = TextAreaField("页尾邀请说明", validators=[Optional(), Length(max=360)])
+    cta_title = StringField("页尾留言标题", validators=[Optional(), Length(max=120)])
+    cta_text = TextAreaField("页尾留言说明", validators=[Optional(), Length(max=360)])
     cta_button_label = StringField("页尾按钮文字", validators=[Optional(), Length(max=40)])
     cta_button_url = StringField("页尾按钮链接", validators=[Optional(), Length(max=500)])
     footer_text = StringField("页脚文字", validators=[Optional(), Length(max=255)])
@@ -194,14 +204,19 @@ class TransitionSettingsForm(FlaskForm):
     transition_color_start = StringField("覆盖起始色", validators=HEX_COLOR_VALIDATORS)
     transition_color_middle = StringField("覆盖过渡色", validators=HEX_COLOR_VALIDATORS)
     transition_color_end = StringField("覆盖结束色", validators=HEX_COLOR_VALIDATORS)
+    component_motion_duration = IntegerField(
+        "组件总时长（毫秒）",
+        validators=[DataRequired(), NumberRange(min=520, max=1100)],
+    )
+    component_motion_style = RadioField("阻尼感", validators=[DataRequired()])
+    component_motion_color = StringField("线条主色", validators=HEX_COLOR_VALIDATORS)
+    component_motion_softness = RadioField("表面柔化", validators=[DataRequired()])
     submit = SubmitField("保存动效设置")
 
 
 class DialogAppearanceForm(FlaskForm):
-    dialog_style = RadioField("弹窗样式", validators=[DataRequired()])
-    dialog_color_start = StringField("弹窗起始色", validators=HEX_COLOR_VALIDATORS)
-    dialog_color_end = StringField("弹窗结束色", validators=HEX_COLOR_VALIDATORS)
-    dialog_accent = StringField("弹窗强调色", validators=HEX_COLOR_VALIDATORS)
+    revision = HiddenField("设置版本", validators=[Optional()])
+    dialog_accent = StringField("弹窗轮廓色", validators=HEX_COLOR_VALIDATORS)
     dialog_radius = IntegerField(
         "弹窗圆角", validators=[DataRequired(), NumberRange(min=14, max=42)]
     )
@@ -212,7 +227,19 @@ class DialogAppearanceForm(FlaskForm):
         "背景模糊", validators=[DataRequired(), NumberRange(min=0, max=30)]
     )
     dialog_shadow = RadioField("阴影强度", validators=[DataRequired()])
-    submit = SubmitField("保存弹窗外观")
+    toast_background = StringField("通知底色", validators=HEX_COLOR_VALIDATORS)
+    toast_text = StringField("通知文字", validators=HEX_COLOR_VALIDATORS)
+    toast_accent = StringField("普通通知", validators=HEX_COLOR_VALIDATORS)
+    toast_success = StringField("成功通知", validators=HEX_COLOR_VALIDATORS)
+    toast_warning = StringField("提醒通知", validators=HEX_COLOR_VALIDATORS)
+    toast_error = StringField("错误通知", validators=HEX_COLOR_VALIDATORS)
+    toast_radius = IntegerField(
+        "通知圆角", validators=[DataRequired(), NumberRange(min=12, max=32)]
+    )
+    toast_duration = IntegerField(
+        "停留时间（毫秒）", validators=[DataRequired(), NumberRange(min=2000, max=12000)]
+    )
+    submit = SubmitField("保存弹窗与通知")
 
 
 class InterfaceAppearanceForm(FlaskForm):
@@ -240,9 +267,7 @@ class SeoSettingsForm(FlaskForm):
     enable_feed = BooleanField("启用Atom订阅")
     enable_structured_data = BooleanField("输出JSON-LD结构化数据")
     schema_type = SelectField("站点主体类型", choices=[])
-    robots_disallow = TextAreaField(
-        "robots禁止路径", validators=[Optional(), Length(max=3000)]
-    )
+    robots_disallow = TextAreaField("robots禁止路径", validators=[Optional(), Length(max=3000)])
     submit = SubmitField("保存SEO设置")
 
 
@@ -334,6 +359,8 @@ class CommentForm(FlaskForm):
     content = TextAreaField("评论内容", validators=[DataRequired(), Length(min=2, max=3000)])
     parent_id = HiddenField("回复评论", validators=[Optional()])
     contact = StringField("请留空", validators=[Optional(), Length(max=0)])
+    human_nonce = HiddenField("验证码标识", validators=[Optional()])
+    human_answer = StringField("图中字符", validators=[Optional(), Length(min=4, max=4)])
     submit = SubmitField("提交评论")
 
 

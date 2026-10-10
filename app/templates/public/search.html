@@ -4,14 +4,13 @@
 {% block title %}全站搜索 {{ seo_settings.title_separator }} {{ seo_settings.site_title }}{% endblock %}
 {% block robots_meta %}noindex, follow{% endblock %}
 {% block body_class %}search-body{% endblock %}
-{% block head %}<script src="{{ url_for('static', filename='scripts/search.js', v=app_version) }}" defer></script>{% endblock %}
 
 {% block content %}
 <div class="page-shell search-page" data-global-search data-search-endpoint="{{ url_for('public.search_api') }}">
   <header class="search-hero">
-    <span class="eyebrow">SEARCH THE WHOLE PLANET</span>
-    <h1>搜索整座小小星球</h1>
-    <p>从博客、项目、动态、友链与公开留言中找到正在寻找的片段。</p>
+    <span class="eyebrow">站内搜索</span>
+    <h1>找一找站里的内容</h1>
+    <p>从博客、项目、动态、友链与公开留言中查找标题、正文和名字。</p>
     <form class="global-search-form" method="get" action="{{ url_for('public.search') }}" data-global-search-form>
       <label class="global-search-box" for="global-search-input">
         {{ icon('search') }}
@@ -50,7 +49,7 @@
         <span class="search-result-card__arrow" aria-hidden="true">→</span>
       </a>
       {% else %}
-        {% if results.query %}<div class="search-empty-state"><span aria-hidden="true">✦</span><strong>暂时没有找到相同的星光</strong></div>{% endif %}
+        {% if results.query %}<div class="search-empty-state"><span aria-hidden="true">⌕</span><strong>暂时没有符合条件的内容</strong></div>{% endif %}
       {% endfor %}
     </div>
     <nav class="search-pagination" data-search-pagination aria-label="搜索结果分页" {% if results.pages <= 1 %}hidden{% endif %}>

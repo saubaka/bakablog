@@ -22,6 +22,7 @@ from app.models import (
 )
 from app.services.blog import apply_search, public_post_condition
 from app.services.content import public_moment_condition, public_project_condition
+from app.services.human_check import issue_human_check
 
 
 def _base_statement():
@@ -128,16 +129,22 @@ def article(slug: str):
     related_posts = db.session.scalars(
         related_statement.order_by(Post.published_at.desc()).limit(3)
     ).all()
-    comments = db.session.scalars(
-        db.select(Comment)
-        .where(
-            Comment.post_id == post.id,
-            Comment.parent_id.is_(None),
-            Comment.status == "approved",
-        )
-        .order_by(Comment.is_pinned.desc(), Comment.created_at.asc())
-    ).all()
-    comment_form = CommentForm()
+    comments = []
+    comment_form = None
+    human_challenge = None
+    if post.allow_comments:
+        comments = db.session.scalars(
+            db.select(Comment)
+            .where(
+                Comment.post_id == post.id,
+                Comment.parent_id.is_(None),
+                Comment.status == "approved",
+            )
+            .order_by(Comment.is_pinned.desc(), Comment.created_at.asc())
+        ).all()
+        comment_form = CommentForm()
+        human_challenge = issue_human_check("comment-post", str(post.id))
+        comment_form.human_nonce.data = human_challenge.nonce
     return render_template(
         "blog/article.html",
         post=post,
@@ -147,6 +154,10 @@ def article(slug: str):
         related_posts=related_posts,
         comments=comments,
         comment_form=comment_form,
+        human_challenge=human_challenge,
+        comment_target_type="post",
+        comment_target_id=post.id,
+        comment_action=url_for("public.create_comment", slug=post.slug),
         action_form=EmptyForm(),
     )
 

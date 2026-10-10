@@ -428,6 +428,8 @@
     const data = new FormData();
     data.append('image', file);
     uploadStatus.textContent = '正在清理元数据并生成图片…';
+    const task = window.CloudDiary?.progress?.('正在上传图片…');
+    let reportedStep = 0;
     try {
       const result = await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -436,7 +438,10 @@
         xhr.responseType = 'json';
         xhr.upload.addEventListener('progress', (event) => {
           if (!event.lengthComputable) return;
-          uploadStatus.textContent = `正在上传 ${Math.round(event.loaded / event.total * 100)}%`;
+          const percent = Math.round(event.loaded / event.total * 100);
+          uploadStatus.textContent = `正在上传 ${percent}%`;
+          const step = Math.min(3, Math.floor(percent / 34));
+          if (step > reportedStep) { reportedStep = step; task?.update(percent >= 100 ? '上传完成，正在清理元数据…' : `正在上传 ${percent}%`); }
         });
         xhr.addEventListener('load', () => resolve({ ok: xhr.status >= 200 && xhr.status < 300, payload: xhr.response || {} }));
         xhr.addEventListener('error', () => reject(new Error('网络中断，上传失败')));
@@ -447,10 +452,12 @@
       insertMediaFigure({ url: payload.data.url, alt: payload.data.alt_text || file.name, width: payload.data.width, height: payload.data.height });
       const optimizedSize = payload.data.size_bytes ? `${Math.max(1, Math.round(payload.data.size_bytes / 1024))} KB` : '本地优化完成';
       uploadStatus.textContent = `图片已插入（${optimizedSize}）；可拖动并调整尺寸、方向与位置。`;
-      window.CloudDiary?.showToast?.('图片已插入可视化编辑器。', 'success');
+      if (task) task.finish('图片已插入可视化编辑器。', 'success');
+      else window.CloudDiary?.showToast?.('图片已插入可视化编辑器。', 'success');
     } catch (error) {
       uploadStatus.textContent = error.message;
-      window.CloudDiary?.showToast?.(error.message, 'error');
+      if (task) task.fail(error.message);
+      else window.CloudDiary?.showToast?.(error.message, 'error');
     }
     imageInput.value = '';
   });

@@ -24,7 +24,7 @@
 {% block admin_content %}
 {% if site_section == 'content' %}
 <section class="home-admin-overview card">
-  <div><span class="eyebrow">HOME CONTROL CENTER</span><h2>首页内容控制台</h2></div>
+  <div><h2>首页内容控制台</h2></div>
   <div class="home-admin-overview__stats">
     <span><strong>{{ modules|length }}</strong><small>实际首页模块</small></span>
     <span><strong>{{ modules|selectattr('is_enabled')|list|length }}</strong><small>当前已启用</small></span>
@@ -33,15 +33,15 @@
 </section>
 
 <nav class="home-admin-jumpbar" aria-label="首页设置页内导航">
-  <a href="#home-copy">首页文案</a><a href="#home-actions">首屏按钮</a><a href="#home-about">关于拼贴</a><a href="#home-footer">页尾与页脚</a><a href="#home-modules">模块编排</a>
+  <a href="#home-copy">首页文案</a><a href="#home-actions">首屏链接</a><a href="#home-about">关于信息</a><a href="#home-footer">页尾留言</a><a href="#home-modules">模块编排</a>
 </nav>
 
 <form class="card admin-section home-config-v3" id="home-copy" method="post">
   {{ form.hidden_tag() }}
-  <div class="panel-heading"><div><span class="eyebrow">VISIBLE COPY</span><h2>首页可见文案</h2></div></div>
+  <div class="panel-heading"><div><h2>首页可见文案</h2></div></div>
 
   <section class="home-editor-section" id="home-hero-copy">
-    <header class="home-editor-section__heading"><span>01</span><div><h3>首屏内容</h3></div></header>
+    <header class="home-editor-section__heading"><span>01</span><div><h3>首屏介绍</h3></div></header>
     <div class="home-editor-section__body form-grid">
       {{ setting_field(form.hero_title, true) }}
       {{ setting_field(form.hero_subtitle, true, 3) }}
@@ -51,16 +51,16 @@
   </section>
 
   <section class="home-editor-section" id="home-actions">
-    <header class="home-editor-section__heading"><span>02</span><div><h3>首屏行动按钮</h3></div></header>
+    <header class="home-editor-section__heading"><span>02</span><div><h3>首屏链接</h3></div></header>
     <div class="home-action-editor-grid">
       {{ action_editor('A','主行动按钮','浅蓝按钮',form.hero_primary_label,form.hero_primary_url) }}
       {{ action_editor('B','次行动按钮','白色按钮',form.hero_secondary_label,form.hero_secondary_url) }}
-      {{ action_editor('C','探索按钮','文字按钮',form.hero_explore_label,form.hero_explore_url) }}
+      {{ action_editor('C','相册入口','右侧文字链接',form.hero_explore_label,form.hero_explore_url) }}
     </div>
   </section>
 
   <section class="home-editor-section" id="home-about">
-    <header class="home-editor-section__heading"><span>03</span><div><h3>关于我拼贴状态</h3></div></header>
+    <header class="home-editor-section__heading"><span>03</span><div><h3>关于信息</h3></div></header>
     <div class="home-state-editor-grid">
       {{ setting_field(form.about_now) }}
       {{ setting_field(form.about_tools) }}
@@ -69,7 +69,7 @@
   </section>
 
   <section class="home-editor-section" id="home-footer">
-    <header class="home-editor-section__heading"><span>04</span><div><h3>页尾邀请与全站页脚</h3></div></header>
+    <header class="home-editor-section__heading"><span>04</span><div><h3>页尾留言与全站页脚</h3></div></header>
     <div class="form-grid">
       {{ setting_field(form.cta_title, true) }}
       {{ setting_field(form.cta_text, true, 3) }}
@@ -83,7 +83,7 @@
 </form>
 
 <section class="card admin-section home-module-admin-v3" id="home-modules">
-  <div class="panel-heading"><div><span class="eyebrow">PAGE STRUCTURE</span><h2>首页模块编排</h2></div></div>
+  <div class="panel-heading"><div><h2>首页模块编排</h2></div></div>
   <div class="home-module-card-list">
   {% for module in modules %}
     {% set meta = module_meta.get(module.module_key, {}) %}
@@ -98,7 +98,7 @@
       </header>
       <div class="home-module-card-v3__facts"><span><small>内容来源</small><strong>{{ meta.get('source','站点内容') }}</strong></span><span><small>前台布局</small><strong>{{ meta.get('layout','固定布局') }}</strong></span><span><small>模块标识</small><code>{{ module.module_key }}</code></span></div>
       <div class="home-module-card-v3__fields">
-        {% if meta.get('title_editable') %}<label class="field"><span class="field__label">区域标题</span><input name="title" maxlength="100" value="{{ module.title }}"></label>{% else %}<input type="hidden" name="title" value="{{ module.title }}"><div class="home-module-fixed-field"><small>区域标题</small><strong>{{ '首屏标题' if module.module_key == 'hero' else '页尾邀请标题' }}</strong></div>{% endif %}
+        {% if meta.get('title_editable') %}<label class="field"><span class="field__label">区域标题</span><input name="title" maxlength="100" value="{{ module.title }}"></label>{% else %}<input type="hidden" name="title" value="{{ module.title }}"><div class="home-module-fixed-field"><small>区域标题</small><strong>{{ '首屏标题' if module.module_key == 'hero' else '页尾留言标题' }}</strong></div>{% endif %}
         <label class="field"><span class="field__label">页面顺序</span><input name="sort_order" type="number" value="{{ module.sort_order }}"></label>
         {% if meta.get('quantity_label') %}<label class="field"><span class="field__label">{{ meta.get('quantity_label') }}</span><input name="item_limit" type="number" min="1" max="12" value="{{ module.item_limit }}"></label>{% else %}<input type="hidden" name="item_limit" value="{{ module.item_limit }}">{% endif %}
         {% if styles %}<label class="field"><span class="field__label">项目布局</span><select name="style_variant">{% for value,label in styles %}<option value="{{ value }}" {{ 'selected' if module.style_variant == value or (loop.first and module.style_variant not in style_values) }}>{{ label }}</option>{% endfor %}</select></label>{% else %}<input type="hidden" name="style_variant" value="{{ module.style_variant }}">{% endif %}

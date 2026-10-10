@@ -40,16 +40,26 @@ from app.models import (
 from app.security import permission_required, record_audit
 from app.services.blog import render_markdown
 from app.services.content import (
+    COMPONENT_MOTION_DEFAULTS,
+    COMPONENT_MOTION_SOFTNESS_CHOICES,
+    COMPONENT_MOTION_SOFTNESS_VALUES,
+    COMPONENT_MOTION_STYLE_CHOICES,
+    COMPONENT_MOTION_STYLE_VALUES,
     DIALOG_APPEARANCE_DEFAULTS,
     DIALOG_SHADOW_CHOICES,
     DIALOG_SHADOW_VALUES,
-    DIALOG_STYLE_CHOICES,
-    DIALOG_STYLE_VALUES,
     GLOBAL_FONT_CHOICES,
     GLOBAL_FONT_VALUES,
     HOME_MODULE_ADMIN_META,
     HOME_MODULE_LABELS,
     HOME_SETTING_DEFAULTS,
+    NOTIFICATION_MOTION_FIELDS,
+    NOTIFICATION_MOTION_PRESETS,
+    NOTIFICATION_MOTION_SETTING,
+    NOTIFICATION_STACK_RANGE,
+    NOTIFICATION_TYPE_LABELS,
+    NOTIFICATION_TYPES,
+    OVERLAY_REVISION_SETTING,
     PAGE_TRANSITION_CHOICES,
     PAGE_TRANSITION_COLOR_DEFAULTS,
     PAGE_TRANSITION_VALUES,
@@ -57,6 +67,11 @@ from app.services.content import (
     apply_page_form,
     apply_project_form,
     get_setting,
+    normalize_component_motion_style,
+    notification_motion_from_form,
+    notification_motion_json,
+    parse_notification_motion,
+    resolve_color_setting,
     safe_content_url,
     set_setting,
     sync_default_home_modules,
@@ -318,9 +333,7 @@ def moments():
     if status_filter not in {"all", "draft", "published"}:
         status_filter = "all"
     statement = (
-        db.select(Moment)
-        .where(Moment.deleted_at.is_(None))
-        .order_by(Moment.updated_at.desc())
+        db.select(Moment).where(Moment.deleted_at.is_(None)).order_by(Moment.updated_at.desc())
     )
     if status_filter != "all":
         statement = statement.where(Moment.status == status_filter)
@@ -430,6 +443,8 @@ def home_management():
 def transition_settings():
     form = TransitionSettingsForm()
     form.transition_style.choices = list(PAGE_TRANSITION_CHOICES)
+    form.component_motion_style.choices = list(COMPONENT_MOTION_STYLE_CHOICES)
+    form.component_motion_softness.choices = list(COMPONENT_MOTION_SOFTNESS_CHOICES)
     if request.method == "GET":
         current_style = get_setting("page_transition_style", "stretch")
         form.transition_style.data = (
@@ -442,7 +457,40 @@ def transition_settings():
         except (TypeError, ValueError):
             form.transition_duration.data = 720
         for name, default in PAGE_TRANSITION_COLOR_DEFAULTS.items():
-            getattr(form, name.removeprefix("page_")).data = get_setting(name, default)
+            getattr(form, name.removeprefix("page_")).data = resolve_color_setting(
+                name, get_setting(name, default), default
+            )
+        try:
+            form.component_motion_duration.data = max(
+                520,
+                min(
+                    1100,
+                    int(
+                        get_setting(
+                            "component_motion_duration",
+                            COMPONENT_MOTION_DEFAULTS["component_motion_duration"],
+                        )
+                    ),
+                ),
+            )
+        except (TypeError, ValueError):
+            form.component_motion_duration.data = 760
+        component_style = get_setting(
+            "component_motion_style", COMPONENT_MOTION_DEFAULTS["component_motion_style"]
+        )
+        form.component_motion_style.data = normalize_component_motion_style(component_style)
+        component_softness = get_setting(
+            "component_motion_softness",
+            COMPONENT_MOTION_DEFAULTS["component_motion_softness"],
+        )
+        form.component_motion_softness.data = (
+            component_softness if component_softness in COMPONENT_MOTION_SOFTNESS_VALUES else "soft"
+        )
+        form.component_motion_color.data = resolve_color_setting(
+            "component_motion_color",
+            get_setting("component_motion_color", COMPONENT_MOTION_DEFAULTS["component_motion_color"]),
+            COMPONENT_MOTION_DEFAULTS["component_motion_color"],
+        )
     if form.validate_on_submit():
         style = form.transition_style.data
         if style not in PAGE_TRANSITION_VALUES:
@@ -453,8 +501,22 @@ def transition_settings():
         for name in PAGE_TRANSITION_COLOR_DEFAULTS:
             field_name = name.removeprefix("page_")
             set_setting(name, getattr(form, field_name).data.lower())
+        component_style = form.component_motion_style.data
+        component_softness = form.component_motion_softness.data
+        if component_style not in COMPONENT_MOTION_STYLE_VALUES:
+            abort(400)
+        if component_softness not in COMPONENT_MOTION_SOFTNESS_VALUES:
+            abort(400)
+        component_duration = max(520, min(1100, int(form.component_motion_duration.data)))
+        set_setting("component_motion_duration", str(component_duration))
+        set_setting("component_motion_style", component_style)
+        set_setting("component_motion_color", form.component_motion_color.data.lower())
+        set_setting("component_motion_softness", component_softness)
         record_audit(
-            "site.transition.update", "site", "transitions", f"{style} / {duration}ms / 自定义配色"
+            "site.transition.update",
+            "site",
+            "transitions",
+            f"{style} / {duration}ms / 组件{component_duration}ms / {component_style}",
         )
         db.session.commit()
         flash("全站页面过渡方式已经更新。", "success")
@@ -463,6 +525,8 @@ def transition_settings():
         "admin/content/transitions.html",
         form=form,
         transition_choices=PAGE_TRANSITION_CHOICES,
+        component_motion_styles=COMPONENT_MOTION_STYLE_CHOICES,
+        component_motion_softness_choices=COMPONENT_MOTION_SOFTNESS_CHOICES,
     )
 
 
@@ -470,55 +534,89 @@ def transition_settings():
 @permission_required("site.manage")
 def dialog_appearance():
     form = DialogAppearanceForm()
-    form.dialog_style.choices = list(DIALOG_STYLE_CHOICES)
     form.dialog_shadow.choices = list(DIALOG_SHADOW_CHOICES)
+    color_fields = (
+        "dialog_accent", "toast_background", "toast_text", "toast_accent",
+        "toast_success", "toast_warning", "toast_error",
+    )
+    metric_fields = (
+        ("dialog_radius", 14, 42),
+        ("dialog_width", 360, 720),
+        ("dialog_backdrop_blur", 0, 30),
+        ("toast_radius", 12, 32),
+        ("toast_duration", 2000, 12000),
+    )
+    try:
+        current_revision = int(get_setting(OVERLAY_REVISION_SETTING, "0"))
+    except ValueError:
+        current_revision = 0
+    notice_motion = parse_notification_motion(get_setting(NOTIFICATION_MOTION_SETTING, ""))
+    status = 200
     if request.method == "GET":
-        current_style = get_setting("dialog_style", DIALOG_APPEARANCE_DEFAULTS["dialog_style"])
-        form.dialog_style.data = current_style if current_style in DIALOG_STYLE_VALUES else "soft"
         current_shadow = get_setting("dialog_shadow", DIALOG_APPEARANCE_DEFAULTS["dialog_shadow"])
-        form.dialog_shadow.data = (
-            current_shadow if current_shadow in DIALOG_SHADOW_VALUES else "soft"
-        )
-        for name in ("dialog_color_start", "dialog_color_end", "dialog_accent"):
-            getattr(form, name).data = get_setting(name, DIALOG_APPEARANCE_DEFAULTS[name])
-        for name, minimum, maximum in (
-            ("dialog_radius", 14, 42),
-            ("dialog_width", 360, 720),
-            ("dialog_backdrop_blur", 0, 30),
-        ):
+        form.dialog_shadow.data = current_shadow if current_shadow in DIALOG_SHADOW_VALUES else "soft"
+        for name in color_fields:
+            getattr(form, name).data = resolve_color_setting(
+                name,
+                get_setting(name, DIALOG_APPEARANCE_DEFAULTS[name]),
+                DIALOG_APPEARANCE_DEFAULTS[name],
+            )
+        for name, minimum, maximum in metric_fields:
             try:
                 value = int(get_setting(name, DIALOG_APPEARANCE_DEFAULTS[name]))
             except (TypeError, ValueError):
                 value = int(DIALOG_APPEARANCE_DEFAULTS[name])
             getattr(form, name).data = max(minimum, min(maximum, value))
-    if form.validate_on_submit():
-        style = form.dialog_style.data
-        if style not in DIALOG_STYLE_VALUES:
+        form.revision.data = str(current_revision)
+    elif form.validate_on_submit():
+        if form.dialog_shadow.data not in DIALOG_SHADOW_VALUES:
             abort(400)
-        shadow = form.dialog_shadow.data
-        if shadow not in DIALOG_SHADOW_VALUES:
-            abort(400)
-        set_setting("dialog_style", style)
-        for name in ("dialog_color_start", "dialog_color_end", "dialog_accent"):
-            set_setting(name, getattr(form, name).data.lower())
-        set_setting("dialog_shadow", shadow)
-        for name in ("dialog_radius", "dialog_width", "dialog_backdrop_blur"):
-            set_setting(name, str(getattr(form, name).data))
-        record_audit(
-            "site.dialog.update",
-            "site",
-            "dialogs",
-            f"{style} / {form.dialog_width.data}px / {shadow}",
-        )
-        db.session.commit()
-        flash("全站弹窗外观已经更新。", "success")
-        return redirect(url_for("admin.dialog_appearance"))
+        submitted_motion, motion_errors = notification_motion_from_form(request.form)
+        try:
+            submitted_revision = int(form.revision.data or "-1")
+        except ValueError:
+            submitted_revision = -1
+        notice_motion = submitted_motion
+        if motion_errors:
+            for message in motion_errors:
+                flash(message, "error")
+            status = 400
+        elif submitted_revision != current_revision:
+            # Keep the draft on screen; the next save is made against the
+            # revision the administrator has now been shown.
+            flash("这些设置刚刚在别处更新过。页面保留了你的修改，请核对后再保存一次。", "warning")
+            form.revision.data = str(current_revision)
+            status = 409
+        else:
+            for name in color_fields:
+                set_setting(name, getattr(form, name).data.lower())
+            set_setting("dialog_shadow", form.dialog_shadow.data)
+            for name, _minimum, _maximum in metric_fields:
+                set_setting(name, str(getattr(form, name).data))
+            set_setting(NOTIFICATION_MOTION_SETTING, notification_motion_json(submitted_motion))
+            set_setting(OVERLAY_REVISION_SETTING, str(current_revision + 1))
+            record_audit(
+                "site.dialog.update",
+                "site",
+                "dialogs",
+                f"r{current_revision + 1} / {form.dialog_width.data}px / {form.dialog_shadow.data}",
+            )
+            db.session.commit()
+            flash("全站弹窗与通知设置已经更新。", "success")
+            return redirect(url_for("admin.dialog_appearance"))
+    elif request.method == "POST":
+        notice_motion, _errors = notification_motion_from_form(request.form)
+        status = 400
     return render_template(
         "admin/content/dialogs.html",
         form=form,
-        dialog_style_choices=DIALOG_STYLE_CHOICES,
         dialog_shadow_choices=DIALOG_SHADOW_CHOICES,
-    )
+        notice_motion=notice_motion,
+        notice_types=[(kind, NOTIFICATION_TYPE_LABELS[kind]) for kind in NOTIFICATION_TYPES],
+        notice_fields=NOTIFICATION_MOTION_FIELDS,
+        notice_stack_range=NOTIFICATION_STACK_RANGE,
+        notice_presets=NOTIFICATION_MOTION_PRESETS,
+    ), status
 
 
 @admin_bp.route("/appearance/interface/", methods=["GET", "POST"])
@@ -532,8 +630,7 @@ def interface_appearance():
         if not action_form.validate_on_submit():
             abort(400)
         hint_settings = {
-            "admin_menu_subtitles_visible": request.form.get("admin_menu_subtitles_visible")
-            == "y",
+            "admin_menu_subtitles_visible": request.form.get("admin_menu_subtitles_visible") == "y",
             "panel_descriptions_visible": request.form.get("panel_descriptions_visible") == "y",
             "card_descriptions_visible": request.form.get("card_descriptions_visible") == "y",
             "field_descriptions_visible": request.form.get("field_descriptions_visible") == "y",
@@ -809,11 +906,15 @@ def update_navigation(item_id: int):
         item.url = safe_content_url(request.form.get("url", ""), allow_empty=False)
     except ValueError as error:
         flash(str(error), "error")
-        return redirect(url_for("admin.site_content", section="navigation", _anchor="home-navigation"))
+        return redirect(
+            url_for("admin.site_content", section="navigation", _anchor="home-navigation")
+        )
     label = request.form.get("label", item.label).strip()[:80]
     if not label:
         flash("导航名称不能为空。", "error")
-        return redirect(url_for("admin.site_content", section="navigation", _anchor="home-navigation"))
+        return redirect(
+            url_for("admin.site_content", section="navigation", _anchor="home-navigation")
+        )
     item.label = label
     item.location = request.form.get("location", item.location)
     if item.location not in {"header", "footer", "both"}:

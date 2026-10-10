@@ -1,0 +1,109 @@
+{% extends "layouts/base.html" %}
+{% from "components/macros.html" import icon %}
+{% block title %}创建管理员 · {{ site_name }}{% endblock %}
+{% block navigation_mode %}native{% endblock %}
+{% block body_class %}auth-body setup-body{% endblock %}
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/setup.css', v=app_version) }}">
+  <script src="{{ url_for('static', filename='scripts/setup.js', v=app_version) }}" defer></script>
+{% endblock %}
+
+{% macro row(field, hint='') -%}
+  <div class="setup-field{% if field.errors %} has-error{% endif %}" data-setup-field="{{ field.name }}">
+    <label class="setup-field__label" for="{{ field.id }}">{{ field.label.text }}</label>
+    <div class="setup-field__control">
+      {{ field(**kwargs) }}
+      {% if caller %}{{ caller() }}{% endif %}
+    </div>
+    {% if hint %}<small class="setup-field__hint" id="{{ field.id }}-hint">{{ hint }}</small>{% endif %}
+    {% for error in field.errors %}<small class="field-error" role="alert">{{ error }}</small>{% endfor %}
+  </div>
+{%- endmacro %}
+
+{% block body %}
+<main class="setup" id="main-content" data-setup>
+  <span class="setup-brand" style="--i:0">
+    <span class="brand-mark">{% if site_logo %}<img src="{{ url_for('public.media_file', filename=site_logo.thumbnail_filename) }}" alt="">{% else %}<span class="window-symbol" aria-hidden="true"><i></i><i></i></span>{% endif %}</span>
+    <span>{{ site_name }}<small>尚未初始化</small></span>
+  </span>
+
+  <div class="setup-layout">
+    <section class="setup-intro" aria-labelledby="setup-title">
+      <h1 id="setup-title" style="--i:2">创建唯一管理员</h1>
+      <p class="setup-intro__lead" style="--i:3">先给站点建一个管理员账号，之前的管理员凭证已经不能用了。建好就直接进后台，这个页面以后不会再出现。</p>
+
+      <ol class="setup-steps" aria-label="管理员初始化步骤" data-setup-steps style="--i:4">
+        <li data-step="account" aria-current="step"><i class="setup-steps__dot"><b>1</b>{{ icon('check') }}</i><span><strong>账号</strong><small>用户名与显示名称</small></span></li>
+        <li data-step="password"><i class="setup-steps__dot"><b>2</b>{{ icon('check') }}</i><span><strong>密码</strong><small>至少 14 个字符</small></span></li>
+        <li data-step="verify"><i class="setup-steps__dot"><b>3</b>{{ icon('check') }}</i><span><strong>验证</strong><small>输入图中的字符</small></span></li>
+      </ol>
+
+      <div class="setup-mascot" data-setup-mascot data-setup-ready="false" style="--i:5">
+        <svg class="setup-mascot__cloud" viewBox="26 20 114 74" aria-hidden="true" focusable="false">
+          <g class="setup-mascot__body">
+            <circle cx="50" cy="70" r="22"/><circle cx="82" cy="52" r="30"/><circle cx="114" cy="68" r="24"/><rect x="50" y="68" width="64" height="24" rx="12"/>
+          </g>
+          <circle class="setup-mascot__cheek" cx="64" cy="76" r="5"/><circle class="setup-mascot__cheek" cx="102" cy="76" r="5"/>
+          <g class="setup-mascot__eyes"><circle cx="72" cy="66" r="3.2"/><circle cx="94" cy="66" r="3.2"/></g>
+          <path class="setup-mascot__mouth setup-mascot__mouth--idle" d="M78 76q5 4 10 0"/>
+          <path class="setup-mascot__mouth setup-mascot__mouth--happy" d="M76 75q7 8 14 0"/>
+        </svg>
+        <p><strong>{{ site_name }}</strong><small><b class="setup-mascot__dot"></b><em data-setup-ready-text>管理员待创建</em></small></p>
+      </div>
+    </section>
+
+    <section class="setup-card" aria-labelledby="setup-form-title">
+      <header class="setup-card__head">
+        <h2 id="setup-form-title">管理员信息</h2>
+        <p>只存在你自己的数据库里，密码是加密保存的。</p>
+      </header>
+
+      <form method="post" class="setup-form" novalidate data-setup-form>
+        {{ form.hidden_tag() }}
+
+        <fieldset class="setup-group" data-setup-group="account">
+          <legend><span class="setup-group__num">1</span>账号</legend>
+          {{ row(form.username, '3 到 50 个字符，登录时用', autocomplete='username', autofocus=true, aria_describedby=form.username.id ~ '-hint') }}
+          {{ row(form.display_name, '后台里显示的名字', autocomplete='name', aria_describedby=form.display_name.id ~ '-hint') }}
+        </fieldset>
+
+        <fieldset class="setup-group" data-setup-group="password">
+          <legend><span class="setup-group__num">2</span>密码</legend>
+          <div class="setup-bundle">
+            {% call row(form.password, '字母、数字、符号混着用更好', autocomplete='new-password', aria_describedby=form.password.id ~ '-hint') %}
+              <button class="setup-peek" type="button" data-setup-peek aria-pressed="false" aria-label="显示密码">显示</button>
+            {% endcall %}
+            <div class="setup-meter" data-setup-meter data-level="0" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+            <p class="setup-status" data-setup-strength aria-live="polite">至少 14 个字符</p>
+          </div>
+          <div class="setup-bundle">
+            {% call row(form.password_confirm, '', autocomplete='new-password', aria_describedby='setup-match') %}{% endcall %}
+            <p class="setup-status" id="setup-match" data-setup-match aria-live="polite">再输一遍，防止打错</p>
+          </div>
+        </fieldset>
+
+        <fieldset class="setup-group" data-setup-group="verify">
+          <legend><span class="setup-group__num">3</span>验证</legend>
+          {% if setup_code_required %}
+            {{ row(form.setup_code, '在服务器上运行 issue-admin-setup-code 拿到，30 分钟内有效', autocomplete='one-time-code', required=true, aria_describedby=form.setup_code.id ~ '-hint') }}
+          {% endif %}
+          <div class="human-check" data-human-check data-refresh-url="{{ url_for('bakaadmin.refresh_login_human_check') }}">
+            <div class="human-check__image"><img src="{{ human_challenge.image_data }}" alt="四位人机验证字符" data-human-check-image></div>
+            <button class="icon-button human-check__refresh" type="button" data-human-check-refresh aria-label="换一张验证码">↻</button>
+            <label class="field human-check__field" for="{{ form.human_answer.id }}"><span class="field__label">{{ form.human_answer.label.text }}</span>{{ form.human_answer(autocomplete='off', maxlength='4', required=true, data_human_check_answer='') }}{% for error in form.human_answer.errors %}<small class="field-error" role="alert">{{ error }}</small>{% endfor %}</label>
+            <small class="human-check__status" data-human-check-status aria-live="polite">输入图中的四位字符</small>
+          </div>
+        </fieldset>
+
+        <div class="setup-submit-wrap">
+          <button class="button button--primary setup-submit" type="submit" name="submit" value="y" data-setup-submit>
+            <span class="setup-submit__label">{{ form.submit.label.text }}</span>
+            <span class="setup-submit__arrow" aria-hidden="true">{{ icon('arrow') }}</span>
+            <span class="setup-submit__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+</main>
+{% endblock %}

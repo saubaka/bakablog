@@ -6,17 +6,4 @@
   <nav class="drawer__links">
     {% for item in primary_navigation %}<a href="{{ item.url }}" {% if item.open_new_tab %}target="_blank" rel="noopener"{% endif %}>{{ icon('document') }}<span><strong>{{ item.label }}</strong>{% if item.summary %}<small>{{ item.summary|truncate(34) }}</small>{% endif %}</span></a>{% endfor %}
   </nav>
-  <section class="drawer-gateway card">
-    {% if gateway_identity %}
-    <span class="drawer-gateway__avatar" data-fallback-media><span class="safe-media__fallback">{{ gateway_identity.display_name[:1] }}</span>{% if gateway_identity.avatar_url %}<img src="{{ url_for('gateway.avatar') }}" alt="" data-fallback-image>{% endif %}</span>
-    <div><strong>{{ gateway_identity.display_name }}</strong><small>@{{ gateway_identity.preferred_username }}</small></div>
-    <div class="drawer-gateway__actions"><a class="button button--soft button--small" href="{{ url_for('gateway.portal') }}">个人中心</a>{% if gateway_is_admin %}<a class="button button--soft button--small" href="{{ url_for('admin.dashboard') }}">管理后台</a>{% endif %}<form method="post" action="{{ url_for('gateway.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button button--soft button--small" type="submit">退出登录</button></form></div>
-    {% else %}
-    <span class="soft-icon soft-icon--blue">{{ icon('person') }}</span>
-    <div><strong>使用云门账号</strong></div>
-    <div class="drawer-gateway__actions">
-      <a class="button button--primary button--small" href="{{ url_for('gateway.login', next=request.full_path if request.query_string else request.path) }}">登录</a>
-    </div>
-    {% endif %}
-  </section>
 </aside>

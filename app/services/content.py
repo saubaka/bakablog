@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from datetime import UTC, datetime
 from urllib.parse import urlsplit
 
@@ -18,20 +19,44 @@ PAGE_TRANSITION_CHOICES = (
 PAGE_TRANSITION_VALUES = frozenset(value for value, _label in PAGE_TRANSITION_CHOICES)
 
 PAGE_TRANSITION_COLOR_DEFAULTS = {
-    "page_transition_color_start": "#eaf6ff",
-    "page_transition_color_middle": "#f9fbff",
-    "page_transition_color_end": "#fceef6",
+    "page_transition_color_start": "#EDF4FC",
+    "page_transition_color_middle": "#F7F9FC",
+    "page_transition_color_end": "#F7E5ED",
 }
 
-DIALOG_STYLE_CHOICES = (
-    ("soft", "柔和圆角"),
-    ("glass", "轻透玻璃"),
-    ("paper", "纸张卡片"),
-    ("compact", "紧凑浮层"),
-    ("cloud", "云朵气泡"),
-    ("outline", "轻线留白"),
+COMPONENT_MOTION_STYLE_CHOICES = (
+    ("calm", "安静阻尼"),
+    ("soft", "柔和阻尼"),
+    ("snappy", "利落阻尼"),
 )
-DIALOG_STYLE_VALUES = frozenset(value for value, _label in DIALOG_STYLE_CHOICES)
+COMPONENT_MOTION_STYLE_VALUES = frozenset(value for value, _label in COMPONENT_MOTION_STYLE_CHOICES)
+COMPONENT_MOTION_LEGACY_STYLES = {
+    "clean": "calm",
+    "soft-track": "soft",
+    "minimal": "snappy",
+}
+COMPONENT_MOTION_SOFTNESS_CHOICES = (
+    ("none", "关闭柔化"),
+    ("light", "轻微柔化"),
+    ("soft", "柔和浮现"),
+)
+COMPONENT_MOTION_SOFTNESS_VALUES = frozenset(
+    value for value, _label in COMPONENT_MOTION_SOFTNESS_CHOICES
+)
+COMPONENT_MOTION_DEFAULTS = {
+    "component_motion_duration": "760",
+    "component_motion_style": "soft",
+    "component_motion_color": "#D4E6F3",
+    "component_motion_softness": "soft",
+}
+
+
+def normalize_component_motion_style(value: str | None) -> str:
+    """Map retired trace presets to the single-line damping profiles."""
+    normalized = COMPONENT_MOTION_LEGACY_STYLES.get(value or "", value or "")
+    return normalized if normalized in COMPONENT_MOTION_STYLE_VALUES else "soft"
+
+
 DIALOG_SHADOW_CHOICES = (
     ("none", "无阴影"),
     ("light", "轻柔"),
@@ -40,15 +65,152 @@ DIALOG_SHADOW_CHOICES = (
 )
 DIALOG_SHADOW_VALUES = frozenset(value for value, _label in DIALOG_SHADOW_CHOICES)
 DIALOG_APPEARANCE_DEFAULTS = {
-    "dialog_style": "soft",
-    "dialog_color_start": "#ffffff",
-    "dialog_color_end": "#fff1f7",
-    "dialog_accent": "#7eaed0",
-    "dialog_radius": "30",
+    "dialog_accent": "#99ABCD",
+    "dialog_radius": "22",
     "dialog_width": "510",
     "dialog_backdrop_blur": "6",
     "dialog_shadow": "soft",
+    "toast_background": "#FFFFFF",
+    "toast_text": "#354052",
+    "toast_accent": "#BFD9E8",
+    "toast_success": "#78B894",
+    "toast_warning": "#C99A4A",
+    "toast_error": "#C97676",
+    "toast_radius": "28",
+    "toast_duration": "5200",
 }
+
+# Lighter light-blue scheme (1.43.0): colours that sites stored while they were
+# still the old defaults are treated as "never customised" and resolve to the new
+# default when read. Nothing is rewritten in the database, and any other saved
+# colour is respected unchanged.
+LEGACY_DEFAULT_COLORS = {
+    "page_transition_color_start": frozenset({"#E5EFFB"}),
+    "component_motion_color": frozenset({"#91BED8", "#BFD9E8"}),
+    "dialog_accent": frozenset({"#526FA6"}),
+    "toast_accent": frozenset({"#91BED8"}),
+}
+
+
+def resolve_color_setting(name: str, stored: str | None, default: str) -> str:
+    """Return the stored colour, or the current default for retired defaults."""
+    if stored and stored.strip().upper() in LEGACY_DEFAULT_COLORS.get(name, ()):
+        return default
+    return stored if stored else default
+
+
+# Top capsule notification motion (project 8 phase five). One JSON setting
+# holds every type so a save is a single atomic row; a separate revision
+# counter guards the whole overlay form against concurrent edits.
+NOTIFICATION_TYPES = ("success", "info", "warning", "error", "loading")
+NOTIFICATION_TYPE_LABELS = {
+    "success": "成功",
+    "info": "信息",
+    "warning": "提醒",
+    "error": "错误",
+    "loading": "处理中",
+}
+NOTIFICATION_MOTION_FIELDS = (
+    ("enter", "进入", 0, 3000),
+    ("exit", "退出", 0, 3000),
+    ("text_out", "文字退出", 0, 1000),
+    ("text_in", "文字进入", 0, 1000),
+)
+NOTIFICATION_STACK_RANGE = (0, 1500)
+NOTIFICATION_MOTION_PRESETS = {
+    "fast": {"label": "快速", "enter": 520, "exit": 460, "text_out": 120, "text_in": 240, "stack": 220},
+    "standard": {"label": "标准", "enter": 780, "exit": 680, "text_out": 160, "text_in": 340, "stack": 320},
+    "relaxed": {"label": "舒缓", "enter": 1040, "exit": 900, "text_out": 200, "text_in": 440, "stack": 420},
+}
+NOTIFICATION_MOTION_SETTING = "notification_motion"
+OVERLAY_REVISION_SETTING = "overlay_settings_revision"
+
+
+def default_notification_motion() -> dict:
+    preset = NOTIFICATION_MOTION_PRESETS["standard"]
+    return {
+        "schema": 1,
+        "types": {
+            kind: {name: preset[name] for name, _label, _low, _high in NOTIFICATION_MOTION_FIELDS}
+            for kind in NOTIFICATION_TYPES
+        },
+        "stack": preset["stack"],
+    }
+
+
+def _bounded_int(value: object, low: int, high: int) -> int | None:
+    if isinstance(value, bool):
+        return None
+    try:
+        number = int(str(value).strip())
+    except (TypeError, ValueError):
+        return None
+    return number if low <= number <= high else None
+
+
+def parse_notification_motion(raw: str | None) -> dict:
+    """Read the stored JSON; anything missing or invalid uses the default.
+
+    Reading never writes back, so a damaged row cannot silently become the
+    saved configuration.
+    """
+    config = default_notification_motion()
+    try:
+        data = json.loads(raw) if raw else {}
+    except (TypeError, ValueError):
+        return config
+    if not isinstance(data, dict):
+        return config
+    types = data.get("types") if isinstance(data.get("types"), dict) else {}
+    for kind in NOTIFICATION_TYPES:
+        values = types.get(kind) if isinstance(types.get(kind), dict) else {}
+        for name, _label, low, high in NOTIFICATION_MOTION_FIELDS:
+            number = _bounded_int(values.get(name), low, high)
+            if number is not None:
+                config["types"][kind][name] = number
+    stack = _bounded_int(data.get("stack"), *NOTIFICATION_STACK_RANGE)
+    if stack is not None:
+        config["stack"] = stack
+    return config
+
+
+def _loose_int(value: object) -> int | None:
+    try:
+        return int(str(value).strip())
+    except (TypeError, ValueError):
+        return None
+
+
+def notification_motion_from_form(form) -> tuple[dict, list[str]]:
+    """Validate the posted fields strictly; out-of-range values are errors.
+
+    The returned config is only persisted when there are no errors. When the
+    form is rejected it still carries what the administrator typed so the
+    page can show the draft again instead of resetting it.
+    """
+    config = default_notification_motion()
+    errors: list[str] = []
+    for kind in NOTIFICATION_TYPES:
+        for name, label, low, high in NOTIFICATION_MOTION_FIELDS:
+            raw = form.get(f"notice_{kind}_{name}", "")
+            number = _bounded_int(raw, low, high)
+            if number is None:
+                errors.append(f"{NOTIFICATION_TYPE_LABELS[kind]}通知的{label}需要是 {low}–{high} 毫秒之间的整数。")
+                number = _loose_int(raw)
+            if number is not None:
+                config["types"][kind][name] = number
+    stack = _bounded_int(form.get("notice_stack", ""), *NOTIFICATION_STACK_RANGE)
+    if stack is None:
+        errors.append(f"堆叠过渡需要是 {NOTIFICATION_STACK_RANGE[0]}–{NOTIFICATION_STACK_RANGE[1]} 毫秒之间的整数。")
+        stack = _loose_int(form.get("notice_stack", ""))
+    if stack is not None:
+        config["stack"] = stack
+    return config, errors
+
+
+def notification_motion_json(config: dict) -> str:
+    return json.dumps(config, separators=(",", ":"), sort_keys=True)
+
 
 GLOBAL_FONT_CHOICES = (
     ("cloud-rounded", "云朵圆体"),
@@ -61,92 +223,100 @@ GLOBAL_FONT_CHOICES = (
 GLOBAL_FONT_VALUES = frozenset(value for value, _label in GLOBAL_FONT_CHOICES)
 
 DEFAULT_MODULES = (
-    ("hero", "欢迎来到我的小世界", 10, 1, "feature"),
-    ("posts", "最近写下的东西", 20, 3, "feature"),
-    ("projects", "正在发生的小项目", 30, 3, "showcase"),
-    ("moments", "最近的生活碎片", 40, 3, "timeline"),
-    ("gallery", "装进胶片里的光", 45, 6, "filmstrip"),
-    ("about", "关于这个小小星球", 50, 5, "collage"),
-    ("links", "相邻的小小星球", 60, 6, "cards"),
-    ("cta", "要不要再坐一会儿？", 70, 1, "feature"),
+    ("hero", "首页首屏", 10, 1, "feature"),
+    ("posts", "最近文章", 20, 3, "feature"),
+    ("projects", "项目", 30, 3, "showcase"),
+    ("moments", "动态", 40, 3, "timeline"),
+    ("gallery", "相册", 45, 6, "filmstrip"),
+    ("about", "关于 sau_baka", 50, 5, "collage"),
+    ("links", "常去的网站", 60, 6, "cards"),
+    ("cta", "留言", 70, 1, "feature"),
 )
 
+LEGACY_HOME_MODULE_TITLES = {
+    "posts": {"最近写下的东西"},
+    "projects": {"正在发生的小项目"},
+    "moments": {"最近的生活碎片"},
+    "gallery": {"装进胶片里的光"},
+    "about": {"关于我", "关于这个小小星球"},
+    "links": {"友链与留言", "相邻的小小星球"},
+    "cta": {"要不要再坐一会儿？"},
+}
+
+HOME_MODULE_DEFAULT_TITLES = {key: title for key, title, *_rest in DEFAULT_MODULES}
+
 HOME_MODULE_LABELS = {
-    "hero": "首屏欢迎区",
-    "posts": "精选文章",
-    "projects": "项目展柜",
-    "moments": "生活时间线",
-    "gallery": "相册胶片",
-    "about": "关于我拼贴",
-    "links": "友链与留言",
-    "cta": "页尾邀请",
+    "hero": "首屏介绍",
+    "posts": "文章",
+    "projects": "项目",
+    "moments": "动态",
+    "gallery": "相册",
+    "about": "关于",
+    "links": "友链",
+    "cta": "留言",
 }
 
 HOME_MODULE_ADMIN_META = {
     "hero": {
-        "description": "首页最上方的欢迎区、个人头像、此刻状态和三个行动按钮。",
+        "description": "首页最上方的个人介绍、头像、当前重点和两个主要按钮。",
         "source": "下方“首屏内容与按钮”",
-        "layout": "固定首屏布局",
+        "layout": "单一介绍表面",
         "title_editable": False,
         "quantity_label": None,
         "styles": (),
     },
     "posts": {
-        "description": "展示最新公开文章；第一篇为主卡，其余为旁侧小卡。",
+        "description": "展示最新公开文章；第一篇展开呈现，其余文章按行排列。",
         "source": "已发布文章",
-        "layout": "精选文章舞台",
+        "layout": "编辑式文章列表",
         "title_editable": True,
         "quantity_label": "文章数量",
         "styles": (),
     },
     "projects": {
-        "description": "展示公开项目作品，可选择横向展柜或规则卡片布局。",
+        "description": "展示公开项目；第一项为主项目，其余项目使用紧凑链接。",
         "source": "已发布项目",
-        "layout": "可切换布局",
+        "layout": "主项目与项目索引",
         "title_editable": True,
         "quantity_label": "项目数量",
-        "styles": (
-            ("showcase", "横向展柜"),
-            ("cards", "卡片网格"),
-            ("stack", "层叠作品"),
-        ),
+        "styles": (),
     },
     "moments": {
-        "description": "以便签时间线展示最近公开的生活动态。",
+        "description": "以轻量时间线展示最近公开的动态。没有内容时不占据首页空间。",
         "source": "已发布动态",
-        "layout": "便签时间线",
+        "layout": "文字时间线",
         "title_editable": True,
         "quantity_label": "动态数量",
         "styles": (),
     },
     "gallery": {
-        "description": "从已发布相册中提取最近照片，形成横向胶片。",
+        "description": "从已发布相册中提取最近照片。没有内容时不占据首页空间。",
         "source": "已发布相册照片",
-        "layout": "横向胶片",
+        "layout": "疏密图片网格",
         "title_editable": True,
         "quantity_label": "照片数量",
         "styles": (),
     },
     "about": {
-        "description": "组合个人资料、当前状态和技能进度，形成关于我拼贴。",
+        "description": "将个人简介与当前状态分成两个清晰区域。",
         "source": "个人资料与技能",
-        "layout": "关于我拼贴",
+        "layout": "简介与事实双栏",
         "title_editable": True,
         "quantity_label": "技能数量",
         "styles": (),
     },
     "links": {
-        "description": "展示已审核且启用的友链，并附带最近留言入口。",
-        "source": "精选友链与留言",
-        "layout": "友链与留言双栏",
+        "description": "展示已审核且启用的友链；留言入口统一放在页尾。",
+        "source": "精选友链",
+        "layout": "简洁友链列表",
         "title_editable": True,
         "quantity_label": "友链数量",
         "styles": (),
     },
     "cta": {
-        "description": "首页最下方的行动邀请，标题、说明和按钮在下方单独维护。",
+        "description": "首页最下方唯一的留言入口，标题、说明和按钮在下方维护。",
         "source": "下方“页尾邀请与页脚”",
-        "layout": "固定页尾邀请",
+        "layout": "页尾留言条",
         "title_editable": False,
         "quantity_label": None,
         "styles": (),
@@ -154,24 +324,37 @@ HOME_MODULE_ADMIN_META = {
 }
 
 HOME_SETTING_DEFAULTS = {
-    "hero_title": "把生活写成一册软绵绵的手账。",
-    "hero_subtitle": "这里收藏编程、设计和生活里的微小闪光。",
-    "hero_tags": "Flask开发 / 设计练习 / 生活记录",
-    "hero_status": "正在把这颗小星球装饰得更可爱",
-    "hero_primary_label": "读最新文章",
+    "hero_title": "sau_baka，正在做 Cloudtrace",
+    "hero_subtitle": "记录 Flask 开发、界面设计和偶尔拍下的照片。",
+    "hero_tags": "Flask / 界面练习 / 日常记录",
+    "hero_status": "继续完善这个个人网站",
+    "hero_primary_label": "最近文章",
     "hero_primary_url": "/blog/",
     "hero_secondary_label": "认识我",
     "hero_secondary_url": "/about/",
-    "hero_explore_label": "随机漫游",
+    "hero_explore_label": "看看相册",
     "hero_explore_url": "/gallery/",
-    "about_now": "认真完善这座个人网站",
-    "about_tools": "Flask · SQLite · 原生CSS",
-    "about_learning": "更细腻的交互与叙事设计",
-    "cta_title": "要不要在云朵上留个脚印？",
-    "cta_text": "可以继续慢慢读，也可以写下一句话。每一次来访都会让这颗小星球更完整。",
+    "about_now": "完善 Cloudtrace 的内容与交互",
+    "about_tools": "Flask、SQLite、原生 CSS",
+    "about_learning": "前端交互与内容设计",
+    "cta_title": "想说点什么？",
+    "cta_text": "可以在留言簿里留下问题、建议或一句问候。",
     "cta_button_label": "去留言簿",
     "cta_button_url": "/guestbook/",
     "footer_text": "使用 Flask 与本地资源搭建",
+}
+
+LEGACY_HOME_SETTING_VALUES = {
+    "hero_title": {"在代码、设计和日常之间"},
+    "hero_subtitle": {"这里放着我正在做的项目、读过的东西，还有偶尔写下的几句。"},
+    "hero_status": {"在做网站，也在记一些小事"},
+    "hero_primary_label": {"读最新文章"},
+    "hero_explore_label": {"打开相册"},
+    "cta_title": {"如果你也刚好路过"},
+    "cta_text": {"随便看看；有想说的话，留在留言簿里就好。"},
+    "about_now": {"认真完善这座个人网站"},
+    "about_tools": {"Flask · SQLite · 原生CSS"},
+    "about_learning": {"更细腻的交互与叙事设计"},
 }
 
 
@@ -224,6 +407,7 @@ def apply_moment_form(moment: Moment, form) -> None:  # type: ignore[no-untyped-
     moment.location = (form.location.data or "").strip()
     moment.status = form.status.data
     moment.is_pinned = bool(form.is_pinned.data)
+    moment.allow_comments = bool(form.allow_comments.data)
     moment.published_at = (
         moment.published_at or datetime.now(UTC) if moment.status == "published" else None
     )

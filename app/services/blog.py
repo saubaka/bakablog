@@ -164,6 +164,7 @@ def apply_post_form(post: Post, form, actor_id: int) -> None:  # type: ignore[no
     post.tags = sync_tags(form.tags.data or "")
     post.is_pinned = bool(form.is_pinned.data)
     post.is_featured = bool(form.is_featured.data)
+    post.allow_comments = bool(form.allow_comments.data)
     post.seo_title = (form.seo_title.data or "").strip()
     post.seo_description = (form.seo_description.data or "").strip()
     post.status = form.status.data

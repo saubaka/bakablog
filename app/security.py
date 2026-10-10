@@ -62,10 +62,15 @@ def login_is_rate_limited(_username: str) -> bool:
     """Limit failures by requester without letting strangers lock a known account."""
 
     from app.models import LoginLog
+    from app.services.content import get_setting
 
-    window = datetime.now(UTC) - timedelta(
-        seconds=int(current_app.config["LOGIN_RATE_WINDOW_SECONDS"])
-    )
+    try:
+        limit = min(20, max(3, int(get_setting("admin_login_max_failures", "5"))))
+        lock_minutes = min(180, max(1, int(get_setting("admin_login_lock_minutes", "15"))))
+    except (TypeError, ValueError):
+        limit = int(current_app.config["LOGIN_RATE_LIMIT"])
+        lock_minutes = max(1, int(current_app.config["LOGIN_RATE_WINDOW_SECONDS"]) // 60)
+    window = datetime.now(UTC) - timedelta(minutes=lock_minutes)
     identity = request_fingerprint("login")
     failed = db.session.scalar(
         db.select(db.func.count())
@@ -76,7 +81,7 @@ def login_is_rate_limited(_username: str) -> bool:
             LoginLog.ip_address == identity,
         )
     )
-    return (failed or 0) >= int(current_app.config["LOGIN_RATE_LIMIT"])
+    return (failed or 0) >= limit
 
 
 def sanitize_request_id(value: str | None) -> str | None:

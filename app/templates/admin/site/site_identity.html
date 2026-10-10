@@ -33,11 +33,11 @@
     <form class="card admin-form site-logo-upload-card" method="post" enctype="multipart/form-data" data-animated-upload>
       <input type="hidden" name="action" value="logo">
       {{ logo_form.hidden_tag() }}
-      <div class="panel-heading"><div><span class="eyebrow">IMAGE STUDIO</span><h2>上传与裁剪Logo</h2></div></div>
+      <div class="panel-heading"><div><h2>上传与裁剪Logo</h2></div></div>
       <label class="site-logo-select button button--soft" for="site-identity-logo-input">{{ icon('image') }}<span>选择图片</span>{{ logo_form.logo(id='site-identity-logo-input', class_='site-logo-file-input', accept='image/jpeg,image/png,image/webp', data_image_crop='', data_logo_crop='', hidden=true) }}</label>
       {% for error in logo_form.logo.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
       <span class="upload-progress" data-upload-progress hidden><i></i><small>准备上传</small></span>
-      {{ logo_form.submit(class='button button--primary is-save-action', data_save_action='') }}
+      <button class="button button--primary is-save-action" type="submit" data-save-action>{{ logo_form.submit.label.text }}</button>
     </form>
   </section>
 </div>

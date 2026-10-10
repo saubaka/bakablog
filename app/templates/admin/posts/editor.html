@@ -1,6 +1,7 @@
 {% extends "layouts/admin.html" %}
 {% from "components/macros.html" import icon %}
 {% block title %}{{ '编辑' if post else '新建' }}文章 · {{ site_name }}{% endblock %}
+{% block navigation_mode %}native{% endblock %}
 {% block head %}
 <script src="{{ url_for('static', filename='scripts/editor.js', v=app_version) }}" defer></script>
 <noscript><style>.visual-editor__canvas,.visual-editor__preview,.visual-editor__toolbar,.editor-mode-switch,.editor-statusbar,.image-layout-inspector{display:none!important}.visual-editor__source{display:block!important}</style></noscript>
@@ -22,7 +23,7 @@
   <aside class="editor-sidebar" data-editor-sidebar>
     <section class="card editor-sidebar-widget is-open" data-editor-widget>
       <button class="editor-sidebar-widget__toggle" type="button" data-editor-widget-toggle aria-expanded="true"><span>发布设置</span><i aria-hidden="true">⌄</i></button>
-      <div class="editor-sidebar-widget__body"><div><label class="field"><span class="field__label">{{ form.status.label.text }}</span>{{ form.status() }}</label><label class="field"><span class="field__label">{{ form.published_at.label.text }}</span>{{ form.published_at() }}{% for error in form.published_at.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label><label class="check-row">{{ form.is_pinned() }}<span>置顶文章</span></label><label class="check-row">{{ form.is_featured() }}<span>首页推荐</span></label></div></div>
+      <div class="editor-sidebar-widget__body"><div><label class="field"><span class="field__label">{{ form.status.label.text }}</span>{{ form.status() }}</label><label class="field"><span class="field__label">{{ form.published_at.label.text }}</span>{{ form.published_at() }}{% for error in form.published_at.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label><label class="check-row">{{ form.is_pinned() }}<span>置顶文章</span></label><label class="check-row">{{ form.is_featured() }}<span>首页推荐</span></label><label class="check-row">{{ form.allow_comments() }}<span>允许访客评论</span></label></div></div>
     </section>
     <section class="card editor-sidebar-widget is-open" data-editor-widget>
       <button class="editor-sidebar-widget__toggle" type="button" data-editor-widget-toggle aria-expanded="true"><span>内容整理</span><i aria-hidden="true">⌄</i></button>

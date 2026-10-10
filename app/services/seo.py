@@ -8,11 +8,11 @@ from app.extensions import db
 from app.models import SiteSetting
 
 SEO_DEFAULTS = {
-    "seo_site_title": "小屿日记",
+    "seo_site_title": "sau_bakaの博客",
     "seo_title_separator": "·",
     "seo_default_description": "记录代码、设计与生活",
     "seo_default_keywords": "个人博客, Flask, 设计, 生活记录",
-    "seo_author_name": "小屿",
+    "seo_author_name": "sau_baka",
     "seo_default_og_image": "",
     "seo_og_locale": "zh_CN",
     "seo_twitter_card": "summary_large_image",

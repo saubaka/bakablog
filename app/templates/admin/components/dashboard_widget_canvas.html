@@ -4,7 +4,7 @@
     <div class="dashboard-widget__hero-mark">迹</div>
     <div>
       <span class="eyebrow">BAKA BLOG DASHBOARD</span>
-      <h2>今天也在认真照看这座小小星球</h2>
+      <h2>今天先处理这些内容</h2>
       <p>{{ counts.published }} 篇文章正在公开展示，{{ counts.pending_total }} 项互动等待处理。</p>
     </div>
     <span class="badge badge--blue">v{{ app_version }}</span>
@@ -29,10 +29,10 @@
   <article class="dashboard-widget dashboard-widget--actions dashboard-fixed-grid__actions">
     <div class="dashboard-widget__heading"><span><small>QUICK CREATE</small><strong>快捷创作</strong></span></div>
     <div class="dashboard-widget__actions">
-      <a href="{{ url_for('admin.create_post') }}">{{ icon('document') }}写文章</a>
-      <a href="{{ url_for('admin.edit_moment') }}">{{ icon('moment') }}写动态</a>
-      <a href="{{ url_for('admin.media_library') }}">{{ icon('image') }}传图片</a>
-      <a href="{{ url_for('admin.moderation', view='comments') }}">{{ icon('heart') }}看评论</a>
+      <a data-motion-control href="{{ url_for('admin.create_post') }}">{{ icon('document') }}写文章</a>
+      <a data-motion-control href="{{ url_for('admin.edit_moment') }}">{{ icon('moment') }}写动态</a>
+      <a data-motion-control href="{{ url_for('admin.media_library') }}">{{ icon('image') }}传图片</a>
+      <a data-motion-control href="{{ url_for('admin.moderation', view='comments') }}">{{ icon('heart') }}看评论</a>
     </div>
   </article>
 

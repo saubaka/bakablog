@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import gzip
+import hashlib
 import os
 import re
 from http import HTTPStatus
@@ -27,8 +28,7 @@ from flask import (
 from flask_wtf.csrf import CSRFError
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from app.blueprints.admin import admin_bp
-from app.blueprints.gateway import gateway_bp
+from app.blueprints.admin import admin_auth_bp, admin_bp
 from app.blueprints.public import public_bp
 from app.config import CONFIGS, BaseConfig
 from app.extensions import csrf, db, login_manager, migrate
@@ -99,11 +99,29 @@ def create_app(
     return app
 
 
+_SHELL_TOKEN = re.compile(r"<input[^>]*csrf_token[^>]*>")
+_SHELL_STATE = re.compile(r'\s(?:aria-current|aria-expanded)="[^"]*"|\b(?:is-current|is-open)\b')
+
+
+def shell_digest(value: object) -> str:
+    """Fingerprint persistent shell markup without per-page or per-request state.
+
+    Enhanced navigation only swaps the page region when the fetched page shares
+    this fingerprint, so current-item markers and CSRF values are ignored while
+    any real change to menus, branding or theme falls back to a full load.
+    """
+    text = _SHELL_STATE.sub("", _SHELL_TOKEN.sub("", str(value)))
+    text = re.sub(r"\s+", " ", text)
+    text = re.sub(r'="\s+', '="', re.sub(r'\s+"', '"', text))
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:24]
+
+
 def _register_template_filters(app: Flask) -> None:
     from app.services.external_links import linkify_external_html, notice_url
 
     app.jinja_env.filters["linkify_external"] = linkify_external_html
     app.jinja_env.filters["external_notice_url"] = notice_url
+    app.jinja_env.filters["shell_digest"] = shell_digest
 
 
 def _ensure_instance_directories(app: Flask) -> None:
@@ -113,7 +131,7 @@ def _ensure_instance_directories(app: Flask) -> None:
 
 def _register_blueprints(app: Flask) -> None:
     app.register_blueprint(public_bp)
-    app.register_blueprint(gateway_bp)
+    app.register_blueprint(admin_auth_bp)
     app.register_blueprint(admin_bp)
 
 
@@ -131,9 +149,9 @@ def _initialize_extensions(app: Flask) -> None:
         if not user_id.isdigit():
             return None
         user = db.session.get(User, int(user_id))
-        return user if user is not None and user.can_login else None
+        return user if user is not None and user.is_active else None
 
-    login_manager.login_view = "admin.login"
+    login_manager.login_view = "bakaadmin.login"
     login_manager.login_message = "请先登录管理后台。"
 
 
@@ -141,6 +159,36 @@ def _register_commands(app: Flask) -> None:
     from app.cli import register_commands
 
     register_commands(app)
+
+
+_SETUP_EXEMPT_ENDPOINTS = frozenset(
+    {
+        "static",
+        "bakaadmin.login",
+        "bakaadmin.refresh_login_human_check",
+        "public.healthcheck",
+        "public.readiness_check",
+    }
+)
+
+
+def _superadmin_setup_required() -> bool:
+    """Cached "no active superadministrator" probe used by the setup guard."""
+
+    from app.services.admin_bootstrap import setup_required
+    from app.services.cache import setup_state_cache
+
+    try:
+        return bool(
+            setup_state_cache.get_or_set(
+                f"setup-required:{current_app.instance_path}",
+                5,
+                setup_required,
+            )
+        )
+    except Exception:
+        # A missing or not-yet-migrated database must not shadow real errors.
+        return False
 
 
 def _register_request_hooks(app: Flask) -> None:
@@ -152,24 +200,15 @@ def _register_request_hooks(app: Flask) -> None:
         g.request_started_at = perf_counter()
 
     @app.before_request
-    def validate_gateway_identity():  # type: ignore[no-untyped-def]
-        from app.services.gateway import current_gateway_session
-
-        g.gateway_session = current_gateway_session(validate_remote=True)
-        return None
-
-    @app.before_request
-    def validate_account_session():  # type: ignore[no-untyped-def]
+    def validate_admin_session():  # type: ignore[no-untyped-def]
         from flask_login import current_user, logout_user
 
         from app.models import utc_now
         from app.services.auth import (
-            AUTH_SOURCE_GATEWAY,
-            AUTH_SOURCE_RECOVERY,
+            AUTH_SOURCE_LOCAL,
             AUTH_SOURCE_TESTING,
             current_user_session,
             current_user_session_source,
-            linked_gateway_session_id,
             session_is_valid,
             touch_user_session,
         )
@@ -178,17 +217,9 @@ def _register_request_hooks(app: Flask) -> None:
             return None
         item = current_user_session()
         source = current_user_session_source()
-        gateway_session = g.get("gateway_session")
-        source_is_valid = source == AUTH_SOURCE_RECOVERY
-        if source == AUTH_SOURCE_TESTING:
-            source_is_valid = current_app.testing
-        elif source == AUTH_SOURCE_GATEWAY:
-            source_is_valid = bool(
-                gateway_session is not None
-                and gateway_session.id == linked_gateway_session_id()
-                and gateway_session.linked_user_id == current_user.id
-                and gateway_session.gateway_subject == current_user.gateway_subject
-            )
+        source_is_valid = source == AUTH_SOURCE_LOCAL or (
+            source == AUTH_SOURCE_TESTING and current_app.testing
+        )
         session_is_current = bool(
             item is not None
             and item.user_id == current_user.id
@@ -201,7 +232,7 @@ def _register_request_hooks(app: Flask) -> None:
                 db.session.commit()
             logout_user()
             session.clear()
-            return redirect(url_for("admin.login", next=request.path))
+            return redirect(url_for("bakaadmin.login", next=request.path))
         if touch_user_session(item):
             current_user.last_seen_at = item.last_seen_at
             db.session.commit()
@@ -222,11 +253,6 @@ def _register_request_hooks(app: Flask) -> None:
             return redirect(request.url.replace("http://", "https://", 1), code=308)
         if request.endpoint in {"public.healthcheck", "public.readiness_check"}:
             return None
-        if request.endpoint == "gateway.local_recovery":
-            from app.services.local_recovery import request_is_loopback
-
-            if request_is_loopback():
-                return None
         policy = get_access_policy()
         g.access_policy = policy
         try:
@@ -242,6 +268,31 @@ def _register_request_hooks(app: Flask) -> None:
         if require_https and not request.is_secure:
             return redirect(request.url.replace("http://", "https://", 1), code=308)
         return None
+
+    @app.before_request
+    def redirect_to_superadmin_guidance():  # type: ignore[no-untyped-def]
+        """Send every visitor to the first-superadmin guidance while uninitialised.
+
+        The state is cached for a few seconds so the guard costs at most one
+        counting query per window, and the guidance page itself reuses the
+        existing admin login template, tokens and motion timeline.
+        """
+
+        if not current_app.config.get("SETUP_REDIRECT_ENABLED", True):
+            return None
+        from flask_login import current_user
+
+        if request.endpoint in _SETUP_EXEMPT_ENDPOINTS or request.path.startswith("/static/"):
+            return None
+        # An authenticated administrator (for example the one created seconds
+        # ago) keeps normal access; the admin blueprint owns its own guard.
+        if current_user.is_authenticated:
+            return None
+        if (request.endpoint or "").startswith("admin."):
+            return None
+        if not _superadmin_setup_required():
+            return None
+        return redirect(url_for("bakaadmin.login"))
 
     @app.before_request
     def enforce_managed_pages():  # type: ignore[no-untyped-def]
@@ -349,9 +400,6 @@ def _register_context_processors(app: Flask) -> None:
             int(app.config["SITE_CONTEXT_CACHE_SECONDS"]),
             _build_site_context,
         )
-        from flask_login import current_user
-
-        gateway_configured = bool(cached.get("gateway_operational"))
         context = {
             "site_name": cached.get("site_name", app.config["SITE_NAME"]),
             "site_tagline": cached.get("site_tagline", app.config["SITE_TAGLINE"]),
@@ -360,10 +408,6 @@ def _register_context_processors(app: Flask) -> None:
             "current_year": app.config["CURRENT_YEAR"],
             "app_version": app.config["APP_VERSION"],
             "site_url": app.config["SITE_URL"],
-            "gateway_identity": g.get("gateway_session"),
-            "gateway_is_admin": bool(
-                current_user.is_authenticated and current_user.has_permission("admin.access")
-            ),
             "primary_navigation": build_primary_navigation(
                 list(cached.get("primary_menu_config", ())),
                 list(cached.get("managed_pages_config", ())),
@@ -371,11 +415,6 @@ def _register_context_processors(app: Flask) -> None:
             ),
             **cached,
         }
-        context.update(
-            {
-                "gateway_enabled": gateway_configured,
-            }
-        )
         return context
 
 
@@ -456,14 +495,19 @@ def _environment_flag(name: str, default: bool = False) -> bool:
 def _build_site_context() -> dict[str, object]:
     from app.models import CustomPage, Media, NavigationItem, SiteProfile, SiteSetting
     from app.services.content import (
+        COMPONENT_MOTION_DEFAULTS,
+        COMPONENT_MOTION_SOFTNESS_VALUES,
         DIALOG_APPEARANCE_DEFAULTS,
         DIALOG_SHADOW_VALUES,
-        DIALOG_STYLE_VALUES,
         GLOBAL_FONT_VALUES,
+        NOTIFICATION_MOTION_SETTING,
         PAGE_TRANSITION_COLOR_DEFAULTS,
         PAGE_TRANSITION_VALUES,
+        normalize_component_motion_style,
+        notification_motion_json,
+        parse_notification_motion,
+        resolve_color_setting,
     )
-    from app.services.gateway import gateway_is_enabled
     from app.services.seo import SEO_DEFAULTS, get_seo_settings
     from app.services.site_management import (
         ADMIN_NAVIGATION_SETTING,
@@ -494,6 +538,7 @@ def _build_site_context() -> dict[str, object]:
         "page_transition_style": "stretch",
         "page_transition_duration": "720",
         **PAGE_TRANSITION_COLOR_DEFAULTS,
+        **COMPONENT_MOTION_DEFAULTS,
         **DIALOG_APPEARANCE_DEFAULTS,
         "global_font_style": "cloud-rounded",
         "admin_menu_subtitles_visible": "true",
@@ -507,6 +552,7 @@ def _build_site_context() -> dict[str, object]:
         PRIMARY_MENU_SETTING: "",
         FOOTER_CONTENT_SETTING: "",
         ADMIN_NAVIGATION_SETTING: "",
+        NOTIFICATION_MOTION_SETTING: "",
         **SEO_DEFAULTS,
     }
     chrome_settings = dict(chrome_defaults)
@@ -526,12 +572,21 @@ def _build_site_context() -> dict[str, object]:
         )
     except (TypeError, ValueError):
         transition_duration = 720
+    try:
+        component_motion_duration = max(
+            520, min(1100, int(chrome_settings.get("component_motion_duration", "760")))
+        )
+    except (TypeError, ValueError):
+        component_motion_duration = 760
+    component_motion_style = normalize_component_motion_style(
+        chrome_settings.get("component_motion_style")
+    )
+    component_motion_softness = chrome_settings.get("component_motion_softness", "soft")
+    if component_motion_softness not in COMPONENT_MOTION_SOFTNESS_VALUES:
+        component_motion_softness = "soft"
     safe_color = lambda value, default: (  # noqa: E731
         value if re.fullmatch(r"#[0-9A-Fa-f]{6}", value or "") else default
     )
-    dialog_style = chrome_settings.get("dialog_style", "soft")
-    if dialog_style not in DIALOG_STYLE_VALUES:
-        dialog_style = "soft"
     dialog_shadow = chrome_settings.get("dialog_shadow", "soft")
     if dialog_shadow not in DIALOG_SHADOW_VALUES:
         dialog_shadow = "soft"
@@ -617,7 +672,11 @@ def _build_site_context() -> dict[str, object]:
         "page_transition_style": transition_style,
         "page_transition_duration": transition_duration,
         "page_transition_color_start": safe_color(
-            chrome_settings.get("page_transition_color_start"),
+            resolve_color_setting(
+                "page_transition_color_start",
+                chrome_settings.get("page_transition_color_start"),
+                PAGE_TRANSITION_COLOR_DEFAULTS["page_transition_color_start"],
+            ),
             PAGE_TRANSITION_COLOR_DEFAULTS["page_transition_color_start"],
         ),
         "page_transition_color_middle": safe_color(
@@ -628,29 +687,52 @@ def _build_site_context() -> dict[str, object]:
             chrome_settings.get("page_transition_color_end"),
             PAGE_TRANSITION_COLOR_DEFAULTS["page_transition_color_end"],
         ),
-        "dialog_style": dialog_style,
-        "dialog_color_start": safe_color(
-            chrome_settings.get("dialog_color_start"),
-            DIALOG_APPEARANCE_DEFAULTS["dialog_color_start"],
+        "component_motion_duration": component_motion_duration,
+        "component_motion_style": component_motion_style,
+        "component_motion_color": safe_color(
+            resolve_color_setting(
+                "component_motion_color",
+                chrome_settings.get("component_motion_color"),
+                COMPONENT_MOTION_DEFAULTS["component_motion_color"],
+            ),
+            COMPONENT_MOTION_DEFAULTS["component_motion_color"],
         ),
-        "dialog_color_end": safe_color(
-            chrome_settings.get("dialog_color_end"),
-            DIALOG_APPEARANCE_DEFAULTS["dialog_color_end"],
-        ),
+        "component_motion_softness": component_motion_softness,
         "dialog_accent": safe_color(
-            chrome_settings.get("dialog_accent"),
+            resolve_color_setting(
+                "dialog_accent",
+                chrome_settings.get("dialog_accent"),
+                DIALOG_APPEARANCE_DEFAULTS["dialog_accent"],
+            ),
             DIALOG_APPEARANCE_DEFAULTS["dialog_accent"],
         ),
         "dialog_radius": safe_number("dialog_radius", 14, 42),
         "dialog_width": safe_number("dialog_width", 360, 720),
         "dialog_backdrop_blur": safe_number("dialog_backdrop_blur", 0, 30),
         "dialog_shadow": dialog_shadow,
+        "notification_motion_json": notification_motion_json(
+            parse_notification_motion(chrome_settings[NOTIFICATION_MOTION_SETTING])
+        ),
+        "toast_background": safe_color(chrome_settings.get("toast_background"), DIALOG_APPEARANCE_DEFAULTS["toast_background"]),
+        "toast_text": safe_color(chrome_settings.get("toast_text"), DIALOG_APPEARANCE_DEFAULTS["toast_text"]),
+        "toast_accent": safe_color(
+            resolve_color_setting(
+                "toast_accent",
+                chrome_settings.get("toast_accent"),
+                DIALOG_APPEARANCE_DEFAULTS["toast_accent"],
+            ),
+            DIALOG_APPEARANCE_DEFAULTS["toast_accent"],
+        ),
+        "toast_success": safe_color(chrome_settings.get("toast_success"), DIALOG_APPEARANCE_DEFAULTS["toast_success"]),
+        "toast_warning": safe_color(chrome_settings.get("toast_warning"), DIALOG_APPEARANCE_DEFAULTS["toast_warning"]),
+        "toast_error": safe_color(chrome_settings.get("toast_error"), DIALOG_APPEARANCE_DEFAULTS["toast_error"]),
+        "toast_radius": safe_number("toast_radius", 12, 32),
+        "toast_duration": safe_number("toast_duration", 2000, 12000),
         "font_style": font_style,
         "admin_menu_subtitles_visible": admin_menu_subtitles_visible,
         "panel_descriptions_visible": panel_descriptions_visible,
         "card_descriptions_visible": card_descriptions_visible,
         "field_descriptions_visible": field_descriptions_visible,
-        "gateway_operational": gateway_is_enabled(),
     }
 
 

@@ -23,7 +23,6 @@ from app.extensions import db
 from app.services.backup import database_path
 from app.services.content import (
     DIALOG_SHADOW_CHOICES,
-    DIALOG_STYLE_CHOICES,
     GLOBAL_FONT_CHOICES,
     PAGE_TRANSITION_CHOICES,
 )
@@ -39,7 +38,6 @@ def components():
     return render_template(
         "public/components.html",
         transition_choices=PAGE_TRANSITION_CHOICES,
-        dialog_style_choices=DIALOG_STYLE_CHOICES,
         dialog_shadow_choices=DIALOG_SHADOW_CHOICES,
         font_choices=GLOBAL_FONT_CHOICES,
     )

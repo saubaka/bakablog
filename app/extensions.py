@@ -16,7 +16,7 @@ migrate = Migrate(compare_type=True, render_as_batch=True)
 login_manager = LoginManager()
 csrf = CSRFProtect()
 
-login_manager.login_view = "admin.login"
+login_manager.login_view = "bakaadmin.login"
 login_manager.login_message = "请先登录，再进入管理后台。"
 login_manager.login_message_category = "warning"
 login_manager.session_protection = "strong"

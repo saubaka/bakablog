@@ -78,7 +78,6 @@ class User(UserMixin, db.Model):
         db.DateTime(timezone=True), nullable=False, default=utc_now, onupdate=utc_now
     )
     last_login_at = db.Column(db.DateTime(timezone=True))
-    gateway_subject = db.Column(db.String(100), unique=True, index=True)
     roles = db.relationship(
         "Role",
         secondary=user_roles,
@@ -99,8 +98,14 @@ class User(UserMixin, db.Model):
         )
 
     @property
+    def is_superadmin(self) -> bool:
+        return any(role.code == "superadmin" for role in self.roles)
+
+    @property
     def can_login(self) -> bool:
-        return self.is_active and self.has_permission("admin.access")
+        """Only the active built-in superadministrator may establish a session."""
+
+        return self.is_active and self.is_superadmin
 
 
 class UserSession(db.Model):
@@ -120,84 +125,6 @@ class UserSession(db.Model):
     expires_at = db.Column(db.DateTime(timezone=True), nullable=False, index=True)
     revoked_at = db.Column(db.DateTime(timezone=True), index=True)
     user = db.relationship("User", lazy="joined")
-
-
-class GatewayIdentitySession(db.Model):
-    __tablename__ = "gateway_identity_sessions"
-    __table_args__ = (
-        db.Index(
-            "ix_gateway_identity_sessions_subject_active",
-            "gateway_subject",
-            "revoked_at",
-            "expires_at",
-        ),
-    )
-
-    id = db.Column(db.Integer, primary_key=True)
-    token_hash = db.Column(db.String(64), unique=True, nullable=False, index=True)
-    gateway_subject = db.Column(db.String(100), nullable=False, index=True)
-    preferred_username = db.Column(db.String(80), nullable=False)
-    display_name = db.Column(db.String(120), nullable=False)
-    email = db.Column(db.String(254), nullable=False, default="")
-    email_verified = db.Column(db.Boolean, nullable=False, default=False)
-    avatar_url = db.Column(db.String(800), nullable=False, default="")
-    scope = db.Column(db.String(300), nullable=False, default="openid profile email")
-    access_token_encrypted = db.Column(db.Text, nullable=False)
-    refresh_token_encrypted = db.Column(db.Text, nullable=False)
-    linked_user_id = db.Column(
-        db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), index=True
-    )
-    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now)
-    last_seen_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now)
-    last_validated_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now)
-    expires_at = db.Column(db.DateTime(timezone=True), nullable=False, index=True)
-    refresh_expires_at = db.Column(db.DateTime(timezone=True), nullable=False)
-    revoked_at = db.Column(db.DateTime(timezone=True), index=True)
-    linked_user = db.relationship("User", lazy="joined")
-
-
-class GatewayConfiguration(db.Model):
-    """The single Cloudgate OIDC connection managed from the local admin."""
-
-    __tablename__ = "gateway_configurations"
-    __table_args__ = (
-        db.CheckConstraint(
-            "http_timeout_seconds BETWEEN 2 AND 30",
-            name="ck_gateway_config_timeout",
-        ),
-        db.CheckConstraint(
-            "introspection_interval_seconds BETWEEN 60 AND 3600",
-            name="ck_gateway_config_introspection",
-        ),
-        db.CheckConstraint(
-            "refresh_token_ttl_days BETWEEN 1 AND 90",
-            name="ck_gateway_config_refresh_days",
-        ),
-    )
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), nullable=False, default="云门")
-    issuer = db.Column(db.String(500), nullable=False)
-    client_id = db.Column(db.String(200), nullable=False)
-    client_secret_encrypted = db.Column(db.Text, nullable=False)
-    redirect_uri = db.Column(db.String(500), nullable=False)
-    scopes = db.Column(db.String(300), nullable=False, default="openid profile email avatar")
-    application_name = db.Column(db.String(100), nullable=False, default="sau_bakaの博客")
-    application_description = db.Column(db.String(240), nullable=False, default="")
-    application_homepage_url = db.Column(db.String(500), nullable=False, default="")
-    privacy_policy_url = db.Column(db.String(500), nullable=False, default="")
-    application_icon_url = db.Column(
-        db.String(500),
-        nullable=False,
-        default="http://127.0.0.1:5000/static/icons/cloud-diary-app.svg",
-    )
-    http_timeout_seconds = db.Column(db.Integer, nullable=False, default=8)
-    introspection_interval_seconds = db.Column(db.Integer, nullable=False, default=300)
-    refresh_token_ttl_days = db.Column(db.Integer, nullable=False, default=30)
-    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now)
-    updated_at = db.Column(
-        db.DateTime(timezone=True), nullable=False, default=utc_now, onupdate=utc_now
-    )
 
 
 class LoginLog(db.Model):
@@ -309,6 +236,7 @@ class Post(db.Model):
     published_at = db.Column(db.DateTime(timezone=True), index=True)
     is_pinned = db.Column(db.Boolean, nullable=False, default=False)
     is_featured = db.Column(db.Boolean, nullable=False, default=False)
+    allow_comments = db.Column(db.Boolean, nullable=False, default=False)
     reading_minutes = db.Column(db.Integer, nullable=False, default=1)
     seo_title = db.Column(db.String(180), nullable=False, default="")
     seo_description = db.Column(db.String(300), nullable=False, default="")
@@ -364,7 +292,7 @@ class SiteProfile(db.Model):
     __tablename__ = "site_profiles"
 
     id = db.Column(db.Integer, primary_key=True)
-    display_name = db.Column(db.String(80), nullable=False, default="小屿")
+    display_name = db.Column(db.String(80), nullable=False, default="sau_baka")
     headline = db.Column(db.String(160), nullable=False, default="独立开发者 / 设计爱好者")
     location = db.Column(db.String(120), nullable=False, default="")
     email = db.Column(db.String(160), nullable=False, default="")
@@ -468,6 +396,7 @@ class Moment(db.Model):
     location = db.Column(db.String(120), nullable=False, default="")
     status = db.Column(db.String(20), nullable=False, default="draft", index=True)
     is_pinned = db.Column(db.Boolean, nullable=False, default=False)
+    allow_comments = db.Column(db.Boolean, nullable=False, default=False)
     published_at = db.Column(db.DateTime(timezone=True), index=True)
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now)
     updated_at = db.Column(
@@ -644,14 +573,21 @@ class Comment(db.Model):
     __tablename__ = "comments"
     __table_args__ = (
         db.Index("ix_comments_post_public", "post_id", "status", "is_pinned", "created_at"),
+        db.Index("ix_comments_moment_public", "moment_id", "status", "is_pinned", "created_at"),
         db.CheckConstraint(
             "status IN ('pending', 'approved', 'spam', 'blocked')", name="ck_comments_status"
         ),
         db.CheckConstraint("author_type IN ('visitor', 'staff')", name="ck_comments_author_type"),
+        db.CheckConstraint(
+            "(post_id IS NOT NULL AND moment_id IS NULL) OR "
+            "(post_id IS NULL AND moment_id IS NOT NULL)",
+            name="ck_comments_single_target",
+        ),
     )
 
     id = db.Column(db.Integer, primary_key=True)
-    post_id = db.Column(db.Integer, db.ForeignKey("posts.id", ondelete="CASCADE"), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey("posts.id", ondelete="CASCADE"))
+    moment_id = db.Column(db.Integer, db.ForeignKey("moments.id", ondelete="CASCADE"))
     parent_id = db.Column(db.Integer, db.ForeignKey("comments.id", ondelete="CASCADE"))
     admin_user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"))
     author_type = db.Column(db.String(20), nullable=False, default="visitor")
@@ -666,6 +602,7 @@ class Comment(db.Model):
     user_agent = db.Column(db.String(255), nullable=False, default="")
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utc_now, index=True)
     post = db.relationship("Post", lazy="joined")
+    moment = db.relationship("Moment", lazy="joined")
     parent = db.relationship(
         "Comment", remote_side=[id], backref=db.backref("replies", lazy="selectin")
     )

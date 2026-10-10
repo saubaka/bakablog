@@ -457,6 +457,7 @@ def reply_comment(item_id: int):
     root = parent.parent or parent
     reply = Comment(
         post_id=root.post_id,
+        moment_id=root.moment_id,
         parent_id=root.id,
         admin_user_id=current_user.id,
         author_type="staff",

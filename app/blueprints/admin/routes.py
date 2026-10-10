@@ -23,9 +23,9 @@ from flask_login import current_user, login_user, logout_user
 from sqlalchemy import case, literal, union_all
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from app.blueprints.admin import admin_bp
+from app.blueprints.admin import admin_auth_bp, admin_bp
 from app.extensions import db
-from app.forms import AccessSettingsForm, EmptyForm, LoginForm, MediaUploadForm
+from app.forms import AccessSettingsForm, EmptyForm, LoginForm, MediaUploadForm, SuperadminSetupForm
 from app.models import (
     Album,
     AuditLog,
@@ -47,9 +47,16 @@ from app.security import (
     record_audit,
     request_fingerprint,
 )
+from app.services.admin_bootstrap import (
+    AdminBootstrapError,
+    initialize_superadmin,
+    setup_code_required,
+    setup_required,
+)
 from app.services.auth import current_user_session, establish_user_session
 from app.services.backup import database_path
 from app.services.content import get_setting, set_setting
+from app.services.human_check import issue_human_check, verify_human_check
 from app.services.media import MediaValidationError, delete_stored_image, store_image
 from app.services.system_metrics import collect_runtime_metrics, host_snapshot
 from app.services.system_update import (
@@ -65,37 +72,74 @@ DUMMY_PASSWORD_HASH = generate_password_hash("not-the-password-being-checked")
 
 @admin_bp.before_request
 def protect_admin():
-    if request.endpoint == "admin.login":
-        return None
     if current_user.is_authenticated and current_user.has_permission("admin.access"):
         return None
     if current_user.is_authenticated:
         abort(403)
     next_target = request.full_path if request.query_string else request.path
-    if current_app.testing:
-        return redirect(url_for("admin.login", next=next_target))
-    return redirect(url_for("gateway.login", intent="admin", next=next_target))
+    return redirect(url_for("bakaadmin.login", next=next_target))
 
 
-@admin_bp.route("/login/", methods=["GET", "POST"])
+@admin_auth_bp.route("/bakaadmin", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for("admin.dashboard"))
-    if not current_app.testing:
-        return redirect(
-            url_for(
-                "gateway.login",
-                intent="admin",
-                next=_safe_next_url(request.args.get("next")) or url_for("admin.dashboard"),
+    if setup_required():
+        form = SuperadminSetupForm()
+        code_required = setup_code_required()
+        form_valid = form.validate_on_submit()
+        challenge_ok = False
+        if form_valid:
+            challenge_ok = verify_human_check(
+                "admin-setup", "superadmin", form.human_nonce.data or "", form.human_answer.data
             )
+            if not challenge_ok:
+                form.human_answer.errors.append("字符不匹配，请按新图片重新输入。")
+        if form_valid and challenge_ok:
+            try:
+                user = initialize_superadmin(
+                    form.username.data,
+                    form.display_name.data,
+                    form.password.data,
+                    setup_code=form.setup_code.data or "",
+                    require_code=code_required,
+                )
+            except (AdminBootstrapError, ValueError) as error:
+                flash(str(error), "error")
+            else:
+                session.clear()
+                login_user(user, remember=False)
+                establish_user_session(user, source="local")
+                db.session.commit()
+                flash("管理员已创建，后台可以使用了。", "success")
+                return redirect(url_for("admin.dashboard"))
+        challenge = issue_human_check("admin-setup", "superadmin")
+        form.human_nonce.data = challenge.nonce
+        # The picture changes on every render, so the old answer is stale.
+        form.human_answer.data = ""
+        return render_template(
+            "admin/setup.html",
+            form=form,
+            human_challenge=challenge,
+            setup_code_required=code_required,
         )
     form = LoginForm()
-    if form.validate_on_submit():
+    form_valid = form.validate_on_submit()
+    challenge_ok = False
+    if form_valid:
+        challenge_ok = verify_human_check(
+            "admin-login", "superadmin", form.human_nonce.data or "", form.human_answer.data
+        )
+        if not challenge_ok:
+            form.human_answer.errors.append("字符不匹配，请按新图片重新输入。")
+    if form_valid and challenge_ok:
         username = form.username.data.strip().lower()
         if login_is_rate_limited(username):
             current_app.logger.warning("login rate limit reached username=%s", username[:80])
             flash("登录尝试次数过多，请稍后再试。", "error")
-            return render_template("admin/login.html", form=form), 429
+            challenge = issue_human_check("admin-login", "superadmin")
+            form.human_nonce.data = challenge.nonce
+            return render_template("admin/login.html", form=form, human_challenge=challenge), 429
         user = db.session.scalar(db.select(User).where(User.username == username))
         password_ok = (
             user.check_password(form.password.data)
@@ -103,7 +147,11 @@ def login():
             else check_password_hash(DUMMY_PASSWORD_HASH, form.password.data)
         )
         success = bool(
-            user and user.can_login and password_ok and user.has_permission("admin.access")
+            user
+            and user.can_login
+            and user.is_superadmin
+            and password_ok
+            and user.has_permission("admin.access")
         )
         db.session.add(
             LoginLog(
@@ -120,13 +168,24 @@ def login():
             session.clear()
             session.permanent = bool(form.remember.data)
             login_user(user, remember=False)
-            establish_user_session(user, source="testing")
+            establish_user_session(user, source="local")
             db.session.commit()
             flash("欢迎回来，后台已经准备好了。", "success")
             return redirect(_safe_next_url(request.args.get("next")) or url_for("admin.dashboard"))
         db.session.commit()
         flash("用户名或密码不正确。", "error")
-    return render_template("admin/login.html", form=form)
+    challenge = issue_human_check("admin-login", "superadmin")
+    form.human_nonce.data = challenge.nonce
+    return render_template("admin/login.html", form=form, human_challenge=challenge)
+
+
+@admin_auth_bp.get("/bakaadmin/human-check")
+def refresh_login_human_check():
+    scope = "admin-setup" if setup_required() else "admin-login"
+    challenge = issue_human_check(scope, "superadmin")
+    return jsonify(
+        {"ok": True, "nonce": challenge.nonce, "image": challenge.image_data},
+    )
 
 
 @admin_bp.route("/access/", methods=["GET", "POST"])
@@ -180,9 +239,6 @@ def access_settings():
 
 @admin_bp.post("/logout/")
 def logout():
-    from app.services.gateway import terminate_gateway_session
-
-    terminate_gateway_session()
     item = current_user_session()
     if item is not None:
         item.revoked_at = datetime.now(UTC)
@@ -190,7 +246,7 @@ def logout():
     logout_user()
     session.clear()
     flash("已经安全退出后台。", "info")
-    return redirect(url_for("admin.login"))
+    return redirect(url_for("bakaadmin.login"))
 
 
 @admin_bp.get("/")
@@ -358,37 +414,27 @@ def audit_logs():
         AuditLog.action.label("action"),
         AuditLog.actor_id.label("user_id"),
         db.func.coalesce(
-            db.select(User.display_name)
-            .where(User.id == AuditLog.actor_id)
-            .scalar_subquery(),
+            db.select(User.display_name).where(User.id == AuditLog.actor_id).scalar_subquery(),
             "系统",
         ).label("user_name"),
         (AuditLog.target_type + literal(" #") + AuditLog.target_id).label("target"),
         AuditLog.summary.label("summary"),
         (
-            literal("请求 ")
-            + AuditLog.request_id
-            + literal(" · 地址指纹 ")
-            + AuditLog.ip_address
+            literal("请求 ") + AuditLog.request_id + literal(" · 地址指纹 ") + AuditLog.ip_address
         ).label("details"),
     )
     login_query = db.select(
         literal("login").label("kind"),
         LoginLog.id.label("item_id"),
         LoginLog.created_at.label("created_at"),
-        case(
-            (LoginLog.success.is_(True), "login.success"), else_="login.failure"
-        ).label("action"),
+        case((LoginLog.success.is_(True), "login.success"), else_="login.failure").label("action"),
         LoginLog.user_id.label("user_id"),
         db.func.coalesce(User.display_name, LoginLog.username).label("user_name"),
         literal("登录会话").label("target"),
         LoginLog.username.label("summary"),
-        (
-            literal("地址指纹 ")
-            + LoginLog.ip_address
-            + literal(" · ")
-            + LoginLog.user_agent
-        ).label("details"),
+        (literal("地址指纹 ") + LoginLog.ip_address + literal(" · ") + LoginLog.user_agent).label(
+            "details"
+        ),
     ).outerjoin(User, User.id == LoginLog.user_id)
 
     if selected_user == "system":
@@ -410,9 +456,7 @@ def audit_logs():
     if selected_function == "login":
         combined = login_query.subquery()
     elif selected_function != "all":
-        combined = audit_query.where(
-            AuditLog.action.like(f"{selected_function}.%")
-        ).subquery()
+        combined = audit_query.where(AuditLog.action.like(f"{selected_function}.%")).subquery()
     else:
         combined = union_all(audit_query, login_query).subquery()
     total = db.session.scalar(db.select(db.func.count()).select_from(combined)) or 0
@@ -578,9 +622,7 @@ def system_update_status():
     response = jsonify(
         {
             "ok": True,
-            "data": read_update_state(
-                current_app.instance_path, current_app.config["APP_VERSION"]
-            ),
+            "data": read_update_state(current_app.instance_path, current_app.config["APP_VERSION"]),
         }
     )
     response.headers["Cache-Control"] = "no-store"
@@ -723,35 +765,41 @@ def _apply_log_retention(mode: str, count: int, days: int) -> int:
 def _log_storage_summary() -> dict[str, object]:
     audit_count = db.session.scalar(db.select(db.func.count()).select_from(AuditLog)) or 0
     login_count = db.session.scalar(db.select(db.func.count()).select_from(LoginLog)) or 0
-    audit_bytes = db.session.scalar(
-        db.select(
-            db.func.coalesce(
-                db.func.sum(
-                    db.func.coalesce(db.func.length(AuditLog.action), 0)
-                    + db.func.coalesce(db.func.length(AuditLog.target_type), 0)
-                    + db.func.coalesce(db.func.length(AuditLog.target_id), 0)
-                    + db.func.coalesce(db.func.length(AuditLog.summary), 0)
-                    + db.func.coalesce(db.func.length(AuditLog.request_id), 0)
-                    + db.func.coalesce(db.func.length(AuditLog.ip_address), 0)
-                    + 72
-                ),
-                0,
+    audit_bytes = (
+        db.session.scalar(
+            db.select(
+                db.func.coalesce(
+                    db.func.sum(
+                        db.func.coalesce(db.func.length(AuditLog.action), 0)
+                        + db.func.coalesce(db.func.length(AuditLog.target_type), 0)
+                        + db.func.coalesce(db.func.length(AuditLog.target_id), 0)
+                        + db.func.coalesce(db.func.length(AuditLog.summary), 0)
+                        + db.func.coalesce(db.func.length(AuditLog.request_id), 0)
+                        + db.func.coalesce(db.func.length(AuditLog.ip_address), 0)
+                        + 72
+                    ),
+                    0,
+                )
             )
         )
-    ) or 0
-    login_bytes = db.session.scalar(
-        db.select(
-            db.func.coalesce(
-                db.func.sum(
-                    db.func.coalesce(db.func.length(LoginLog.username), 0)
-                    + db.func.coalesce(db.func.length(LoginLog.ip_address), 0)
-                    + db.func.coalesce(db.func.length(LoginLog.user_agent), 0)
-                    + 56
-                ),
-                0,
+        or 0
+    )
+    login_bytes = (
+        db.session.scalar(
+            db.select(
+                db.func.coalesce(
+                    db.func.sum(
+                        db.func.coalesce(db.func.length(LoginLog.username), 0)
+                        + db.func.coalesce(db.func.length(LoginLog.ip_address), 0)
+                        + db.func.coalesce(db.func.length(LoginLog.user_agent), 0)
+                        + 56
+                    ),
+                    0,
+                )
             )
         )
-    ) or 0
+        or 0
+    )
     return {
         "audit_count": audit_count,
         "login_count": login_count,

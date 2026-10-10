@@ -303,7 +303,7 @@ def site_identity():
         logo_form=logo_form,
         remove_form=EmptyForm(),
         current_logo=logo,
-        display_name=get_setting("site_display_name", "小屿日记"),
+        display_name=get_setting("site_display_name", "sau_bakaの博客"),
         tagline=get_setting("site_display_tagline", "记录代码、设计与生活"),
     )
 
@@ -473,15 +473,41 @@ def site_addresses():
 @permission_required("system.maintain")
 def site_security():
     policy = get_access_policy()
+    try:
+        login_max_failures = min(
+            20, max(3, int(get_setting("admin_login_max_failures", "5")))
+        )
+        login_lock_minutes = min(
+            180, max(1, int(get_setting("admin_login_lock_minutes", "15")))
+        )
+    except (TypeError, ValueError):
+        login_max_failures, login_lock_minutes = 5, 15
     if request.method == "POST":
         if not EmptyForm().validate_on_submit():
             abort(400)
         require_https = request.form.get("require_https") == "y"
         hotlink = request.form.get("hotlink_protection") == "y"
+        try:
+            login_max_failures = min(
+                20, max(3, int(request.form.get("admin_login_max_failures", "5")))
+            )
+            login_lock_minutes = min(
+                180, max(1, int(request.form.get("admin_login_lock_minutes", "15")))
+            )
+        except ValueError:
+            flash("登录限制必须填写整数。", "error")
+            return render_template(
+                "admin/site/site_security.html",
+                policy=policy,
+                login_max_failures=login_max_failures,
+                login_lock_minutes=login_lock_minutes,
+            ), 400
         if require_https and not request.is_secure and request.form.get("confirm_https") != "y":
             flash("请先确认HTTPS已经能够正常访问。", "error")
         else:
             save_security_policy(require_https, hotlink)
+            set_setting("admin_login_max_failures", str(login_max_failures))
+            set_setting("admin_login_lock_minutes", str(login_lock_minutes))
             _commit_setting(
                 "site.security.update",
                 "security",
@@ -490,4 +516,9 @@ def site_security():
             )
             target = url_for("admin.site_security", _external=True)
             return redirect(target.replace("http://", "https://", 1) if require_https else target)
-    return render_template("admin/site/site_security.html", policy=policy)
+    return render_template(
+        "admin/site/site_security.html",
+        policy=policy,
+        login_max_failures=login_max_failures,
+        login_lock_minutes=login_lock_minutes,
+    )

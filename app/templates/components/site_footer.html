@@ -3,11 +3,11 @@
   <div class="site-footer__columns">
     {% for column in footer_content.columns %}
       {% set public_links = column.links | rejectattr('url', 'equalto', '/admin/') | list %}
-      {% if public_links or gateway_is_admin %}
+      {% if public_links %}
       <section class="site-footer__column">
         <strong>{{ column.title }}</strong>
         {% for item in column.links %}
-          {% if item.url != '/admin/' or gateway_is_admin %}<a href="{{ item.url|external_notice_url }}">{{ item.label }}</a>{% endif %}
+          {% if item.url != '/admin/' %}<a href="{{ item.url|external_notice_url }}">{{ item.label }}</a>{% endif %}
         {% endfor %}
       </section>
       {% endif %}
@@ -16,10 +16,10 @@
     <section class="site-footer__column">
       <strong>更多链接</strong>
       {% for item in navigation_items %}
-        {% if item.location in ('footer', 'both') and (item.url != '/admin/' or gateway_is_admin) %}<a href="{{ item.url|external_notice_url }}"{% if item.open_new_tab %} rel="nofollow noopener noreferrer"{% endif %}>{{ item.label }}</a>{% endif %}
+        {% if item.location in ('footer', 'both') and item.url != '/admin/' %}<a href="{{ item.url|external_notice_url }}"{% if item.open_new_tab %} rel="nofollow noopener noreferrer"{% endif %}>{{ item.label }}</a>{% endif %}
       {% endfor %}
     </section>
     {% endif %}
   </div>
-  <div class="site-footer__meta"><small>© {{ current_year }} {{ site_name }} · {{ footer_content.copyright or footer_text }}</small><button type="button" data-motion-toggle aria-pressed="false">动效：跟随系统</button></div>
+  <div class="site-footer__meta"><small>© {{ current_year }} {{ site_name }} · {{ footer_content.copyright or footer_text }}</small></div>
 </footer>

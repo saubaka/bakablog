@@ -9,10 +9,10 @@
 
 {% block body %}
   <div class="admin-shell{% if not admin_menu_subtitles_visible %} admin-menu--compact{% endif %}">
-    <aside class="admin-sidebar" id="admin-sidebar" aria-label="后台导航">
+    {% set admin_sidebar %}<aside class="admin-sidebar" id="admin-sidebar" aria-label="后台导航" data-motion-surface="feature" data-motion-controls="none">
       <a class="admin-brand" href="{{ url_for('admin.dashboard') }}">
-        <span class="brand-mark">{% if site_logo %}<img src="{{ url_for('public.media_file', filename=site_logo.thumbnail_filename) }}" alt="">{% else %}{{ icon('cloud') }}{% endif %}</span>
-        <span>{{ system_name }}<small>{{ system_name_en }}</small></span>
+        <span class="brand-mark">{% if site_logo %}<img src="{{ url_for('public.media_file', filename=site_logo.thumbnail_filename) }}" alt="">{% else %}<span class="window-symbol" aria-hidden="true"><i></i><i></i></span>{% endif %}</span>
+        <span data-admin-brand-name>{{ system_name }}<small>{{ system_name_en }}</small></span>
       </a>
       {% set endpoint = request.endpoint or '' %}
       {% set site_section = request.args.get('section', 'content') %}
@@ -34,7 +34,6 @@
       {% set albums_active = endpoint in ('admin.albums','admin.edit_album','admin.update_photo','admin.delete_photo','admin.delete_album') %}
       {% set appearance_active = endpoint in ('admin.transition_settings','admin.dialog_appearance','admin.interface_appearance','admin.toggle_admin_menu_subtitles') %}
       {% set interface_section = request.args.get('section', 'font') %}
-      {% set gateway_active = endpoint == 'admin.gateway_settings' %}
       {% set system_active = endpoint in ('admin.audit_logs','admin.system_status','admin.runtime_metrics','admin.system_about','admin.system_update_status','admin.system_update_check','admin.system_update_download','admin.system_update_install','admin.system_update_rollback') %}
       <nav class="admin-nav" aria-label="后台功能分类" data-admin-navigation>
         <section class="admin-nav-group admin-nav-direct {{ 'is-open' if dashboard_active }}" data-admin-menu-group data-menu-key="dashboard">
@@ -80,15 +79,8 @@
         <section class="admin-nav-group {{ 'is-open' if appearance_active }}" data-admin-menu-group data-menu-key="appearance">
           <button class="admin-nav-group__toggle" type="button" data-admin-menu-toggle aria-expanded="{{ 'true' if appearance_active else 'false' }}" aria-controls="admin-menu-appearance">{{ icon('spark') }}<span><strong>主题</strong><small>字体、提示、动画与弹窗</small></span>{{ icon('arrow-down', 'admin-nav-group__chevron') }}</button>
           <div class="admin-nav-group__items" id="admin-menu-appearance"><div>
-            {% if current_user.has_permission('site.manage') %}{{ admin_child('font', '字体', '选择全站字体', url_for('admin.interface_appearance', section='font'), endpoint == 'admin.interface_appearance' and interface_section == 'font') }}{{ admin_child('hints', '提示', '控制后台菜单小标题', url_for('admin.interface_appearance', section='hints'), endpoint in ('admin.interface_appearance','admin.toggle_admin_menu_subtitles') and interface_section == 'hints') }}{{ admin_child('transitions', '动画', '页面过渡、时长与遮罩颜色', url_for('admin.transition_settings'), endpoint == 'admin.transition_settings') }}{{ admin_child('dialogs', '弹窗', '弹窗主题、尺寸、阴影与颜色', url_for('admin.dialog_appearance'), endpoint == 'admin.dialog_appearance') }}{% endif %}
+            {% if current_user.has_permission('site.manage') %}{{ admin_child('font', '字体', '选择全站字体', url_for('admin.interface_appearance', section='font'), endpoint == 'admin.interface_appearance' and interface_section == 'font') }}{{ admin_child('hints', '提示', '控制后台菜单小标题', url_for('admin.interface_appearance', section='hints'), endpoint in ('admin.interface_appearance','admin.toggle_admin_menu_subtitles') and interface_section == 'hints') }}{{ admin_child('transitions', '动画', '页面过渡、时长与遮罩颜色', url_for('admin.transition_settings'), endpoint == 'admin.transition_settings') }}{{ admin_child('dialogs', '弹窗与通知', '统一浮层配色、轮廓与节奏', url_for('admin.dialog_appearance'), endpoint == 'admin.dialog_appearance') }}{% endif %}
             {{ admin_child('components', '预览', '查看全站外观与交互组件', url_for('public.components')) }}
-          </div></div>
-        </section>
-
-        <section class="admin-nav-group {{ 'is-open' if gateway_active }}" data-admin-menu-group data-menu-key="gateway">
-          <button class="admin-nav-group__toggle" type="button" data-admin-menu-toggle aria-expanded="{{ 'true' if gateway_active else 'false' }}" aria-controls="admin-menu-gateway">{{ icon('cloud') }}<span><strong>云门</strong><small>统一身份连接与入口控制</small></span>{{ icon('arrow-down', 'admin-nav-group__chevron') }}</button>
-          <div class="admin-nav-group__items" id="admin-menu-gateway"><div>
-            {% if current_user.has_permission('system.maintain') %}{{ admin_child('gateway-connection', '网关连接', '连接参数、连通性与管理员绑定', url_for('admin.gateway_settings'), endpoint == 'admin.gateway_settings') }}{% endif %}
           </div></div>
         </section>
 
@@ -107,13 +99,14 @@
         <span><strong>{{ current_user.display_name }}</strong><small>{{ current_user.username }}</small></span>
         <form action="{{ url_for('admin.logout') }}" method="post">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button class="icon-button icon-button--small" type="submit" aria-label="退出登录">↗</button>
+          <button class="icon-button icon-button--small" type="submit" data-motion-skip aria-label="退出登录">↗</button>
         </form>
       </div>
-    </aside>
-    <div class="admin-workspace">
+    </aside>{% endset %}
+    {{ admin_sidebar }}
+    <div class="admin-workspace" data-navigation-region="admin" data-shell-signature="{{ admin_sidebar|shell_digest }}">
       <header class="admin-topbar">
-        <button class="icon-button admin-menu-button" type="button" data-admin-drawer aria-controls="admin-sidebar" aria-expanded="false" aria-label="打开后台菜单">{{ icon('menu') }}</button>
+        <button class="icon-button admin-menu-button" type="button" data-admin-drawer data-motion-skip aria-controls="admin-sidebar" aria-expanded="false" aria-label="打开后台菜单">{{ icon('menu') }}</button>
         <div class="admin-topbar__title">
           <span class="eyebrow">{{ app_version }}</span>
           <h1>{% block admin_title %}后台{% endblock %}</h1>

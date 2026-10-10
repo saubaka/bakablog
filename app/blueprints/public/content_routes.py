@@ -4,12 +4,14 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from flask import abort, current_app, render_template, request
+from flask import abort, current_app, render_template, request, url_for
 
 from app.blueprints.public import public_bp
 from app.extensions import db
+from app.forms import CommentForm, EmptyForm
 from app.models import (
     Album,
+    Comment,
     CustomPage,
     Experience,
     FriendLink,
@@ -25,12 +27,16 @@ from app.models import (
 from app.services.blog import public_post_condition
 from app.services.cache import home_content_cache
 from app.services.content import (
+    HOME_MODULE_DEFAULT_TITLES,
     HOME_SETTING_DEFAULTS,
+    LEGACY_HOME_MODULE_TITLES,
+    LEGACY_HOME_SETTING_VALUES,
     get_home_modules,
     get_settings,
     public_moment_condition,
     public_project_condition,
 )
+from app.services.human_check import issue_human_check
 
 
 @public_bp.get("/")
@@ -113,7 +119,23 @@ def _build_home_payload() -> dict[str, object]:
         for key, default in HOME_SETTING_DEFAULTS.items()
         for value in [settings.get(key, default)]
     }
+    settings = {
+        key: (
+            HOME_SETTING_DEFAULTS[key]
+            if value in LEGACY_HOME_SETTING_VALUES.get(key, set())
+            else value
+        )
+        for key, value in settings.items()
+    }
     hero_tags = [item.strip() for item in settings["hero_tags"].split("/") if item.strip()][:4]
+    home_module_titles = {
+        module.module_key: (
+            HOME_MODULE_DEFAULT_TITLES[module.module_key]
+            if module.title in LEGACY_HOME_MODULE_TITLES.get(module.module_key, set())
+            else module.title
+        )
+        for module in modules
+    }
     return {
         "modules": modules,
         "posts": posts,
@@ -125,6 +147,7 @@ def _build_home_payload() -> dict[str, object]:
         "skills": skills,
         "socials": socials,
         "hero_tags": hero_tags,
+        "home_module_titles": home_module_titles,
         "home_settings": settings,
     }
 
@@ -218,7 +241,33 @@ def moment_detail(item_id: int):
     )
     if moment is None:
         abort(404)
-    return render_template("public/moment_detail.html", moment=moment)
+    comments = []
+    comment_form = None
+    human_challenge = None
+    if moment.allow_comments:
+        comments = db.session.scalars(
+            db.select(Comment)
+            .where(
+                Comment.moment_id == moment.id,
+                Comment.parent_id.is_(None),
+                Comment.status == "approved",
+            )
+            .order_by(Comment.is_pinned.desc(), Comment.created_at.asc())
+        ).all()
+        comment_form = CommentForm()
+        human_challenge = issue_human_check("comment-moment", str(moment.id))
+        comment_form.human_nonce.data = human_challenge.nonce
+    return render_template(
+        "public/moment_detail.html",
+        moment=moment,
+        comments=comments,
+        comment_form=comment_form,
+        human_challenge=human_challenge,
+        comment_target_type="moment",
+        comment_target_id=moment.id,
+        comment_action=url_for("public.create_moment_comment", item_id=moment.id),
+        action_form=EmptyForm(),
+    )
 
 
 @public_bp.get("/pages/<slug>/")

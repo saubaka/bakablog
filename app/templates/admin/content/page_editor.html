@@ -1,5 +1,6 @@
 {% extends "layouts/admin.html" %}
 {% block title %}{{ '编辑页面' if page else '新建页面' }} · {{ site_name }}{% endblock %}
+{% block navigation_mode %}native{% endblock %}
 {% block head %}
 <script src="{{ url_for('static', filename='scripts/editor.js', v=app_version) }}" defer></script>
 <noscript><style>.visual-editor__canvas,.visual-editor__preview,.visual-editor__toolbar,.editor-mode-switch,.editor-statusbar,.image-layout-inspector{display:none!important}.visual-editor__source{display:block!important}</style></noscript>

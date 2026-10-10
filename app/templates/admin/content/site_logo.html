@@ -33,7 +33,7 @@
     </label>
     {% for error in form.logo.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
     <span class="upload-progress" data-upload-progress hidden><i></i><small>准备上传</small></span>
-    {{ form.submit(class='button button--primary', data_save_action='') }}
+    <button class="button button--primary" type="submit" data-save-action>{{ form.submit.label.text }}</button>
   </form>
 </div>
 {% endblock %}

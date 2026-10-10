@@ -19,6 +19,7 @@ from app.services.access import (
     save_bound_urls,
     save_security_policy,
 )
+from app.services.admin_bootstrap import issue_setup_code, reset_superadmin_credentials
 from app.services.auth import revoke_all_user_sessions
 from app.services.backup import (
     BackupError,
@@ -27,7 +28,6 @@ from app.services.backup import (
     restore_site_backup,
     verify_site_backup,
 )
-from app.services.local_recovery import create_local_recovery_token
 from app.services.migrations import migration_head
 
 PERMISSIONS = {
@@ -62,15 +62,16 @@ PERMISSIONS = {
 def register_commands(app: Flask) -> None:
     app.cli.add_command(site_init)
     app.cli.add_command(seed_permissions)
-    app.cli.add_command(create_admin)
+    app.cli.add_command(create_superadmin)
     app.cli.add_command(db_check)
     app.cli.add_command(db_optimize)
     app.cli.add_command(site_backup)
     app.cli.add_command(site_backup_verify)
     app.cli.add_command(site_restore)
     app.cli.add_command(system_check)
-    app.cli.add_command(local_recovery_link)
     app.cli.add_command(configure_deployment_domain)
+    app.cli.add_command(reset_superadmin)
+    app.cli.add_command(issue_admin_setup_code)
 
 
 @click.command("configure-deployment-domain")
@@ -96,22 +97,7 @@ def configure_deployment_domain(domain: str) -> None:
     click.echo(f"生产访问域名已绑定：https://{host}")
 
 
-@click.command("local-recovery-link")
-@with_appcontext
-def local_recovery_link() -> None:
-    """Create a five-minute, one-use administrator URL for this computer."""
-
-    eligible = [user for user in db.session.scalars(db.select(User)).all() if user.can_login]
-    if not eligible:
-        raise click.ClickException("没有可用于本机恢复的活动管理员。")
-    raw_token = create_local_recovery_token()
-    click.echo(
-        "RECOVERY_URL="
-        f"http://127.0.0.1:5000/auth/recovery/local/{raw_token}/"
-    )
-
-
-def ensure_permissions() -> Role:
+def ensure_permissions(*, commit: bool = True) -> Role:
     permission_models: list[Permission] = []
     for code, name in PERMISSIONS.items():
         permission = db.session.scalar(db.select(Permission).where(Permission.code == code))
@@ -122,13 +108,16 @@ def ensure_permissions() -> Role:
 
     role = db.session.scalar(db.select(Role).where(Role.code == "superadmin"))
     if role is None:
-        role = Role(code="superadmin", name="管理员", is_system=True)
+        role = Role(code="superadmin", name="超级管理员", is_system=True)
         db.session.add(role)
     else:
-        role.name = "管理员"
+        role.name = "超级管理员"
         role.is_system = True
     role.permissions = permission_models
-    db.session.commit()
+    if commit:
+        db.session.commit()
+    else:
+        db.session.flush()
     return role
 
 
@@ -173,17 +162,46 @@ def seed_permissions() -> None:
     click.echo("内置角色与权限已同步。")
 
 
-@click.command("create-admin")
-@click.option("--username", prompt="管理员用户名")
-@click.option("--display-name", prompt="显示名称", default="站点管理员")
+@click.command("create-superadmin")
+@click.option("--username", prompt="超级管理员用户名")
+@click.option("--display-name", prompt="显示名称", default="超级管理员")
 @click.password_option(confirmation_prompt=True)
 @with_appcontext
-def create_admin(username: str, display_name: str, password: str) -> None:
-    """Create or reset a local administrator account."""
+def create_superadmin(username: str, display_name: str, password: str) -> None:
+    """Create or reset the only supported local account type."""
 
     username = _validate_credentials(username, password)
     user = create_or_update_admin(username, password, display_name.strip())
-    click.echo(f"管理员账号已保存：{user.username}")
+    click.echo(f"超级管理员账号已保存：{user.username}")
+
+
+@click.command("reset-superadmin")
+@click.option("--yes", is_flag=True, help="确认清除旧凭据并进入初始化状态。")
+@with_appcontext
+def reset_superadmin(yes: bool) -> None:
+    """Back up the site and clear administrator credentials without breaking content FKs."""
+
+    if not yes:
+        raise click.ClickException("此操作会撤销全部管理员登录；确认后请增加--yes。")
+    try:
+        archive, code = reset_superadmin_credentials()
+    except Exception as error:
+        db.session.rollback()
+        raise click.ClickException(f"管理员重置失败，数据库未提交：{error}") from error
+    click.echo(f"管理员凭据已清除；备份：{archive}")
+    click.echo(f"远程或生产初始化口令（30分钟有效）：{code}")
+
+
+@click.command("issue-admin-setup-code")
+@with_appcontext
+def issue_admin_setup_code() -> None:
+    """Issue a replacement one-time setup code while no administrator exists."""
+
+    try:
+        code = issue_setup_code()
+    except Exception as error:
+        raise click.ClickException(str(error)) from error
+    click.echo(f"一次性初始化口令（30分钟有效）：{code}")
 
 
 @click.command("db-check")

@@ -31,3 +31,4 @@ class TTLCache:
 
 site_context_cache = TTLCache()
 home_content_cache = TTLCache()
+setup_state_cache = TTLCache()

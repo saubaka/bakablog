@@ -1,6 +1,6 @@
 # Cloudtrace Debian 12与Linux部署教程
 
-本教程对应 baka blog `1.32.0`、`bakablog 1.4.0`和仓库：
+本教程对应 baka blog `1.36.5`、`bakablog 1.4.0`和仓库：
 
 ```text
 https://github.com/saubaka/bakablog

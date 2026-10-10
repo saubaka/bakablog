@@ -2,6 +2,16 @@
   const doc = document;
   const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches || doc.documentElement.dataset.motion === 'reduce';
 
+  // 每个主题下拉各有一个观察者；页面区域被替换后立即断开，避免继续持有已移除的节点。
+  const selectObservers = new Map();
+  const releaseDetachedSelects = () => {
+    selectObservers.forEach((observer, select) => {
+      if (select.isConnected) return;
+      observer.disconnect();
+      selectObservers.delete(select);
+    });
+  };
+
   function enhanceSelect(select) {
     if (select.multiple || select.dataset.nativeSelect !== undefined || select.dataset.themedSelectReady) return;
     select.dataset.themedSelectReady = 'true';
@@ -87,7 +97,9 @@
       }
     });
     select.addEventListener('change', sync);
-    new MutationObserver(render).observe(select, { childList: true, subtree: true, attributes: true });
+    const selectObserver = new MutationObserver(render);
+    selectObserver.observe(select, { childList: true, subtree: true, attributes: true });
+    selectObservers.set(select, selectObserver);
     render();
   }
 
@@ -104,23 +116,64 @@
     });
   }
   markSaveActions();
-  new MutationObserver((records) => records.forEach((record) => record.addedNodes.forEach((node) => {
-    if (node.nodeType === 1) markSaveActions(node.matches?.('select,button,input') ? node.parentElement : node);
-  }))).observe(doc.body, { childList: true, subtree: true });
+  new MutationObserver((records) => {
+    records.forEach((record) => record.addedNodes.forEach((node) => {
+      if (node.nodeType === 1) markSaveActions(node.matches?.('select,button,input') ? node.parentElement : node);
+    }));
+    if (records.some((record) => record.removedNodes.length)) releaseDetachedSelects();
+  }).observe(doc.body, { childList: true, subtree: true });
   doc.addEventListener('click', (event) => {
     if (!event.target.closest('.themed-select')) doc.querySelectorAll('.themed-select.is-open .themed-select__trigger').forEach((button) => button.click());
   });
 
-  const seoForm = doc.querySelector('[data-seo-form]');
-  if (seoForm) {
-    const updatePreview = () => {
-      const title = seoForm.querySelector('[data-seo-title]')?.value || '';
-      const description = seoForm.querySelector('[data-seo-description]')?.value || '';
-      doc.querySelectorAll('[data-seo-preview-title],[data-seo-social-title]').forEach((item) => { item.textContent = title; });
-      doc.querySelectorAll('[data-seo-preview-description],[data-seo-social-description]').forEach((item) => { item.textContent = description; });
-    };
-    seoForm.addEventListener('input', updatePreview); updatePreview();
-  }
+  // Forms inside the page region are mounted again after enhanced navigation.
+  const initForms = (scope) => {
+    markSaveActions(scope);
+    const seoForm = scope.querySelector('[data-seo-form]');
+    if (seoForm) {
+      const updatePreview = () => {
+        const title = seoForm.querySelector('[data-seo-title]')?.value || '';
+        const description = seoForm.querySelector('[data-seo-description]')?.value || '';
+        scope.querySelectorAll('[data-seo-preview-title],[data-seo-social-title]').forEach((item) => { item.textContent = title; });
+        scope.querySelectorAll('[data-seo-preview-description],[data-seo-social-description]').forEach((item) => { item.textContent = description; });
+      };
+      seoForm.addEventListener('input', updatePreview); updatePreview();
+    }
+
+    scope.querySelectorAll('form[data-animated-upload]').forEach((form) => form.addEventListener('submit', (event) => {
+      if (form.dataset.uploading === 'true' || !form.querySelector('input[type="file"]')?.files?.length) return;
+      event.preventDefault(); form.dataset.uploading = 'true';
+      const bar = form.querySelector('[data-upload-progress]');
+      const fill = bar?.querySelector('i'); const label = bar?.querySelector('small');
+      if (bar) bar.hidden = false;
+      const task = window.CloudDiary?.progress?.('正在上传…');
+      let reportedStep = 0;
+      const xhr = new XMLHttpRequest();
+      xhr.open((form.method || 'POST').toUpperCase(), form.action || location.href);
+      xhr.upload.addEventListener('progress', (progress) => {
+        const percent = progress.lengthComputable ? Math.round(progress.loaded / progress.total * 100) : 35;
+        if (fill) fill.style.setProperty('--upload-progress', `${percent}%`);
+        if (label) label.textContent = `正在上传 ${percent}%`;
+        const step = Math.min(3, Math.floor(percent / 34));
+        if (step > reportedStep) { reportedStep = step; task?.update(percent >= 100 ? '上传完成，正在处理…' : `正在上传 ${percent}%`); }
+      });
+      xhr.addEventListener('load', () => {
+        if (fill) fill.style.setProperty('--upload-progress', '100%');
+        if (label) label.textContent = '上传完成';
+        form.classList.add('is-upload-complete');
+        window.setTimeout(() => { location.assign(xhr.responseURL || location.href); }, reduced() ? 0 : 260);
+      });
+      xhr.addEventListener('error', () => {
+        form.dataset.uploading = 'false';
+        if (label) label.textContent = '上传失败，请重试';
+        bar?.classList.add('is-error');
+        task?.fail('网络中断，上传失败，请重试。');
+      });
+      xhr.send(new FormData(form));
+    }));
+  };
+  if (window.CloudtracePage?.define) window.CloudtracePage.define('ui-global-forms', initForms);
+  else initForms(doc);
 
   const cropDialog = doc.querySelector('[data-image-crop-dialog]');
   if (!cropDialog) return;
@@ -150,7 +203,8 @@
     ctx.restore();
   }
   function finishCrop(result) {
-    if (cropDialog.open) cropDialog.close();
+    if (window.CloudDiary?.closeDialog) window.CloudDiary.closeDialog(cropDialog);
+    else if (cropDialog.open) cropDialog.close();
     cropDialog.classList.remove('is-avatar-mode', 'is-logo-mode');
     cropDialog.querySelector('#image-crop-title').textContent = '调整图片';
     const done = resolver; resolver = null; state = null; done?.(result);
@@ -170,7 +224,9 @@
         cropDialog.querySelector('#image-crop-title').textContent = avatar ? '调整头像' : (logo ? '调整网站Logo' : '调整图片');
         cropDialog.querySelector('[data-crop-zoom-value]').textContent = '100%';
         cropDialog.querySelectorAll('[data-crop-ratio]').forEach((button) => button.classList.toggle('is-active', button.dataset.cropRatio === (avatar ? '1' : 'free')));
-        cropDialog.showModal(); requestAnimationFrame(drawCrop);
+        if (window.CloudDiary?.openDialog) window.CloudDiary.openDialog(cropDialog);
+        else { cropDialog.showModal(); cropDialog.classList.add('is-present'); }
+        requestAnimationFrame(drawCrop);
       };
       image.onerror = () => { URL.revokeObjectURL(objectUrl); resolve(file); };
       image.src = objectUrl;
@@ -240,26 +296,4 @@
     const ready = new Event('change', { bubbles: true }); ready.cropReady = true; input.dispatchEvent(ready);
   }, true);
 
-  doc.querySelectorAll('form[data-animated-upload]').forEach((form) => form.addEventListener('submit', (event) => {
-    if (form.dataset.uploading === 'true' || !form.querySelector('input[type="file"]')?.files?.length) return;
-    event.preventDefault(); form.dataset.uploading = 'true';
-    const bar = form.querySelector('[data-upload-progress]');
-    const fill = bar?.querySelector('i'); const label = bar?.querySelector('small');
-    if (bar) bar.hidden = false;
-    const xhr = new XMLHttpRequest();
-    xhr.open((form.method || 'POST').toUpperCase(), form.action || location.href);
-    xhr.upload.addEventListener('progress', (progress) => {
-      const percent = progress.lengthComputable ? Math.round(progress.loaded / progress.total * 100) : 35;
-      if (fill) fill.style.setProperty('--upload-progress', `${percent}%`);
-      if (label) label.textContent = `正在上传 ${percent}%`;
-    });
-    xhr.addEventListener('load', () => {
-      if (fill) fill.style.setProperty('--upload-progress', '100%');
-      if (label) label.textContent = '上传完成';
-      form.classList.add('is-upload-complete');
-      window.setTimeout(() => { location.assign(xhr.responseURL || location.href); }, reduced() ? 0 : 260);
-    });
-    xhr.addEventListener('error', () => { form.dataset.uploading = 'false'; if (label) label.textContent = '上传失败，请重试'; bar?.classList.add('is-error'); });
-    xhr.send(new FormData(form));
-  }));
 })();

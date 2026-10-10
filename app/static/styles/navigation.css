@@ -1,0 +1,69 @@
+/*
+ * v1.40.0 - Project 8 adoption, phase 4: same-shell navigation.
+ * The previous page stays readable while the next one loads; a thin line at
+ * the top only appears for slow responses, then the region crossfades with a
+ * short lift. Reduced motion swaps instantly.
+ */
+
+.route-progress {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 1001;
+  height: 3px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 180ms var(--ease, ease);
+}
+
+.route-progress i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 0 3px 3px 0;
+  background: var(--line-blue-strong, #d9e8f6);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+html.is-route-loading .route-progress { opacity: 1; }
+html.is-route-loading .route-progress i { animation: route-progress 2.6s cubic-bezier(.2, .78, .22, 1) forwards; }
+html.is-route-loading [data-navigation-region] { cursor: progress; }
+
+@keyframes route-progress {
+  0% { transform: scaleX(.05); }
+  55% { transform: scaleX(.6); }
+  100% { transform: scaleX(.88); }
+}
+
+[data-navigation-region].is-route-leaving {
+  opacity: .6;
+  transform: translate3d(0, 4px, 0);
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+[data-navigation-region].is-route-entering {
+  animation: route-region-enter 300ms var(--ease, cubic-bezier(.2, .78, .22, 1)) both;
+}
+
+@keyframes route-region-enter {
+  from { opacity: 0; transform: translate3d(0, 8px, 0); }
+  to { opacity: 1; transform: none; }
+}
+
+[data-navigation-region]:focus,
+#main-content:focus { outline: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-navigation-region].is-route-leaving,
+  [data-navigation-region].is-route-entering { animation: none; opacity: 1; transform: none; transition: none; }
+  html.is-route-loading .route-progress i { animation: none; transform: scaleX(.6); }
+}
+
+html:is([data-motion="reduce"], [data-performance="low"]) [data-navigation-region]:is(.is-route-leaving, .is-route-entering) {
+  animation: none;
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+@media print { .route-progress { display: none !important; } }

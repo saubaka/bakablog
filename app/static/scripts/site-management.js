@@ -28,81 +28,86 @@
     });
   }
 
-  const blockList = document.querySelector("[data-page-block-list]");
-  if (blockList) {
-    const renumber = () => blockList.querySelectorAll("[data-page-block] strong").forEach((node, index) => { node.textContent = `板块 ${index + 1}`; });
-    sortable(blockList, "[data-page-block]", renumber);
-    document.addEventListener("click", (event) => {
-      if (event.target.closest("[data-add-page-block]")) {
-        const template = document.querySelector("template[data-page-block-template]");
-        const item = template.content.firstElementChild.cloneNode(true);
-        const id = makeId();
-        item.querySelector("[name=block_id]").value = id;
-        item.querySelector("[name=block_enabled]").value = id;
-        blockList.append(item);
-        renumber();
-        item.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-      const remove = event.target.closest("[data-remove-page-block]");
-      if (remove) {
-        const item = remove.closest("[data-page-block]");
-        item.classList.add("is-removing");
-        setTimeout(() => { item.remove(); renumber(); }, 220);
-      }
-    });
-  }
+  // Page editors are mounted again after enhanced navigation.
+  const initEditors = (scope, signal) => {
+    const blockList = scope.querySelector("[data-page-block-list]");
+    if (blockList) {
+      const renumber = () => blockList.querySelectorAll("[data-page-block] strong").forEach((node, index) => { node.textContent = `板块 ${index + 1}`; });
+      sortable(blockList, "[data-page-block]", renumber);
+      document.addEventListener("click", (event) => {
+        if (event.target.closest("[data-add-page-block]")) {
+          const template = scope.querySelector("template[data-page-block-template]");
+          const item = template.content.firstElementChild.cloneNode(true);
+          const id = makeId();
+          item.querySelector("[name=block_id]").value = id;
+          item.querySelector("[name=block_enabled]").value = id;
+          blockList.append(item);
+          renumber();
+          item.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+        const remove = event.target.closest("[data-remove-page-block]");
+        if (remove) {
+          const item = remove.closest("[data-page-block]");
+          item.classList.add("is-removing");
+          setTimeout(() => { item.remove(); renumber(); }, 220);
+        }
+      }, { signal });
+    }
 
-  const menuList = document.querySelector("[data-sortable-menu]");
-  if (menuList) {
-    sortable(menuList, "[data-menu-item-id]");
-    document.querySelector("[data-menu-order-form]")?.addEventListener("submit", () => {
-      document.querySelector("[data-menu-order-value]").value = JSON.stringify(
-        [...menuList.querySelectorAll("[data-menu-item-id]")].map((item) => item.dataset.menuItemId),
-      );
-    });
-  }
-
-  const footerEditor = document.querySelector("[data-footer-editor]");
-  if (footerEditor) {
-    const list = footerEditor.querySelector("[data-footer-column-list]");
-    document.addEventListener("click", (event) => {
-      const addColumn = event.target.closest("[data-add-footer-column]");
-      if (addColumn) list.append(document.querySelector("template[data-footer-column-template]").content.cloneNode(true));
-      const addLink = event.target.closest("[data-add-footer-link]");
-      if (addLink) addLink.closest("[data-footer-column]").querySelector("[data-footer-link-list]").append(document.querySelector("template[data-footer-link-template]").content.cloneNode(true));
-      const removeColumn = event.target.closest("[data-remove-footer-column]");
-      if (removeColumn) removeColumn.closest("[data-footer-column]").remove();
-      const removeLink = event.target.closest("[data-remove-footer-link]");
-      if (removeLink) removeLink.closest("[data-footer-link]").remove();
-    });
-    footerEditor.addEventListener("submit", () => {
-      const columns = [...list.querySelectorAll("[data-footer-column]")].map((column) => ({
-        id: makeId(),
-        title: column.querySelector("[data-footer-column-title]").value.trim(),
-        links: [...column.querySelectorAll("[data-footer-link]")].map((link) => ({
-          label: link.querySelector("[data-footer-link-label]").value.trim(),
-          url: link.querySelector("[data-footer-link-url]").value.trim(),
-        })).filter((link) => link.label && link.url),
-      })).filter((column) => column.title);
-      footerEditor.querySelector("[data-footer-columns-value]").value = JSON.stringify(columns);
-    });
-  }
-
-  const layoutEditor = document.querySelector("[data-admin-layout-editor]");
-  if (layoutEditor) {
-    const parents = layoutEditor.querySelector("[data-admin-layout-parents]");
-    sortable(parents, "[data-layout-parent]");
-    parents.querySelectorAll("[data-layout-children]").forEach((list) => sortable(list, "[data-layout-child]"));
-    layoutEditor.addEventListener("submit", () => {
-      const payload = { parents: [], children: {} };
-      parents.querySelectorAll(":scope > [data-layout-parent]").forEach((parent) => {
-        const key = parent.dataset.layoutParent;
-        payload.parents.push(key);
-        payload.children[key] = [...parent.querySelectorAll(":scope [data-layout-child]")].map((child) => child.dataset.layoutChild);
+    const menuList = scope.querySelector("[data-sortable-menu]");
+    if (menuList) {
+      sortable(menuList, "[data-menu-item-id]");
+      scope.querySelector("[data-menu-order-form]")?.addEventListener("submit", () => {
+        scope.querySelector("[data-menu-order-value]").value = JSON.stringify(
+          [...menuList.querySelectorAll("[data-menu-item-id]")].map((item) => item.dataset.menuItemId),
+        );
       });
-      layoutEditor.querySelector("[data-admin-layout-value]").value = JSON.stringify(payload);
-    });
-  }
+    }
+
+    const footerEditor = scope.querySelector("[data-footer-editor]");
+    if (footerEditor) {
+      const list = footerEditor.querySelector("[data-footer-column-list]");
+      document.addEventListener("click", (event) => {
+        const addColumn = event.target.closest("[data-add-footer-column]");
+        if (addColumn) list.append(scope.querySelector("template[data-footer-column-template]").content.cloneNode(true));
+        const addLink = event.target.closest("[data-add-footer-link]");
+        if (addLink) addLink.closest("[data-footer-column]").querySelector("[data-footer-link-list]").append(scope.querySelector("template[data-footer-link-template]").content.cloneNode(true));
+        const removeColumn = event.target.closest("[data-remove-footer-column]");
+        if (removeColumn) removeColumn.closest("[data-footer-column]").remove();
+        const removeLink = event.target.closest("[data-remove-footer-link]");
+        if (removeLink) removeLink.closest("[data-footer-link]").remove();
+      }, { signal });
+      footerEditor.addEventListener("submit", () => {
+        const columns = [...list.querySelectorAll("[data-footer-column]")].map((column) => ({
+          id: makeId(),
+          title: column.querySelector("[data-footer-column-title]").value.trim(),
+          links: [...column.querySelectorAll("[data-footer-link]")].map((link) => ({
+            label: link.querySelector("[data-footer-link-label]").value.trim(),
+            url: link.querySelector("[data-footer-link-url]").value.trim(),
+          })).filter((link) => link.label && link.url),
+        })).filter((column) => column.title);
+        footerEditor.querySelector("[data-footer-columns-value]").value = JSON.stringify(columns);
+      });
+    }
+
+    const layoutEditor = scope.querySelector("[data-admin-layout-editor]");
+    if (layoutEditor) {
+      const parents = layoutEditor.querySelector("[data-admin-layout-parents]");
+      sortable(parents, "[data-layout-parent]");
+      parents.querySelectorAll("[data-layout-children]").forEach((list) => sortable(list, "[data-layout-child]"));
+      layoutEditor.addEventListener("submit", () => {
+        const payload = { parents: [], children: {} };
+        parents.querySelectorAll(":scope > [data-layout-parent]").forEach((parent) => {
+          const key = parent.dataset.layoutParent;
+          payload.parents.push(key);
+          payload.children[key] = [...parent.querySelectorAll(":scope [data-layout-child]")].map((child) => child.dataset.layoutChild);
+        });
+        layoutEditor.querySelector("[data-admin-layout-value]").value = JSON.stringify(payload);
+      });
+    }
+  };
+  if (window.CloudtracePage?.define) window.CloudtracePage.define("site-management", initEditors);
+  else initEditors(document, new AbortController().signal);
 
   const navigation = document.querySelector("[data-admin-navigation]");
   const navigationLayout = document.querySelector("[data-admin-navigation-layout]");

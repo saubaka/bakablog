@@ -2,7 +2,7 @@
 {% block title %}动画 · {{ site_name }}{% endblock %}
 {% block admin_title %}动画{% endblock %}
 {% block admin_content %}
-<form class="card admin-section transition-settings" method="post" data-transition-settings>
+<form class="card admin-section transition-settings" method="post" data-transition-settings data-motion-skip>
   {{ form.hidden_tag() }}
   <div class="panel-heading"><div><span class="eyebrow">PAGE MOTION</span><h2>全站页面过渡</h2></div></div>
   <div class="transition-choice-grid">
@@ -33,6 +33,61 @@
       {% endfor %}
     </div>
   </section>
-  <div class="sticky-form-actions">{{ form.submit(class='button button--primary') }}</div>
+  <section class="component-motion-settings" data-component-motion-settings>
+    <div class="panel-heading"><div><span class="eyebrow">COMPONENT MOTION</span><h2>组件入场</h2></div></div>
+    <div class="component-motion-settings__grid">
+      <div class="component-motion-settings__controls">
+        <section class="transition-duration-card component-motion-duration-card">
+          <div><h3>组件线条时间</h3></div>
+          <div class="transition-duration-control">
+            <input type="range" min="520" max="1100" step="20" value="{{ form.component_motion_duration.data or 760 }}" data-component-motion-duration-range aria-label="组件总时长滑块">
+            <label class="field"><span class="field__label">毫秒</span>{{ form.component_motion_duration(min=520,max=1100,step=20,data_component_motion_duration_input='true') }}</label>
+            <output data-component-motion-duration-output>{{ form.component_motion_duration.data or 760 }} ms</output>
+          </div>
+          {% for error in form.component_motion_duration.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+        </section>
+        <fieldset class="component-motion-option-group">
+          <legend>阻尼感</legend>
+          <div class="component-motion-choice-grid">
+            {% for option in form.component_motion_style %}<label class="component-motion-choice">{{ option }}<span><strong>{{ option.label.text }}</strong></span></label>{% endfor %}
+          </div>
+          {% for error in form.component_motion_style.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+        </fieldset>
+        <fieldset class="component-motion-option-group">
+          <legend>内容柔化</legend>
+          <div class="component-motion-choice-grid">
+            {% for option in form.component_motion_softness %}<label class="component-motion-choice">{{ option }}<span><strong>{{ option.label.text }}</strong></span></label>{% endfor %}
+          </div>
+          {% for error in form.component_motion_softness.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+        </fieldset>
+        <div class="appearance-color-grid component-motion-color-grid">
+          {% set field = form.component_motion_color %}
+          <label class="appearance-color-field"><span>{{ field.label.text }}</span>{{ field(type='color') }}<code data-color-value>{{ field.data }}</code>{% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+        </div>
+      </div>
+      <div class="component-motion-live-preview">
+        <div class="component-motion-live-preview__stage">
+          <article class="component-motion-preview-card card" data-motion-surface="feature" data-motion-preview-card data-motion-persist="true">
+            <div data-motion-content><small>实时预览</small><h3>单线围合完整轮廓</h3><p>轮廓、表面与文字连续浮现，按钮共享同一节奏。</p></div>
+            <div class="component-motion-preview-card__controls">
+              <button class="button button--primary" type="button">主要按钮</button>
+              <button class="button button--soft" type="button">次要按钮</button>
+            </div>
+          </article>
+        </div>
+        <div class="component-motion-stage-strip" aria-label="动画关键节点">
+          {% for value, label in ((0, '起点'), (20, '开始浮现'), (50, '同步进入'), (82, '轮廓闭合'), (100, '完成')) %}
+            <button type="button" data-component-motion-stage="{{ value }}" aria-pressed="false"><span>{{ value }}%</span><small>{{ label }}</small></button>
+          {% endfor %}
+        </div>
+        <div class="button-row component-motion-preview-actions">
+          <button class="button button--primary" type="button" data-component-motion-replay>重新播放</button>
+          <button class="button button--soft" type="button" data-component-motion-reverse>中途反向</button>
+          <button class="button button--soft" type="button" data-component-motion-reduced aria-pressed="false">减少动态</button>
+        </div>
+      </div>
+    </div>
+  </section>
+  <div class="sticky-form-actions"><button class="button button--primary" type="submit">{{ form.submit.label.text }}</button></div>
 </form>
 {% endblock %}

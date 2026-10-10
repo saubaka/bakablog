@@ -18,7 +18,7 @@
       {% endfor %}
     </div>
     {% for error in form.font_style.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
-    <div class="sticky-form-actions">{{ form.submit(class='button button--primary') }}</div>
+    <div class="sticky-form-actions"><button class="button button--primary" type="submit">{{ form.submit.label.text }}</button></div>
   </form>
   {% else %}
   <form class="card admin-section interface-hints-panel" method="post" data-hint-settings>
@@ -26,7 +26,7 @@
     <div class="panel-heading"><div><span class="eyebrow">HELPER COPY</span><h2>提示与说明</h2><p>统一控制后台主标题、菜单项、设置卡片和输入字段下方的解释文字，也可一键关闭小标题。</p></div></div>
     <div class="hint-control-grid">
       {% for key,title,description in [
-        ('admin_menu_subtitles_visible','菜单小标题','覆盖所有母菜单与子菜单，包括云门网关连接中的功能说明。'),
+        ('admin_menu_subtitles_visible','菜单小标题','覆盖所有母菜单与子菜单中的功能说明。'),
         ('panel_descriptions_visible','标题说明','控制主标题或模块标题下方的功能解释。'),
         ('card_descriptions_visible','卡片说明','控制选择卡、状态卡和配置卡中的补充说明。'),
         ('field_descriptions_visible','字段说明','控制输入框下方的格式、范围与安全提示。')
@@ -42,7 +42,6 @@
           ('动态','生活记录与快速发布'),('评论','评论、留言与未读消息'),('媒体','上传、预览与文件管理'),
           ('相册','相册、照片与展示状态'),('页面','页面总览与个性化编辑'),('菜单','前台菜单与后台排列'),
           ('站点','身份、页尾、链接与安全'),('项目','项目内容与展示状态'),('主题','字体、提示、动画与弹窗'),
-          ('云门','统一身份连接与管理员绑定'),('网关连接','连接参数、连通性与管理员绑定'),
           ('系统管理','运行状态、日志、关于与更新')
         ] %}<article><strong>{{ title }}</strong><small>{{ description }}</small></article>{% endfor %}
       </div>

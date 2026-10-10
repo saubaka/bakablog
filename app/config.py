@@ -6,7 +6,7 @@ from datetime import timedelta
 
 
 class BaseConfig:
-    APP_VERSION = "1.32.0"  # About and protected repository update center.
+    APP_VERSION = "1.48.0"  # Setup page: opening entrance for the right-hand blocks plus the scroll reveal.
     SYSTEM_NAME = "sau_bakaの博客"
     SYSTEM_NAME_EN = "baka blog"
     SITE_NAME = "sau_bakaの博客"
@@ -52,6 +52,7 @@ class BaseConfig:
     INTERACTION_RATE_WINDOW_SECONDS = 600
     LOGIN_RATE_LIMIT = 5
     LOGIN_RATE_WINDOW_SECONDS = 900
+    HUMAN_CHECK_TTL_SECONDS = 300
     COMMENT_AUTO_APPROVE = False
     SPAM_KEYWORDS = ("博彩", "代开发票", "免费赚钱", "色情", "casino")
     # Flask-WTF passes this value to itsdangerous as ``max_age``. Current
@@ -61,6 +62,9 @@ class BaseConfig:
     # Access is open by default. Host allowlists and HTTPS enforcement are
     # stored in SQLite and can be changed from the administration panel.
     TRUSTED_HOSTS = None
+    # While no active superadministrator exists every visitor is sent to the
+    # first-superadmin guidance instead of the public site.
+    SETUP_REDIRECT_ENABLED = True
     ACCESS_POLICY_CACHE_SECONDS = 5
     TRUST_PROXY_HEADERS = False
     LOG_TO_FILE = False
@@ -72,7 +76,9 @@ class BaseConfig:
     HSTS_MAX_AGE = 31_536_000
     MAX_BACKUP_UNCOMPRESSED_BYTES = 10 * 1024 * 1024 * 1024
     MAX_BACKUP_FILES = 100_000
-    UPDATE_MANIFEST_URL = "https://raw.githubusercontent.com/saubaka/bakablog/main/updates/stable.json"
+    UPDATE_MANIFEST_URL = (
+        "https://raw.githubusercontent.com/saubaka/bakablog/main/updates/stable.json"
+    )
 
 
 class DevelopmentConfig(BaseConfig):
@@ -86,9 +92,11 @@ class DevelopmentConfig(BaseConfig):
 class TestingConfig(BaseConfig):
     ENV_NAME = "testing"
     TESTING = True
+    SETUP_REDIRECT_ENABLED = False
     SECRET_KEY = "testing-secret-key"
     SERVER_NAME = "localhost"
     WTF_CSRF_ENABLED = False
+    HUMAN_CHECK_TEST_ANSWER = "BAKA"
 
 
 class ProductionConfig(BaseConfig):
