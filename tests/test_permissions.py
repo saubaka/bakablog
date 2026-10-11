@@ -12,7 +12,7 @@ def test_admin_api_uses_uniform_response(logged_in_client):
     payload = response.get_json()
     assert payload["ok"] is True
     assert payload["data"]["database"] == "sqlite"
-    assert payload["data"]["version"] == "1.48.0"
+    assert payload["data"]["version"] == "1.49.0"
 
 
 def test_system_status_is_available_to_administrator(logged_in_client):
@@ -20,7 +20,7 @@ def test_system_status_is_available_to_administrator(logged_in_client):
     body = response.get_data(as_text=True)
     assert response.status_code == 200
     assert "系统状态" in body
-    assert "1.48.0" in body
+    assert "1.49.0" in body
     assert "实时资源占用" in body
     assert "data-runtime-metrics" in body
 

@@ -42,16 +42,45 @@ class LoginForm(FlaskForm):
 
 
 class SuperadminSetupForm(FlaskForm):
-    username = StringField("管理员用户名", validators=[DataRequired(), Length(min=3, max=50)])
-    display_name = StringField("显示名称", validators=[DataRequired(), Length(min=1, max=80)])
-    password = PasswordField("管理员密码", validators=[DataRequired(), Length(min=14, max=256)])
+    # Every message is written in Chinese and mirrored word for word by
+    # app/static/scripts/setup.js, which checks the same rules before submitting.
+    username = StringField(
+        "管理员用户名",
+        validators=[
+            DataRequired(message="请填写管理员用户名。"),
+            Length(min=3, max=50, message="用户名需要 3 到 50 个字符。"),
+        ],
+    )
+    display_name = StringField(
+        "显示名称",
+        validators=[
+            DataRequired(message="请填写显示名称。"),
+            Length(min=1, max=80, message="显示名称最多 80 个字符。"),
+        ],
+    )
+    password = PasswordField(
+        "管理员密码",
+        validators=[
+            DataRequired(message="请设置管理员密码。"),
+            Length(min=14, max=256, message="密码需要 14 到 256 个字符。"),
+        ],
+    )
     password_confirm = PasswordField(
         "再次输入密码",
-        validators=[DataRequired(), EqualTo("password", message="两次输入的密码不一致。")],
+        validators=[
+            DataRequired(message="请再输入一遍密码。"),
+            EqualTo("password", message="两次输入的密码不一致。"),
+        ],
     )
-    setup_code = PasswordField("一次性初始化口令", validators=[Optional(), Length(max=128)])
+    setup_code = PasswordField(
+        "一次性初始化口令",
+        validators=[Optional(), Length(max=128, message="口令太长了。")],
+    )
     human_nonce = HiddenField("验证码标识", validators=[Optional()])
-    human_answer = StringField("图中字符", validators=[Optional(), Length(min=4, max=4)])
+    human_answer = StringField(
+        "图中字符",
+        validators=[Optional(), Length(min=4, max=4, message="请输入图中的 4 个字符。")],
+    )
     submit = SubmitField("创建管理员并进入后台")
 
 

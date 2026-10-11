@@ -921,7 +921,7 @@ def test_setup_page_assets_keep_motion_safe_and_rules_in_sync():
     forms = Path("app/forms.py").read_text(encoding="utf-8")
 
     # The client-side minimum must match the server rule it previews.
-    server_min = re.search(r'"管理员密码", validators=\[DataRequired\(\), Length\(min=(\d+)', forms).group(1)
+    server_min = re.search(r'Length\(min=(\d+), max=256, message="密码需要', forms).group(1)
     assert f"const MIN_PASSWORD = {server_min};" in script
     # Reduced motion and low-performance modes stop every animation on the page.
     assert 'html[data-motion="reduce"] .setup *' in css
@@ -979,3 +979,29 @@ def test_setup_blocks_have_an_opening_entrance_before_the_scroll_reveal():
     assert ".setup-reveal" not in block
     # Reduced motion removes it together with every other animation on the page.
     assert 'html[data-motion="reduce"] .setup *' in css
+
+
+def test_setup_script_repeats_the_server_messages_and_hides_hints_on_edit():
+    forms = Path("app/forms.py").read_text(encoding="utf-8")
+    script = Path("app/static/scripts/setup.js").read_text(encoding="utf-8")
+    css = Path("app/static/styles/setup.css").read_text(encoding="utf-8")
+    block = forms[forms.index("class SuperadminSetupForm"):forms.index("class MediaUploadForm")]
+    messages = re.findall(r'message="([^"]+)"', block)
+    assert len(messages) >= 9
+    for message in messages:
+        expected = message.replace("14 到", "${MIN_PASSWORD} 到")
+        assert message in script or expected in script, f"setup.js is missing: {message}"
+        assert not re.search(r"[A-Za-z]{4,} [a-z]{3,}", message), f"English-looking message: {message}"
+    # Editing any text box removes that box's red hint, and the hint folds away smoothly.
+    assert "listen(form, 'input', (event) => clearHints(holderOf(event.target)))" in script
+    assert ".setup .field-error.is-leaving" in css and "max-height: 0" in css
+    # A failed check stops the submit, so the captcha picture is not thrown away.
+    assert "event.preventDefault();" in script and "failed.forEach" in script
+
+
+def test_setup_submit_handler_never_cancels_a_repeated_submit():
+    script = Path("app/static/scripts/setup.js").read_text(encoding="utf-8")
+    handler = script[script.index("listen(form, 'submit'"):script.index("// Coming back through the bfcache")]
+    busy_branch = re.search(r"if \(submit\?\.getAttribute\('aria-busy'\) === 'true'\)[^\n]*", handler).group(0)
+    # Another script re-submits the form after the first submit event; cancelling it would send nothing.
+    assert "preventDefault" not in busy_branch

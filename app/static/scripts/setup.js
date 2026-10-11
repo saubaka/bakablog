@@ -4,6 +4,10 @@
   // Administrator setup page: step tracking and password helpers.
   // Everything degrades to a plain, working form without it.
   const MIN_PASSWORD = 14;
+  const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches
+    || document.documentElement.dataset.motion === 'reduce'
+    || document.documentElement.dataset.performance === 'low';
+
   const strengthOf = (value) => {
     if (!value) return 0;
     const kinds = [/[a-z]/, /[A-Z]/, /\d/, /[^A-Za-z0-9]/].filter((pattern) => pattern.test(value)).length;
@@ -102,9 +106,60 @@
       });
     });
 
+    // ---- checks (same rules and same words as the server) and the red hints ----
+    const required = (value) => value.trim().length > 0;
+    const rules = [
+      { input: username, run: (v) => (!required(v) ? '请填写管理员用户名。' : (v.length < 3 || v.length > 50 ? '用户名需要 3 到 50 个字符。' : '')) },
+      { input: displayName, run: (v) => (!required(v) ? '请填写显示名称。' : (v.length > 80 ? '显示名称最多 80 个字符。' : '')) },
+      { input: password, run: (v) => (!required(v) ? '请设置管理员密码。' : (v.length < MIN_PASSWORD || v.length > 256 ? `密码需要 ${MIN_PASSWORD} 到 256 个字符。` : '')) },
+      { input: confirm, run: (v) => (!required(v) ? '请再输入一遍密码。' : (v !== password?.value ? '两次输入的密码不一致。' : '')) },
+      { input: setupCode, run: (v) => (!required(v) ? '请填写一次性初始化口令。' : (v.length > 128 ? '口令太长了。' : '')) },
+      { input: answer, run: (v) => (v.trim().length !== 4 ? '请输入图中的 4 个字符。' : '') }
+    ].filter((rule) => rule.input);
+
+    const holderOf = (input) => input.closest('.setup-field, .human-check__field');
+
+    // Fade the red hint out and remove it; also drop the red border straight away.
+    const clearHints = (holder) => {
+      if (!holder) return;
+      holder.classList.remove('has-error');
+      holder.querySelectorAll('.field-error:not(.is-leaving)').forEach((hint) => {
+        hint.classList.add('is-leaving');
+        hint.removeAttribute('role');
+        window.setTimeout(() => hint.remove(), 320);
+      });
+      holder.querySelector('input')?.removeAttribute('aria-invalid');
+    };
+    const showHint = (input, message) => {
+      const holder = holderOf(input);
+      if (!holder) return;
+      clearHints(holder);
+      const hint = document.createElement('small');
+      hint.className = 'field-error';
+      hint.setAttribute('role', 'alert');
+      hint.textContent = message;
+      holder.append(hint);
+      holder.classList.add('has-error');
+      input.setAttribute('aria-invalid', 'true');
+    };
+
+    // Any edit inside a text box hides that box's red hint (server-sent or from the check above).
+    listen(form, 'input', (event) => clearHints(holderOf(event.target)));
+
     let busyTimer = 0;
-    listen(form, 'submit', () => {
+    listen(form, 'submit', (event) => {
+      // Other page scripts may submit the form a second time; never cancel that one.
       if (submit?.getAttribute('aria-busy') === 'true') return;
+      const failed = rules.map((rule) => ({ rule, message: rule.run(rule.input.value) })).filter((item) => item.message);
+      if (failed.length) {
+        // Stop here: nothing is sent, so the captcha picture and everything typed stay as they are.
+        event.preventDefault();
+        failed.forEach(({ rule, message }) => showHint(rule.input, message));
+        const first = failed[0].rule.input;
+        first.focus({ preventScroll: true });
+        first.scrollIntoView({ block: 'center', behavior: reduced() ? 'auto' : 'smooth' });
+        return;
+      }
       // Mark busy after the browser has collected the form data (it reads the button value).
       busyTimer = window.setTimeout(() => submit?.setAttribute('aria-busy', 'true'), 0);
     });

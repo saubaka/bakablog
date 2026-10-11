@@ -10,7 +10,7 @@ def test_theme_is_local_and_loaded_after_legacy_styles(client, path):
     html = client.get(path, follow_redirects=True).get_data(as_text=True)
     assert html.index("styles/app.css") < html.index("styles/small-window-theme.css")
     assert html.index("styles/small-window-theme.css") < html.index("styles/notifications.css")
-    assert "small-window-theme.css?v=1.48.0" in html
+    assert "small-window-theme.css?v=1.49.0" in html
 
 
 def test_final_theme_declares_project8_tokens():

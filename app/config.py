@@ -6,7 +6,7 @@ from datetime import timedelta
 
 
 class BaseConfig:
-    APP_VERSION = "1.48.0"  # Setup page: opening entrance for the right-hand blocks plus the scroll reveal.
+    APP_VERSION = "1.49.0"  # Setup form: Chinese validation hints that hide when the field is edited.
     SYSTEM_NAME = "sau_bakaの博客"
     SYSTEM_NAME_EN = "baka blog"
     SITE_NAME = "sau_bakaの博客"

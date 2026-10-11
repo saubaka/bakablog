@@ -31,7 +31,7 @@ def test_healthcheck(client):
         "service": "cloudtrace",
         "stage": 9,
         "status": "ok",
-        "version": "1.48.0",
+        "version": "1.49.0",
     }
     assert response.headers["Cache-Control"] == "no-store"
 

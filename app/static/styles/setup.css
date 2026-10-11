@@ -206,8 +206,24 @@
 .setup-field__control input[type="password"],
 .setup-field__control input[data-peeked] { padding-right: 70px; }
 .setup-field__hint { color: var(--su-faint); font-size: 12px; line-height: 1.6; }
-.setup .setup-field.has-error input { border-color: rgba(201, 118, 118, .55) !important; }
-.setup .field-error { padding: 0 !important; border: 0 !important; background: none !important; color: var(--su-warn); font-size: 12px; line-height: 1.5; }
+.setup :is(.setup-field, .human-check__field).has-error input { border-color: rgba(201, 118, 118, .55) !important; }
+.setup .field-error {
+  display: block;
+  max-height: 3.2em;
+  padding: 0 !important;
+  margin: 0;
+  overflow: hidden;
+  border: 0 !important;
+  background: none !important;
+  color: var(--su-warn);
+  font-size: 12px;
+  line-height: 1.5;
+  animation: setup-hint-in 260ms var(--su-ease) both;
+  transition: opacity 220ms var(--su-ease), transform 260ms var(--su-ease), max-height 300ms var(--su-ease);
+}
+/* a red hint fades up and folds away as soon as its text box is edited */
+.setup .field-error.is-leaving { max-height: 0; opacity: 0; transform: translateY(-4px); pointer-events: none; }
+@keyframes setup-hint-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 
 .setup-peek {
   position: absolute;

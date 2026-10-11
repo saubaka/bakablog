@@ -89,4 +89,4 @@ def test_update_routes_render_realtime_state(logged_in_client):
     status = logged_in_client.get("/admin/system/update/status/")
     assert status.status_code == 200
     assert status.headers["Cache-Control"] == "no-store"
-    assert status.get_json()["data"]["current_version"] == "1.48.0"
+    assert status.get_json()["data"]["current_version"] == "1.49.0"

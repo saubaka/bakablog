@@ -274,3 +274,24 @@ def test_setup_page_only_asks_for_the_code_when_required(client, monkeypatch):
     monkeypatch.setattr("app.blueprints.admin.routes.setup_code_required", lambda: True)
     body = client.get("/bakaadmin").get_data(as_text=True)
     assert "一次性初始化口令" in body and "issue-admin-setup-code" in body
+
+
+def test_setup_form_errors_are_in_chinese_and_only_for_what_is_wrong(client):
+    response = client.post("/bakaadmin", data={})
+    body = response.get_data(as_text=True)
+    assert response.status_code == 200
+    for message in ("请填写管理员用户名。", "请填写显示名称。", "请设置管理员密码。", "请再输入一遍密码。"):
+        assert message in body
+    # No English validator text may leak through.
+    for english in ("This field is required", "Field must be", "Field cannot be longer", "Passwords must match"):
+        assert english not in body
+
+    short = client.post(
+        "/bakaadmin",
+        data={"username": "ab", "display_name": "x", "password": "short", "password_confirm": "short", "human_answer": "12"},
+    ).get_data(as_text=True)
+    assert "用户名需要 3 到 50 个字符。" in short
+    assert "密码需要 14 到 256 个字符。" in short
+    assert "请输入图中的 4 个字符。" in short
+    # A field that is fine stays free of a hint.
+    assert "请填写显示名称。" not in short

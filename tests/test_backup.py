@@ -26,7 +26,7 @@ def test_database_check_and_combined_backup(app, admin_user):
             assert "database/site.db" in bundle.namelist()
             manifest = json.loads(bundle.read("manifest.json"))
             assert manifest["format"] == "cloud-diary-backup-v2"
-            assert manifest["app_version"] == "1.48.0"
+            assert manifest["app_version"] == "1.49.0"
             assert len(manifest["database_sha256"]) == 64
         verified = verify_site_backup(archive)
         assert verified["format"] == "cloud-diary-backup-v2"
