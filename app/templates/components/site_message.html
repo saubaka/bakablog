@@ -1,7 +1,0 @@
-{% from "components/macros.html" import icon %}
-{% macro message(title, text, tone='info') -%}
-  <div class="message message--{{ tone }}" role="{% if tone == 'error' %}alert{% else %}status{% endif %}">
-    <span class="message__icon">{{ icon('alert' if tone in ('warning', 'error') else 'check') }}</span>
-    <span><strong>{{ title }}</strong><small>{{ text }}</small></span>
-  </div>
-{%- endmacro %}

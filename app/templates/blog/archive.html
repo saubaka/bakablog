@@ -1,6 +1,0 @@
-﻿{% extends "layouts/site.html" %}
-{% from "components/macros.html" import empty_state %}
-{% block title %}文章归档 {{ seo_settings.title_separator }} {{ seo_settings.site_title }}{% endblock %}
-{% block robots_meta %}{{ 'index' if seo_settings.index_site and seo_settings.index_archives else 'noindex' }}, {{ 'follow' if seo_settings.follow_links else 'nofollow' }}{% endblock %}
-{% block content %}<div class="page-shell page-shell--narrow"><header class="page-hero"><span class="eyebrow">ARCHIVE</span><h1>文章归档</h1><p>沿着月份，慢慢翻看写过的文字。</p></header>
-{% if grouped %}<div class="archive-list">{% for label, posts in grouped.items() %}<section class="card"><h2>{{ label }} <small>{{ posts|length }}</small></h2>{% for post in posts %}<a href="{{ url_for('public.article', slug=post.slug) }}"><time>{{ post.published_at.strftime('%m.%d') }}</time><strong>{{ post.title }}</strong><span>{{ post.reading_minutes }} 分钟</span></a>{% else %}<p>这个月还没有公开文章。</p>{% endfor %}</section>{% endfor %}</div>{% else %}{{ empty_state('归档还是空的', '发布第一篇文章后，它会按月份出现在这里。') }}{% endif %}</div>{% endblock %}

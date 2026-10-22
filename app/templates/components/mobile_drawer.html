@@ -1,9 +1,0 @@
-{% from "components/macros.html" import icon %}
-<div class="drawer-backdrop" data-mobile-backdrop hidden></div>
-<aside class="mobile-drawer" id="mobile-drawer" aria-label="更多导航" aria-hidden="true">
-  <div class="drawer__handle" aria-hidden="true"></div>
-  <div class="drawer__header"><div><span class="eyebrow">MORE PLACES</span><h2>再去别处看看</h2></div><button class="icon-button" type="button" data-close-mobile-drawer aria-label="关闭菜单">{{ icon('close') }}</button></div>
-  <nav class="drawer__links">
-    {% for item in primary_navigation %}<a href="{{ item.url }}" {% if item.open_new_tab %}target="_blank" rel="noopener"{% endif %}>{{ icon('document') }}<span><strong>{{ item.label }}</strong>{% if item.summary %}<small>{{ item.summary|truncate(34) }}</small>{% endif %}</span></a>{% endfor %}
-  </nav>
-</aside>

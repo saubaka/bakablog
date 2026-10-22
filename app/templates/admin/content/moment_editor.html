@@ -1,4 +1,0 @@
-{% extends "layouts/admin.html" %}
-{% block title %}{{ '编辑动态' if moment else '新建动态' }} · {{ site_name }}{% endblock %}
-{% block admin_title %}{{ '编辑动态' if moment else '新建动态' }}{% endblock %}
-{% block admin_content %}<form class="card admin-form admin-form--wide" method="post">{{ form.hidden_tag() }}<label class="field"><span class="field__label">{{ form.content_markdown.label.text }}</span>{{ form.content_markdown(class='editor-textarea',rows=15) }}</label><div class="form-grid">{% for field in [form.mood,form.location,form.status] %}<label class="field"><span class="field__label">{{ field.label.text }}</span>{{ field() }}</label>{% endfor %}<label class="check-row">{{ form.is_pinned() }}<span>置顶动态</span></label><label class="check-row">{{ form.allow_comments() }}<span>允许访客评论</span></label></div><button class="button button--primary is-save-action" type="submit" data-save-action>保存动态</button></form>{% endblock %}
