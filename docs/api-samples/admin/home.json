@@ -1,0 +1,146 @@
+{
+  "blocks": [
+    {
+      "id": null,
+      "type": "hero",
+      "enabled": true,
+      "config": {
+        "note": "近况 · 正在把博客重新画一遍",
+        "title_lines": [
+          "我是 sau_baka，",
+          "不是笨蛋！！"
+        ],
+        "intro": "这里是我的小窝：博客里放认真写的文章，动态里放碎碎念和随手拍的照片。没有评论区——想说什么，请发邮件。",
+        "buttons": [
+          {
+            "label": "读博客",
+            "url": "/blog",
+            "style": "fill"
+          },
+          {
+            "label": "看动态",
+            "url": "/moments",
+            "style": "line"
+          },
+          {
+            "label": "订阅 RSS",
+            "url": "/feed/posts.xml",
+            "style": "link"
+          }
+        ],
+        "polaroid": {
+          "media_id": null,
+          "caption": "sau_baka，正在写代码",
+          "bubble": "哼，才不是为了谁才更新的！"
+        },
+        "doodles": [
+          "star",
+          "heart",
+          "sparkle"
+        ]
+      }
+    },
+    {
+      "id": null,
+      "type": "notice",
+      "enabled": false,
+      "config": {
+        "text": "",
+        "starts_at": null,
+        "ends_at": null
+      }
+    },
+    {
+      "id": null,
+      "type": "featured",
+      "enabled": false,
+      "config": {
+        "title": "精选",
+        "mode": "auto",
+        "post_ids": [],
+        "count": 3
+      }
+    },
+    {
+      "id": null,
+      "type": "latest_posts",
+      "enabled": true,
+      "config": {
+        "title": "最近的文章",
+        "intro": "写得慢，但每一篇都认真改过三遍。",
+        "count": 6,
+        "layout": "mixed"
+      }
+    },
+    {
+      "id": null,
+      "type": "latest_moments",
+      "enabled": true,
+      "config": {
+        "title": "最近的动态",
+        "intro": "碎碎念、照片、链接，想到什么发什么。",
+        "count": 3
+      }
+    },
+    {
+      "id": null,
+      "type": "shelf",
+      "enabled": true,
+      "config": {
+        "title": "书架",
+        "intro": "按分类和标签翻一翻，找旧东西也方便。",
+        "tag_count": 14
+      }
+    },
+    {
+      "id": null,
+      "type": "about",
+      "enabled": true,
+      "config": {
+        "title": "关于我",
+        "intro": "不是笨蛋，只是比较慢。",
+        "text": [
+          "写代码的人，偶尔画画，经常发呆。喜欢把东西做得安静一点——颜色浅一点，线条细一点，字号刚刚好。",
+          "站名里的 Baka 是日语里的“笨蛋”。别人这么叫我的时候我会生气，自己这么叫的时候不会。"
+        ]
+      }
+    },
+    {
+      "id": null,
+      "type": "now",
+      "enabled": true,
+      "config": {
+        "title": "近况",
+        "items": [
+          {
+            "icon": "code",
+            "text": "在做：重写这个博客"
+          },
+          {
+            "icon": "book",
+            "text": "在读：一本讲 SQLite 内部的小册子"
+          },
+          {
+            "icon": "heart",
+            "text": "在听：下雨的声音"
+          },
+          {
+            "icon": "smile",
+            "text": "在想：晚饭吃什么"
+          }
+        ]
+      }
+    }
+  ],
+  "customized": false,
+  "types": [
+    "hero",
+    "featured",
+    "latest_posts",
+    "latest_moments",
+    "shelf",
+    "about",
+    "now",
+    "notice"
+  ]
+}

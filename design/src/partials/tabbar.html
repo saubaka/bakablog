@@ -1,0 +1,18 @@
+<nav class="tabbar" aria-label="底部导航">
+  <span class="tabbar__ind" aria-hidden="true"></span>
+  <a href="home.html"{{cur:home}}><svg class="i"><use href="#i-home"/></svg>首页</a>
+  <a href="blog.html"{{cur:blog}}><svg class="i"><use href="#i-book"/></svg>博客</a>
+  <a href="moments.html"{{cur:moments}}><svg class="i"><use href="#i-chat"/></svg>动态</a>
+  <button type="button" data-open-search><svg class="i"><use href="#i-search"/></svg>搜索</button>
+  <button type="button" data-open-sheet="#more-sheet"><svg class="i"><use href="#i-more"/></svg>更多</button>
+</nav>
+<div class="sheet" id="more-sheet" role="dialog" aria-label="更多">
+  <div class="sheet__grab"></div>
+  <ul class="stack" style="gap:6px">
+    <li><a class="postrow" style="border:0;padding:12px 4px" href="archive.html"><svg class="i"><use href="#i-calendar"/></svg><strong>归档</strong></a></li>
+    <li><a class="postrow" style="border:0;padding:12px 4px" href="home.html#about"><svg class="i"><use href="#i-smile"/></svg><strong>关于</strong></a></li>
+    <li><a class="postrow" style="border:0;padding:12px 4px" href="#"><svg class="i"><use href="#i-rss"/></svg><strong>订阅 RSS</strong></a></li>
+    <li><a class="postrow" style="border:0;padding:12px 4px" href="components.html"><svg class="i"><use href="#i-sparkle"/></svg><strong>设计系统（样张）</strong></a></li>
+    <li><a class="postrow" style="border:0;padding:12px 4px" href="fx-lab.html"><svg class="i"><use href="#i-sliders"/></svg><strong>动效实验室（样张）</strong></a></li>
+  </ul>
+</div>

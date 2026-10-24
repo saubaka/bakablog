@@ -1,0 +1,204 @@
+{
+  "items": [
+    {
+      "id": 1,
+      "slug": "sqlite-backup",
+      "url": "/blog/sqlite-backup",
+      "title": "SQLite 备份：我差点把自己的数据弄丢",
+      "summary": "先说结论：别用 cp 去备份一个正在被写入的 SQLite 数据库。我就是这样做的，而且还成功了很多次——直到有一次没成功。 这个站用 SQLite 当数据库：一个文件，不用另外装服务，备份起来“应该很简单”。我的第一版备份脚本只有一行：…",
+      "cover": {
+        "id": 1,
+        "alt": "淡蓝色的天空",
+        "caption": "",
+        "width": 960,
+        "height": 640,
+        "color": "#e6f1fc",
+        "animated": false,
+        "src": "/media/348726c4e2463a5fe3390a14f8b9b8a6/960.webp",
+        "srcset": "/media/348726c4e2463a5fe3390a14f8b9b8a6/480.webp 480w, /media/348726c4e2463a5fe3390a14f8b9b8a6/960.webp 960w, /media/348726c4e2463a5fe3390a14f8b9b8a6/1600.webp 1200w",
+        "full": "/media/348726c4e2463a5fe3390a14f8b9b8a6/1600.webp",
+        "variants": [
+          {
+            "size": 480,
+            "w": 480,
+            "h": 320,
+            "url": "/media/348726c4e2463a5fe3390a14f8b9b8a6/480.webp"
+          },
+          {
+            "size": 960,
+            "w": 960,
+            "h": 640,
+            "url": "/media/348726c4e2463a5fe3390a14f8b9b8a6/960.webp"
+          },
+          {
+            "size": 1600,
+            "w": 1200,
+            "h": 800,
+            "url": "/media/348726c4e2463a5fe3390a14f8b9b8a6/1600.webp"
+          }
+        ]
+      },
+      "cover_alt": "",
+      "cover_focus": {
+        "x": 50.0,
+        "y": 50.0
+      },
+      "category": {
+        "id": 1,
+        "slug": "dai-ma",
+        "name": "代码",
+        "description": "",
+        "sticker": "code",
+        "url": "/category/dai-ma"
+      },
+      "tags": [
+        {
+          "id": 3,
+          "slug": "flask",
+          "name": "Flask",
+          "color": "sky",
+          "sticker": null,
+          "url": "/tag/flask"
+        },
+        {
+          "id": 1,
+          "slug": "sqlite",
+          "name": "SQLite",
+          "color": "rose",
+          "sticker": null,
+          "url": "/tag/sqlite"
+        },
+        {
+          "id": 2,
+          "slug": "bei-fen",
+          "name": "备份",
+          "color": "mist",
+          "sticker": null,
+          "url": "/tag/bei-fen"
+        }
+      ],
+      "series": {
+        "id": 1,
+        "slug": "ba-bo-ke-zuo-cheng-zi-ji-xi-huan-de-yang-zi",
+        "title": "把博客做成自己喜欢的样子",
+        "order": 3
+      },
+      "pinned": false,
+      "featured": true,
+      "card_style": "auto",
+      "published_at": "2026-10-20T12:34:51Z",
+      "updated_at": "2026-10-24T12:34:51Z",
+      "reading_minutes": 2,
+      "word_count": 736
+    },
+    {
+      "id": 3,
+      "slug": "lighter-lines",
+      "url": "/blog/lighter-lines",
+      "title": "把线条调浅了一点点，页面就安静了",
+      "summary": "一条 1px 的线，颜色深一档和浅一档，整页的气质完全不同。 我把所有的线统一成了同一个颜色。卡片、分隔线、输入框，都用它： 用了一个变量之后，“哪条线颜色不对”这类问题就从“满页找”变成了“搜一下变量名”。 真正让线条“显深”的，其实是卡…",
+      "cover": null,
+      "cover_alt": "",
+      "cover_focus": {
+        "x": 50.0,
+        "y": 50.0
+      },
+      "category": {
+        "id": 2,
+        "slug": "she-ji",
+        "name": "设计",
+        "description": "",
+        "sticker": "sparkle",
+        "url": "/category/she-ji"
+      },
+      "tags": [
+        {
+          "id": 5,
+          "slug": "css",
+          "name": "CSS",
+          "color": "white",
+          "sticker": null,
+          "url": "/tag/css"
+        },
+        {
+          "id": 6,
+          "slug": "she-ji",
+          "name": "设计",
+          "color": "white",
+          "sticker": null,
+          "url": "/tag/she-ji"
+        }
+      ],
+      "series": null,
+      "pinned": false,
+      "featured": false,
+      "card_style": "auto",
+      "published_at": "2026-10-14T12:34:51Z",
+      "updated_at": "2026-10-24T12:34:51Z",
+      "reading_minutes": 1,
+      "word_count": 264
+    },
+    {
+      "id": 4,
+      "slug": "scroll-motion",
+      "url": "/blog/scroll-motion",
+      "title": "跟着滚动走的入场动画，我是这样做的",
+      "summary": "不是“进入视野就播放”，而是进度跟着滚动位置走，倒着滚也能倒放。 元素的入场进度由它在屏幕里的位置直接算出来，所以跳转、前进后退、窗口缩放之后都不会卡在半透明： 它告诉你“进来了”或“出去了”，但不告诉你进来了多少。要做“跟着滚动走”，就得…",
+      "cover": null,
+      "cover_alt": "",
+      "cover_focus": {
+        "x": 50.0,
+        "y": 50.0
+      },
+      "category": {
+        "id": 1,
+        "slug": "dai-ma",
+        "name": "代码",
+        "description": "",
+        "sticker": "code",
+        "url": "/category/dai-ma"
+      },
+      "tags": [
+        {
+          "id": 7,
+          "slug": "vue",
+          "name": "Vue",
+          "color": "white",
+          "sticker": null,
+          "url": "/tag/vue"
+        },
+        {
+          "id": 8,
+          "slug": "dong-xiao",
+          "name": "动效",
+          "color": "sky",
+          "sticker": null,
+          "url": "/tag/dong-xiao"
+        }
+      ],
+      "series": {
+        "id": 1,
+        "slug": "ba-bo-ke-zuo-cheng-zi-ji-xi-huan-de-yang-zi",
+        "title": "把博客做成自己喜欢的样子",
+        "order": 4
+      },
+      "pinned": false,
+      "featured": false,
+      "card_style": "auto",
+      "published_at": "2026-10-07T12:34:51Z",
+      "updated_at": "2026-10-24T12:34:51Z",
+      "reading_minutes": 1,
+      "word_count": 243
+    }
+  ],
+  "total": 10,
+  "page": 1,
+  "per": 3,
+  "pages": 4,
+  "filters": {
+    "category": null,
+    "tag": null,
+    "series": null,
+    "q": null
+  }
+}

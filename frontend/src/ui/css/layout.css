@@ -1,0 +1,178 @@
+@layer layout {
+
+  .wrap { width: min(var(--wrap), calc(100% - 64px)); margin-inline: auto; }
+  .wrap--read { width: min(var(--reading), calc(100% - 48px)); }
+
+  /* =============== header =============== */
+  .site-header { position: sticky; top: 0; z-index: 60; background: var(--bg); border-bottom: 1px solid var(--line); }
+  .site-header__in { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: var(--header-h); }
+  .brand { display: inline-flex; align-items: center; gap: 12px; min-width: 0; }
+  .brand__logo { width: auto; height: 40px; max-width: 120px; flex: none; object-fit: contain; }
+  .brand__text { display: grid; gap: 1px; line-height: 1.25; min-width: 0; }
+  .brand__text b { font-size: 19px; font-weight: 700; letter-spacing: .01em; white-space: nowrap; }
+  .brand__text small { font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-2); }
+
+  .site-header__tools { display: flex; align-items: center; gap: 8px; }
+
+  /* =============== menu: a thread with beads ===============
+     The beads are the entries, the heart is "you are here" and rides along the thread, the pink stitch sews from the current bead towards the next
+     one as the page is read. Wide screens: a vertical thread on the left edge. Phones and tablets (up to --tablet 1100px): a horizontal thread in a
+     bar along the bottom. Everything is positioned from --n (entries), --i (current), --p (read, 0..1): no measuring. Graphics use the "graphics only"
+     colours (--sky-300, --rose-300); every border is --line / --rose-line. */
+  .thread { --dash: 5px; }
+  .thread__line, .thread__stitch, .thread__pin, .thread__knot { position: absolute; pointer-events: none; }
+  .thread__sew, .thread__tip { position: absolute; }
+  .thread__pin { width: 8px; height: 8px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--sky-300); background: var(--bg); }   /* rings of the thread are graphics (inset rings), borders stay --line / --rose-line */
+  .thread__knot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--rose-line); background: var(--rose-100); }
+  .thread__bead { position: absolute; color: var(--ink-2); font-size: 11px; font-weight: 700; line-height: 1.3; }
+  .thread__dot { position: relative; display: grid; place-items: center; border-radius: 50%; background: var(--paper); }
+  .thread__dot .i { width: 18px; height: 18px; }
+  .thread__heart { position: absolute; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--rose-line); background: var(--rose-100); color: var(--rose-ink); pointer-events: none; opacity: 0; scale: .5; transition: opacity var(--dur-2) var(--ease), scale var(--dur-3) var(--spring); }
+  .thread.has-cur .thread__heart { opacity: 1; scale: 1; }
+  .thread__heart .i { fill: var(--rose-200); animation: thread-beat 2.8s ease-in-out infinite; }
+  .thread__stitch { opacity: 0; transition: opacity var(--dur-2) var(--ease); }
+  .thread.has-cur .thread__stitch { opacity: 1; }
+  .thread.is-moving .thread__stitch { transition: opacity var(--dur-2) var(--ease), translate .8s var(--ease); }
+  /* the sewn part is a solid line that GROWS (scale: compositor work, no repaint) with a small needle head at its tip: growth is continuous, a dashed line would only show it in steps of a dash */
+  .thread__sew { background: var(--rose-300); border-radius: 1px; transform-origin: 0 0; }
+  .thread__tip { width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: var(--rose-300); opacity: clamp(0, calc(var(--p, 0) * 14), 1); }
+  .thread[data-done] .thread__bead.is-next .thread__dot, .thread[data-done] .thread__knot.is-next { animation: thread-tug .6s var(--spring); }
+  @keyframes thread-beat { 0%, 70%, 100% { scale: 1; } 82% { scale: 1.18; } }
+  @keyframes thread-tug { 0% { scale: 1; } 40% { scale: 1.45; } 100% { scale: 1; } }
+  @keyframes thread-pop { from { opacity: 0; translate: 0 4px; scale: .8; } to { opacity: 1; translate: 0; scale: 1; } }
+  @keyframes thread-in { from { opacity: 0; translate: -8px -50%; } to { opacity: 1; translate: 0 -50%; } }
+  @keyframes thread-peek { 0% { opacity: 0; translate: -8px -50%; } 12%, 70% { opacity: 1; translate: 0 -50%; } 100% { opacity: 0; translate: 0 -50%; } }
+
+  /* ---- wide screens: the thread on the left edge ---- */
+  .thread--side { display: none; }
+  @media (min-width: 1101px) {
+    .thread--side {
+      --gap: clamp(44px, calc((100vh - 300px) / max(var(--n) - 1, 1)), 88px);
+      display: block; position: fixed; z-index: 40; left: 3px; width: 26px; height: calc((var(--n) - 1) * var(--gap));
+      top: calc(50% + var(--header-h) / 2 - var(--n) * var(--gap) / 2 + 12px);
+    }
+    .thread--side .thread__line { left: 50%; margin-left: -1px; width: 2px; top: -28px; height: calc(100% + var(--gap) + 28px); background: linear-gradient(to bottom, var(--sky-300) var(--dash), transparent var(--dash)) 0 0 / 2px calc(var(--dash) * 2) repeat-y; }
+    .thread--side .thread__stitch { left: 50%; margin-left: -1px; width: 2px; top: 0; height: var(--gap); translate: 0 calc(var(--i) * var(--gap)); }
+    .thread--side .thread__sew { inset: 0; scale: 1 var(--p, 0); }
+    .thread--side .thread__tip { left: 50%; top: calc(var(--p, 0) * 100%); }
+    .thread--side .thread__pin { left: 50%; margin-left: -4px; top: -38px; }
+    .thread--side .thread__knot { left: 50%; margin-left: -5px; top: calc(100% + var(--gap) - 5px); }
+    .thread--side .thread__bead { left: 0; top: calc(var(--k) * var(--gap) - 14px); width: 26px; height: 28px; display: grid; place-items: center; border-radius: 50%; }
+    .thread--side .thread__dot { width: 12px; height: 12px; box-shadow: inset 0 0 0 1.5px var(--sky-300); transition: width var(--dur-2) var(--spring), height var(--dur-2) var(--spring), box-shadow var(--dur-2) var(--ease); }
+    .thread--side .thread__dot .i { width: 14px; height: 14px; opacity: 0; scale: .4; transition: opacity var(--dur-2) var(--ease), scale var(--dur-2) var(--spring); }
+    .thread--side .thread__bead[aria-current="page"] .thread__dot { opacity: 0; }
+    .thread--side .thread__tag { position: absolute; left: 34px; top: 50%; translate: -8px -50%; padding: 3px 11px; border: 1px solid var(--line); border-radius: var(--r-pill); background: var(--paper); font-size: 12.5px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity var(--dur-2) var(--ease), translate var(--dur-3) var(--spring); }
+    .thread--side .thread__bead[aria-current="page"] .thread__tag { display: none; }
+    .thread--side .thread__bead:focus-visible .thread__tag { opacity: 1; translate: 0 -50%; }
+    .thread--side .thread__heart { left: 0; width: 26px; height: 26px; top: calc((var(--i) + var(--pull-nav, 0)) * var(--gap) - 13px); }
+    .thread--side.is-moving .thread__heart, html[data-pull="back"] .thread--side .thread__heart { transition: opacity var(--dur-2) var(--ease), scale var(--dur-3) var(--spring), top .8s var(--spring); }
+    .thread--side .thread__heart .i { width: 14px; height: 14px; }
+    .thread--side .thread__label { position: absolute; left: 34px; top: 50%; translate: 0 -50%; padding: 3px 11px; border: 1px solid var(--rose-line); border-radius: var(--r-pill); background: var(--rose-50); color: var(--rose-ink); font-size: 12.5px; font-weight: 700; white-space: nowrap; opacity: 0; animation: thread-peek 2.4s var(--ease) both; }
+    .thread--side .thread__bead[aria-current="page"]:hover ~ .thread__heart .thread__label { animation: none; opacity: 1; translate: 0 -50%; }
+  }
+  @media (min-width: 1101px) and (hover: hover) {
+    .thread--side .thread__bead:hover .thread__dot, .thread--side .thread__bead:focus-visible .thread__dot { width: 24px; height: 24px; box-shadow: inset 0 0 0 1.5px var(--rose-300); }
+    .thread--side .thread__bead:hover .thread__dot .i, .thread--side .thread__bead:focus-visible .thread__dot .i { opacity: 1; scale: 1; }
+    .thread--side .thread__bead:hover .thread__tag { opacity: 1; translate: 0 -50%; }
+  }
+  @media (min-width: 1101px) and (hover: none) {
+    .thread--side .thread__dot { width: 24px; height: 24px; }
+    .thread--side .thread__dot .i { opacity: 1; scale: 1; }
+  }
+  @media (min-width: 1360px) {                       /* the page margin is wide enough for the name to stay beside the heart */
+    .thread--side .thread__label { opacity: 1; animation: thread-in .5s var(--spring) both; }
+  }
+
+  /* ---- phones and tablets: the thread in a bar along the bottom ---- */
+  .thread--bottom { display: none; }
+  @media (max-width: 1100px) {
+    .thread--bottom { display: block; position: fixed; z-index: 70; left: 0; right: 0; bottom: 0; height: calc(var(--bar-h) + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--bg); }
+    .thread--bottom .thread__line { left: 0; right: 0; top: 25px; height: 2px; background: linear-gradient(to right, var(--sky-300) var(--dash), transparent var(--dash)) 0 0 / calc(var(--dash) * 2) 2px repeat-x; }
+    .thread--bottom .thread__stitch { left: 0; top: 25px; height: 2px; width: calc(100% / var(--n)); translate: calc((var(--i) + .5) * 100%) 0; }
+    .thread--bottom .thread__sew { inset: 0; scale: calc(var(--p, 0) * (1 - .5 * var(--last))) 1; }
+    .thread--bottom .thread__tip { top: 50%; left: calc(var(--p, 0) * (1 - .5 * var(--last)) * 100%); }
+    .thread--bottom .thread__pin { left: 6px; top: 22px; }
+    .thread--bottom .thread__knot { right: 5px; top: 21px; }
+    .thread--bottom .thread__bead { top: 0; height: calc(100% - env(safe-area-inset-bottom)); left: calc(var(--k) / var(--n) * 100%); width: calc(100% / var(--n)); display: grid; justify-items: center; align-content: start; gap: 3px; padding-top: 8px; }
+    .thread--bottom .thread__dot { width: 34px; height: 34px; border: 1px solid var(--line); transition: scale var(--dur-2) var(--spring); }
+    .thread--bottom .thread__bead:active .thread__dot { scale: .88; }
+    .thread--bottom .thread__bead[aria-current="page"] .thread__dot { opacity: 0; }
+    .thread--bottom .thread__bead[aria-current="page"] { color: var(--rose-ink); }
+    .thread--bottom .thread__bead[aria-current="page"] .thread__tag { animation: thread-pop .5s var(--spring) both; }
+    .thread--bottom .thread__heart { top: 7px; width: 36px; height: 36px; margin-left: -18px; left: calc((var(--i) + .5 + var(--pull-nav, 0)) / var(--n) * 100%); }
+    .thread--bottom.is-moving .thread__heart, html[data-pull="back"] .thread--bottom .thread__heart { transition: opacity var(--dur-2) var(--ease), scale var(--dur-3) var(--spring), left .8s var(--spring); }
+    .thread--bottom .thread__heart .i { width: 18px; height: 18px; }
+    .thread--bottom .thread__label { display: none; }
+  }
+  html.fx-off .thread, html.fx-off .thread * { transition: none !important; animation: none !important; }
+  @media (prefers-reduced-motion: reduce) { .thread, .thread * { transition: none !important; animation: none !important; } }
+
+  /* =============== turning the page by scrolling past its edge (public/pull.ts) ===============
+     The stage is the page and its foot: while it is pulled it gets `translate` and `opacity` from script, and nothing at all when it rests (a transformed box would
+     become the containing block of fixed children). Fixed buttons inside the page are hidden meanwhile. */
+  html.is-pulling .page-stage, html.is-turning .page-stage { will-change: translate, opacity; }
+  html.is-turning .page-stage { pointer-events: none; }
+  html.is-pulling .toc-fab, html.is-turning .toc-fab { opacity: 0; transition: none; pointer-events: none; }
+
+  /* =============== footer =============== */
+  .site-footer { position: relative; margin-top: var(--s-8); border-top: 1px dashed var(--line); background: var(--bg); }
+  .site-footer__legal { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; padding: 28px 0 36px; color: var(--ink-2); font-size: 12.5px; }   /* the footer's own dashed top line is the only line */
+  .site-footer__legal a:hover { color: var(--ink); text-decoration: underline; }
+  .backtop { position: fixed; z-index: 65; right: 24px; bottom: 24px; opacity: 0; translate: 0 12px; pointer-events: none; }
+  .backtop.is-on { opacity: 1; translate: 0 0; pointer-events: auto; }
+
+  /* =============== page sections =============== */
+  .section { position: relative; padding: var(--s-8) 0; border-top: 1px dashed var(--line); }
+  .section--first { border-top: 0; }
+  .split { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 9fr); gap: 56px; align-items: start; }
+  .split__label { position: sticky; top: calc(var(--header-h) + 28px); display: grid; gap: 14px; justify-items: start; }
+  .split__label h2 { font-size: 26px; line-height: 1.35; }
+  .split__label p { color: var(--ink-2); font-size: 14.5px; line-height: 1.8; }
+  .page-head { display: grid; gap: 14px; justify-items: start; padding: 64px 0 40px; }
+  .page-head h1 { font-size: clamp(34px, 4.6vw, 52px); line-height: 1.25; }
+  .page-head p { color: var(--ink-2); max-width: 46ch; }
+
+  .grid-6 { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 24px; }
+  .span-6 { grid-column: span 6; } .span-4 { grid-column: span 4; } .span-3 { grid-column: span 3; } .span-2 { grid-column: span 2; }
+  .stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-5); }
+
+  /* =============== print: the article and nothing around it =============== */
+  @media print {
+    .site-header, .tabbar, .backtop, .readbar, .toc, .toc-fab, .topline, .sheet, .scrim, .site-footer, .skip-link, .pager { display: none !important; }
+    body { background: #fff; padding: 0; }
+    .wrap, .wrap--read { width: 100%; }
+  }
+
+  /* =============== responsive =============== */
+  /* the menu bar is along the bottom up to here: leave room for it, and keep the floating buttons above it */
+  @media (max-width: 1100px) {
+    body { padding-bottom: calc(var(--bar-h) + 40px + env(safe-area-inset-bottom)); }
+    .backtop { right: 16px; bottom: calc(var(--bar-h) + 20px + env(safe-area-inset-bottom)); }
+    .has-toc-fab .backtop { bottom: calc(var(--bar-h) + 84px + env(safe-area-inset-bottom)); }
+  }
+  @media (max-width: 1024px) {
+    .wrap { width: min(var(--wrap), calc(100% - 48px)); }
+    .split { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+    .split__label { position: static; }
+    .split__label h2 { font-size: 24px; }
+    .grid-6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .span-6, .span-4 { grid-column: span 2; } .span-3, .span-2 { grid-column: span 1; }
+  }
+  @media (max-width: 760px) {
+    :root { --header-h: 68px; }
+    .wrap, .wrap--read { width: calc(100% - 32px); }
+    .site-header { position: static; }
+    .site-header__tools .hide-sm { display: none; }
+    .brand__text b { font-size: 17px; }
+    .section { padding: 52px 0; }
+    .page-head { padding: 40px 0 28px; }
+    .grid-6 { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+    .span-6, .span-4, .span-3, .span-2 { grid-column: span 1; }
+    .card--side { flex-direction: column; }
+    .card--side .cover { flex: none; aspect-ratio: 16 / 9; min-height: 0; border-right: 0; border-bottom: 1px solid var(--line); }
+    .card--side .card__body { padding: 20px 22px 22px; }
+    .card--side .card__title { font-size: 22px; }
+    .postrow { grid-template-columns: auto minmax(0, 1fr); }
+    .postrow__go { display: none; }
+  }
+}

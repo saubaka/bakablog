@@ -1,0 +1,114 @@
+/* ==========================================================================
+   Baka Blog · design tokens
+   Rules that must hold for the whole site (they come from mistakes made before):
+   - ONE line colour (--line), 1px, flat cards, no shadows except on floating layers.
+   - The page body (<main>) never draws a focus ring; every other control gets the ring.
+   - Every stylesheet puts its rules into the layers below, in this order, and nothing is left unlayered.
+   - Nothing on the page is dark: the deepest colour is the body ink, and it is only used for text.
+   ========================================================================== */
+@layer reset, tokens, base, components, layout, pages, fx, utilities;
+
+/* Latin letters use the rounded Hiragino face that ships with macOS / iOS; Chinese uses Yuanti (圆体).
+   Limiting the Latin face to Latin code points keeps Chinese from being drawn with Japanese glyph shapes. */
+@font-face {
+  font-family: "BB Latin";
+  src: local("Hiragino Maru Gothic ProN W4"), local("HiraMaruProN-W4"), local("Hiragino Maru Gothic ProN");
+  font-weight: 100 500;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+2013-2014, U+2018-201D, U+2026;
+}
+@font-face {
+  font-family: "BB Latin";
+  src: local("Hiragino Maru Gothic ProN W6"), local("HiraMaruProN-W6");
+  font-weight: 600 900;
+  unicode-range: U+0020-007E, U+00A0-00FF, U+2013-2014, U+2018-201D, U+2026;
+}
+
+@layer tokens {
+  :root {
+    /* ---- palette: primitives -------------------------------------------------------------------------------- */
+    --sky-25: #f7fbff;   /* page: extremely light blue */
+    --sky-50: #eef6fd;
+    --sky-100: #e6f1fc;
+    --sky-200: #d9e9f9;
+    --sky-300: #c3dcf4;  /* graphics only: progress, illustration outlines. Never text. */
+    --line: #dceaf7;     /* THE line colour */
+    --paper: #ffffff;
+    --mist-50: #f6f8fa;  /* light grey */
+    --mist-100: #eff2f6;
+    --mist-200: #e6eaf0;
+    --rose-50: #fff6f9;  /* light pink */
+    --rose-100: #fdeef3;
+    --rose-200: #f9e0ea;
+    --rose-300: #f2c6d8; /* graphics only: doodles, progress ring */
+    --rose-line: #f3d6e2;
+
+    /* ---- text: the only "deep" colours, soft blue-grey, never black ---------------------------------------- */
+    --ink: #46546a;      /* 7.4:1 on --sky-25 */
+    --ink-2: #5d6c84;    /* 5.1:1 on --sky-25; do not put it on --sky-200 / --mist-200 (4.3:1) */
+    --link: #3f68a3;     /* 5.4:1 on --sky-25 */
+    --rose-ink: #9a5470; /* 5.2:1 on --sky-25, 4.8:1 on --rose-100 */
+    --ring: #5e8ec8;     /* keyboard focus only, 3.3:1 on white */
+
+    /* ---- semantic aliases: theme presets re-point these, components only use these -------------------------- */
+    --bg: var(--sky-25);
+    --bg-soft: var(--sky-50);
+    --fill: var(--sky-100);
+    --fill-strong: var(--sky-200);
+    --accent: var(--rose-100);
+    --accent-soft: var(--rose-50);
+    --accent-strong: var(--rose-200);
+    --accent-graphic: var(--rose-300);
+    --accent-line: var(--rose-line);
+    --accent-ink: var(--rose-ink);
+    --neutral: var(--mist-100);
+    --neutral-soft: var(--mist-50);
+
+    /* ---- shape --------------------------------------------------------------------------------------------- */
+    --r-xs: 8px;
+    --r-sm: 14px;
+    --r-md: 20px;
+    --r-lg: 28px;
+    --r-pill: 999px;
+
+    /* ---- space (4px scale) --------------------------------------------------------------------------------- */
+    --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 72px; --s-9: 112px;
+
+    /* ---- type ---------------------------------------------------------------------------------------------- */
+    --font: "BB Latin", "Yuanti SC", "Hiragino Maru Gothic ProN", "PingFang SC", "HarmonyOS Sans SC", "Noto Sans SC", "Microsoft YaHei UI", system-ui, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+    /* ---- motion -------------------------------------------------------------------------------------------- */
+    --ease: cubic-bezier(.22, .8, .3, 1);
+    --ease-soft: cubic-bezier(.3, .7, .3, 1);
+    --dur-1: .16s; --dur-2: .26s; --dur-3: .42s;
+
+    /* ---- floating layers only (sheet, dialog, toast): a blue-tinted shadow, never grey ---------------------- */
+    --float: 0 14px 36px rgba(140, 175, 215, .2);
+    --veil: rgba(238, 246, 253, .78);
+
+    /* ---- layout -------------------------------------------------------------------------------------------- */
+    --wrap: 1120px;
+    --reading: 720px;
+    --header-h: 88px;
+    --fx-k: 1;
+  }
+
+  /* ---- theme presets: all light. Each one is checked for text contrast by qa/contrast.js ----------------- */
+  :root[data-theme="sky"] {            /* 晴空: blue leaning */
+    --sky-25: #f3f9ff; --sky-50: #eaf4fd; --sky-100: #e3effb; --sky-200: #d2e5f7;
+    --accent: var(--sky-100); --accent-soft: var(--sky-50); --accent-strong: var(--sky-200);
+    --accent-graphic: var(--sky-300); --accent-line: var(--line); --accent-ink: var(--link);
+  }
+  :root[data-theme="sakura"] {         /* 樱花: pink leaning */
+    --bg: #fff8fb; --bg-soft: #fff1f6; --fill: #fdeaf1; --fill-strong: #f9dce8;
+    --accent: var(--sky-100); --accent-soft: var(--sky-50); --accent-strong: var(--sky-200);
+    --accent-graphic: var(--sky-300); --accent-line: var(--line); --accent-ink: var(--link);
+  }
+  :root[data-theme="fog"] {            /* 云雾: grey leaning */
+    --bg: #f8f9fb; --bg-soft: #f1f4f8; --fill: #e9eef5; --fill-strong: #e0e7f0;
+    --neutral: #eceff4; --neutral-soft: #f4f6f9;
+  }
+
+  /* ---- motion level chosen by the visitor (or by the system "reduce motion" setting) --------------------- */
+  :root[data-fx-mode="soft"] { --fx-k: .45; }
+}

@@ -1,0 +1,78 @@
+# /opt/1panel/www/conf.d/blog.saubaka.com.conf   (1Panel's OpenResty reads every file in this folder; this one is written by hand, so it does not
+# appear in 1Panel's "网站" list. To manage it from the UI instead, delete this file and create a reverse-proxy website there — same settings.)
+#
+# blog.saubaka.com  ->  gunicorn on 127.0.0.1:8080  (the OpenResty container uses the host network, so loopback is the host's loopback).
+#
+# Cloudflare is in front of this name and (SSL mode "Flexible") reaches this server over plain http on port 80. So:
+#   - there is NO http->https redirect here (it would loop);
+#   - the application is always told the visitor used https (every public visit does, at Cloudflare's edge);
+#   - the visitor's address comes from Cloudflare's CF-Connecting-IP header, trusted ONLY when the connection really comes from a Cloudflare range
+#     (real_ip module); a direct hit on the server's address cannot forge it. Refresh the range list now and then: https://www.cloudflare.com/ips/
+# The application sends its own security headers (CSP, HSTS, ...): add none here.
+
+upstream bakablog_app {
+    server 127.0.0.1:8080;
+    keepalive 16;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name blog.saubaka.com;
+
+    access_log /var/log/nginx/blog.saubaka.com.access.log main;
+    error_log  /var/log/nginx/blog.saubaka.com.error.log warn;
+
+    set_real_ip_from 173.245.48.0/20;
+    set_real_ip_from 103.21.244.0/22;
+    set_real_ip_from 103.22.200.0/22;
+    set_real_ip_from 103.31.4.0/22;
+    set_real_ip_from 141.101.64.0/18;
+    set_real_ip_from 108.162.192.0/18;
+    set_real_ip_from 190.93.240.0/20;
+    set_real_ip_from 188.114.96.0/20;
+    set_real_ip_from 197.234.240.0/22;
+    set_real_ip_from 198.41.128.0/17;
+    set_real_ip_from 162.158.0.0/15;
+    set_real_ip_from 104.16.0.0/13;
+    set_real_ip_from 104.24.0.0/14;
+    set_real_ip_from 172.64.0.0/13;
+    set_real_ip_from 131.0.72.0/22;
+    set_real_ip_from 2400:cb00::/32;
+    set_real_ip_from 2606:4700::/32;
+    set_real_ip_from 2803:f800::/32;
+    set_real_ip_from 2405:b500::/32;
+    set_real_ip_from 2405:8100::/32;
+    set_real_ip_from 2a06:98c0::/29;
+    set_real_ip_from 2c0f:f248::/32;
+    real_ip_header CF-Connecting-IP;
+
+    # certificate issuance (HTTP-01) is answered from the shared folder, like the other sites
+    location ^~ /.well-known/acme-challenge {
+        allow all;
+        root /usr/share/nginx/html;
+    }
+
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-Forwarded-Proto https;
+
+    location / {
+        proxy_pass http://bakablog_app;
+        proxy_read_timeout 120s;
+        proxy_send_timeout 120s;
+    }
+
+    # restoring a backup / importing a Markdown archive from the admin uploads a whole file (the application caps them itself: 2 GB / 600 MB)
+    location /api/admin/system/ {
+        client_max_body_size 2g;
+        client_body_timeout 300s;
+        proxy_request_buffering off;
+        proxy_pass http://bakablog_app;
+        proxy_read_timeout 900s;
+        proxy_send_timeout 900s;
+    }
+}

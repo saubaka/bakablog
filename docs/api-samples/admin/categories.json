@@ -1,0 +1,52 @@
+{
+  "items": [
+    {
+      "id": 1,
+      "slug": "dai-ma",
+      "name": "代码",
+      "description": "",
+      "sticker": "code",
+      "url": "/category/dai-ma",
+      "count": 3,
+      "sort_order": 1,
+      "show_on_shelf": true,
+      "public_count": 3
+    },
+    {
+      "id": 2,
+      "slug": "she-ji",
+      "name": "设计",
+      "description": "",
+      "sticker": "sparkle",
+      "url": "/category/she-ji",
+      "count": 2,
+      "sort_order": 2,
+      "show_on_shelf": true,
+      "public_count": 2
+    },
+    {
+      "id": 3,
+      "slug": "ri-chang",
+      "name": "日常",
+      "description": "",
+      "sticker": "smile",
+      "url": "/category/ri-chang",
+      "count": 3,
+      "sort_order": 3,
+      "show_on_shelf": true,
+      "public_count": 3
+    },
+    {
+      "id": 4,
+      "slug": "sui-bi",
+      "name": "随笔",
+      "description": "",
+      "sticker": "quote",
+      "url": "/category/sui-bi",
+      "count": 4,
+      "sort_order": 4,
+      "show_on_shelf": true,
+      "public_count": 2
+    }
+  ]
+}

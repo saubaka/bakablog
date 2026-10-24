@@ -1,0 +1,278 @@
+{
+  "groups": {
+    "site": {
+      "name": "saubakaの博客",
+      "name_en": "Baka Blog",
+      "tagline": "不是笨蛋！！",
+      "description": "写代码，记日常，偶尔拍点照片。",
+      "language": "zh-CN",
+      "timezone": "Asia/Shanghai",
+      "logo_media_id": null,
+      "favicon_media_id": null
+    },
+    "author": {
+      "name": "sau_baka",
+      "bio": "写代码的人，偶尔画画，经常发呆。喜欢把东西做得安静一点——颜色浅一点，线条细一点，字号刚刚好。",
+      "avatar_media_id": null,
+      "links": [
+        {
+          "label": "订阅",
+          "kind": "rss",
+          "url": "/feed/posts.xml"
+        }
+      ]
+    },
+    "appearance": {
+      "theme": "default",
+      "decor": {
+        "tape": true,
+        "doodles": true
+      },
+      "motion": "full",
+      "code_theme": "frost",
+      "texts": {
+        "not_found_title": "这一页走丢了",
+        "not_found_text": "是我把它弄丢了，还是你输错了地址？（先说好，才不是我的错。）",
+        "error_title": "服务器打了个盹",
+        "error_text": "不是你的问题，过一会儿再来试试。"
+      }
+    },
+    "seo": {
+      "title": "",
+      "description": "",
+      "keywords": [],
+      "share_image_media_id": null,
+      "robots_extra": "",
+      "sitemap": {
+        "moments": true,
+        "pages": true,
+        "taxonomy": true
+      },
+      "rss": {
+        "full_text": true,
+        "items": 20
+      }
+    },
+    "footer": {
+      "icp": "",
+      "copyright": "",
+      "text": "写代码，记日常，偶尔拍点照片。"
+    },
+    "stats": {
+      "enabled": true
+    },
+    "backup": {
+      "enabled": true,
+      "hour": 3,
+      "keep": 14
+    }
+  },
+  "defaults": {
+    "site": {
+      "name": "saubakaの博客",
+      "name_en": "Baka Blog",
+      "tagline": "不是笨蛋！！",
+      "description": "写代码，记日常，偶尔拍点照片。",
+      "language": "zh-CN",
+      "timezone": "Asia/Shanghai",
+      "logo_media_id": null,
+      "favicon_media_id": null
+    },
+    "author": {
+      "name": "sau_baka",
+      "bio": "写代码的人，偶尔画画，经常发呆。喜欢把东西做得安静一点——颜色浅一点，线条细一点，字号刚刚好。",
+      "avatar_media_id": null,
+      "links": [
+        {
+          "label": "订阅",
+          "kind": "rss",
+          "url": "/feed/posts.xml"
+        }
+      ]
+    },
+    "appearance": {
+      "theme": "default",
+      "decor": {
+        "tape": true,
+        "doodles": true
+      },
+      "motion": "full",
+      "code_theme": "frost",
+      "texts": {
+        "not_found_title": "这一页走丢了",
+        "not_found_text": "是我把它弄丢了，还是你输错了地址？（先说好，才不是我的错。）",
+        "error_title": "服务器打了个盹",
+        "error_text": "不是你的问题，过一会儿再来试试。"
+      }
+    },
+    "seo": {
+      "title": "",
+      "description": "",
+      "keywords": [],
+      "share_image_media_id": null,
+      "robots_extra": "",
+      "sitemap": {
+        "moments": true,
+        "pages": true,
+        "taxonomy": true
+      },
+      "rss": {
+        "full_text": true,
+        "items": 20
+      }
+    },
+    "footer": {
+      "icp": "",
+      "copyright": "",
+      "text": "写代码，记日常，偶尔拍点照片。"
+    },
+    "stats": {
+      "enabled": true
+    },
+    "backup": {
+      "enabled": true,
+      "hour": 3,
+      "keep": 14
+    }
+  },
+  "vocab": {
+    "themes": [
+      "default",
+      "sky",
+      "sakura",
+      "fog"
+    ],
+    "motion": [
+      "full",
+      "soft",
+      "off"
+    ],
+    "code_themes": [
+      "frost",
+      "blossom",
+      "fog"
+    ],
+    "doodles": [
+      "star",
+      "heart",
+      "sparkle",
+      "flower",
+      "paw",
+      "wave",
+      "loop"
+    ],
+    "icons": [
+      "home",
+      "book",
+      "chat",
+      "smile",
+      "search",
+      "menu",
+      "more",
+      "close",
+      "arrow-r",
+      "arrow-l",
+      "arrow-u",
+      "arrow-d",
+      "link",
+      "calendar",
+      "clock",
+      "tag",
+      "folder",
+      "rss",
+      "copy",
+      "check",
+      "image",
+      "star",
+      "pin",
+      "external",
+      "list",
+      "bulb",
+      "alert",
+      "heart",
+      "quote",
+      "code",
+      "mail",
+      "info",
+      "sliders",
+      "sparkle",
+      "grid",
+      "rows",
+      "moon"
+    ],
+    "moods": {
+      "happy": "开心",
+      "energy": "元气",
+      "calm": "平静",
+      "sleepy": "犯困",
+      "think": "思考",
+      "moved": "感动",
+      "sulk": "小委屈",
+      "sick": "生病中",
+      "party": "庆祝",
+      "daze": "发呆"
+    },
+    "tag_colors": [
+      "sky",
+      "rose",
+      "mist",
+      "white"
+    ],
+    "nav_regions": [
+      "top",
+      "mobile",
+      "footer"
+    ],
+    "nav_kinds": [
+      "route",
+      "page",
+      "category",
+      "tag",
+      "series",
+      "link",
+      "action"
+    ],
+    "nav_actions": [
+      "search",
+      "more",
+      "top"
+    ],
+    "routes": [
+      "/",
+      "/blog",
+      "/moments",
+      "/archive",
+      "/search"
+    ],
+    "home_block_types": [
+      "hero",
+      "featured",
+      "latest_posts",
+      "latest_moments",
+      "shelf",
+      "about",
+      "now",
+      "notice"
+    ],
+    "mobile_nav_max": 5,
+    "post_statuses": [
+      "draft",
+      "published",
+      "unlisted",
+      "private"
+    ],
+    "card_styles": [
+      "auto",
+      "cover",
+      "side",
+      "note",
+      "quote"
+    ],
+    "page_templates": [
+      "plain",
+      "wide",
+      "sidebar"
+    ]
+  },
+  "customized": []
+}

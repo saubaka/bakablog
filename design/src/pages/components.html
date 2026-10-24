@@ -1,0 +1,219 @@
+title: 设计系统 · saubakaの博客
+desc: 配色、线条、圆角、字体、组件、图标的样张。
+nav:
+page: components
+---
+<div class="wrap">
+  <header class="page-head">
+    <span class="kicker"><svg class="i"><use href="#i-sparkle"/></svg>设计系统样张</span>
+    <h1>颜色、线条、组件</h1>
+    <p>这一页只讲规则。右下角的「设计面板」可以切换四套浅色主题，下面的对比度表会实时重新计算。</p>
+  </header>
+
+  <section class="g-section" id="colors">
+    <header><h2>配色</h2><p>全站没有深色块；最深的颜色只用于文字，是柔和的蓝灰，不是黑。线只有一种颜色。</p></header>
+    <div class="g-grid" data-swatches></div>
+    <div class="demo-box">
+      <h3 style="font-size:16px;margin-bottom:12px">文字对比度（实时计算）</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>文字 / 底</th><th>示例</th><th>对比度</th><th>要求</th><th>结果</th></tr></thead>
+        <tbody data-contrast>
+          <tr data-fg="--ink" data-bg="--bg" data-min="4.5"><td>正文 / 页面底</td></tr>
+          <tr data-fg="--ink" data-bg="--paper" data-min="4.5"><td>正文 / 卡片白</td></tr>
+          <tr data-fg="--ink" data-bg="--fill-strong" data-min="4.5"><td>正文 / 深一档浅蓝</td></tr>
+          <tr data-fg="--ink-2" data-bg="--bg" data-min="4.5"><td>次要文字 / 页面底</td></tr>
+          <tr data-fg="--ink-2" data-bg="--fill" data-min="4.5"><td>次要文字 / 浅蓝填充</td></tr>
+          <tr data-fg="--ink-2" data-bg="--neutral" data-min="4.5"><td>次要文字 / 浅灰填充</td></tr>
+          <tr data-fg="--link" data-bg="--bg" data-min="4.5"><td>链接 / 页面底</td></tr>
+          <tr data-fg="--link" data-bg="--fill" data-min="4.5"><td>链接 / 浅蓝填充</td></tr>
+          <tr data-fg="--link" data-bg="--accent" data-min="4.5"><td>链接 / 强调底</td></tr>
+          <tr data-fg="--accent-ink" data-bg="--accent" data-min="4.5"><td>粉底上的文字</td></tr>
+          <tr data-fg="--accent-ink" data-bg="--accent-soft" data-min="4.5"><td>浅粉便签上的文字</td></tr>
+          <tr data-fg="--ring" data-bg="--paper" data-min="3"><td>键盘焦点环 / 白（图形，3:1）</td></tr>
+        </tbody>
+      </table></div>
+      <p class="g-small" style="color:var(--ink-2);font-size:13px;margin-top:10px">次要文字不放在「深一档浅蓝」「深一档浅灰」上（那里只有 4.3:1），所以组件里不会出现这种组合。</p>
+    </div>
+  </section>
+
+  <section class="g-section" id="shape">
+    <header><h2>线条、圆角、分割线</h2><p>卡片 = 白底 + 1px 线 + 无阴影。悬浮层（弹窗、抽屉、提示）才有阴影，而且是蓝色调的。</p></header>
+    <div class="g-grid">
+      <div class="g-cell"><div class="radius-demo" style="border-radius:8px">8 · 小标签</div></div>
+      <div class="g-cell"><div class="radius-demo" style="border-radius:14px">14 · 输入框 按钮</div></div>
+      <div class="g-cell"><div class="radius-demo" style="border-radius:20px">20 · 卡片</div></div>
+      <div class="g-cell"><div class="radius-demo" style="border-radius:28px">28 · 大面板</div></div>
+      <div class="g-cell"><div class="radius-demo" style="border-radius:999px">999 · 胶囊</div></div>
+    </div>
+    <div class="g-grid" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">
+      <div class="g-cell"><b>实线</b><hr style="border-top:1px solid var(--line)"><small>卡片、输入框、页眉页脚</small></div>
+      <div class="g-cell"><b>针脚（虚线）</b><div class="hr-dash"></div><small>区块之间、列表行之间</small></div>
+      <div class="g-cell"><b>波浪</b><div class="hr-wave"></div><small>文章里的分隔</small></div>
+    </div>
+  </section>
+
+  <section class="g-section" id="type">
+    <header><h2>字体与排版</h2><p>拉丁字母用系统自带的圆润字体，中文用圆体（苹果设备），其他设备回落到无衬线；没有字体下载。</p></header>
+    <div class="demo-box">
+      <div class="type-row"><small>display 72/1.22</small><div style="font-size:56px;font-weight:700;line-height:1.22">不是笨蛋！！</div></div>
+      <div class="type-row"><small>title 48/1.3</small><div style="font-size:40px;font-weight:700;line-height:1.3">博客手记 Baka Blog</div></div>
+      <div class="type-row"><small>h2 27/1.35</small><div style="font-size:27px;font-weight:700">写法二：在 Python 里调用 backup()</div></div>
+      <div class="type-row"><small>h3 20/1.4</small><div style="font-size:20px;font-weight:700">开了 WAL 之后更要小心</div></div>
+      <div class="type-row"><small>body 17/1.95</small><div style="font-size:17px;line-height:1.95">备份文件只有被成功恢复过，才算备份。The quick brown fox 0123456789。</div></div>
+      <div class="type-row"><small>ui 14.5/1.7</small><div style="font-size:14.5px">界面文字：按钮、标签、表单、导航。</div></div>
+      <div class="type-row"><small>caption 12.5</small><div style="font-size:12.5px;color:var(--ink-2)">图注、日期、说明文字，不再小了。</div></div>
+      <div class="type-row"><small>mono 13.5</small><div style="font:13.5px/1.8 var(--mono)">sqlite3 site.db ".backup 'b.db'"</div></div>
+    </div>
+  </section>
+
+  <section class="g-section" id="buttons">
+    <header><h2>按钮与链接</h2><p>悬停只靠填充变化和上移 2px，不加深线、不加阴影。</p></header>
+    <div class="g-row">
+      <button class="btn btn--fill" type="button">主要按钮 <svg class="i"><use href="#i-arrow-r"/></svg></button>
+      <button class="btn" type="button">描线按钮</button>
+      <button class="btn btn--accent" type="button">粉色按钮</button>
+      <button class="btn btn--ghost" type="button">幽灵按钮</button>
+      <button class="btn btn--sm" type="button">小按钮</button>
+      <button class="btn" type="button" disabled>不可用</button>
+      <button class="icon-btn" type="button" aria-label="搜索"><svg class="i"><use href="#i-search"/></svg></button>
+      <a class="text-link" href="#">文字链接 <svg class="i"><use href="#i-arrow-r"/></svg></a>
+    </div>
+  </section>
+
+  <section class="g-section" id="tags">
+    <header><h2>标签、徽标、邮戳</h2></header>
+    <div class="g-row">
+      <span class="tag">默认标签</span><span class="tag tag--sky">浅蓝</span><span class="tag tag--rose">浅粉</span><span class="tag tag--mist">浅灰</span>
+      <a class="tag" href="#"><svg class="i"><use href="#i-tag"/></svg>可点击</a><button class="tag" aria-pressed="true">已选中</button>
+      <span class="badge"><svg class="i" style="width:1em;height:1em"><use href="#i-pin"/></svg>置顶</span>
+      <div class="stamp"><b>22</b><small>Oct</small></div><div class="stamp stamp--sm"><b>08</b><small>Sep</small></div>
+      <span class="kicker"><svg class="i"><use href="#i-sparkle"/></svg>近况 · 一句话</span>
+    </div>
+    <div class="meta"><span><svg class="i"><use href="#i-calendar"/></svg>2026.10.18</span><span><svg class="i"><use href="#i-clock"/></svg>8 分钟</span><span><svg class="i"><use href="#i-folder"/></svg>代码</span></div>
+  </section>
+
+  <section class="g-section" id="notes">
+    <header><h2>便利贴、胶带、涂鸦</h2><p>每屏最多 2 张便利贴、1 处胶带、2 个涂鸦，装饰是点缀不是主角。</p></header>
+    <div class="g-grid" style="grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:26px">
+      <div class="note"><span class="tape" style="left:20px;top:-11px"></span><h3>浅粉便利贴</h3><p style="font-size:14.5px;color:var(--ink-2)">近况、公告、提示。</p></div>
+      <div class="note note--sky"><span class="tape tape--sky" style="left:20px;top:-11px"></span><h3>浅蓝便利贴</h3><p style="font-size:14.5px;color:var(--ink-2)">说明文字。</p></div>
+      <div class="note note--mist"><span class="tape tape--mist" style="left:20px;top:-11px"></span><h3>浅灰便利贴</h3><p style="font-size:14.5px;color:var(--ink-2)">备注。</p></div>
+      <div class="note note--paper"><span class="tape tape--stripe" style="left:20px;top:-11px"></span><h3>白色便利贴</h3><p style="font-size:14.5px;color:var(--ink-2)">干净的一张。</p></div>
+    </div>
+    <div class="g-row" style="gap:28px">
+      <div style="position:relative;width:96px;height:36px"><span class="tape" style="left:6px;top:8px"></span></div>
+      <div style="position:relative;width:96px;height:36px"><span class="tape tape--sky tape--dots" style="left:6px;top:8px"></span></div>
+      <div style="position:relative;width:96px;height:36px"><span class="tape tape--mist tape--stripe" style="left:6px;top:8px"></span></div>
+    </div>
+    <div class="g-row" data-doodles></div>
+  </section>
+
+  <section class="g-section" id="cards">
+    <header><h2>卡片与封面</h2><p>没有封面图的文章，用标题哈希挑一种图案和配色生成封面，纯 CSS，不请求图片。</p></header>
+    <div class="g-grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr))">
+      <div class="g-cell" style="padding:10px"><div class="cover cv-sky cv-dots" style="border-radius:14px"></div><small>dots · sky</small></div>
+      <div class="g-cell" style="padding:10px"><div class="cover cv-rose cv-stripe" style="border-radius:14px"></div><small>stripe · rose</small></div>
+      <div class="g-cell" style="padding:10px"><div class="cover cv-mist cv-wave" style="border-radius:14px"></div><small>wave · mist</small></div>
+      <div class="g-cell" style="padding:10px"><div class="cover cv-sky cv-grid" style="border-radius:14px"></div><small>grid · sky</small></div>
+      <div class="g-cell" style="padding:10px"><div class="cover cv-paper cv-dots" style="border-radius:14px"></div><small>dots · paper</small></div>
+    </div>
+    <div class="grid-6">
+      <a class="card span-3" href="#"><div class="cover cv-sky cv-grid"></div><div class="card__body"><div class="card__tags"><span class="tag tag--rose">代码</span><span class="tag">SQLite</span></div><h3 class="card__title">封面卡片</h3><p class="card__sum">封面在上，标题两行，摘要两行，底部是日期和阅读时间。</p><div class="card__meta meta"><span>2026.10.18</span><span>8 分钟</span></div></div></a>
+      <a class="card card--note span-3" href="#"><span class="tape" style="left:22px;top:-11px"></span><div class="card__body"><div class="card__tags"><span class="tag tag--rose">随笔</span></div><h3 class="card__title">便签卡片</h3><p class="card__sum">没有封面的短文，用便签的样子，贴一条胶带。</p><div class="card__meta meta"><span>2026.09.20</span></div></div></a>
+      <a class="card card--side span-6" href="#"><div class="cover cv-rose cv-stripe"></div><div class="card__body"><div class="card__tags"><span class="tag tag--rose">设计</span></div><h3 class="card__title">左图右文卡片</h3><p class="card__sum">用在精选和置顶。手机上会自动变成上下排列。</p><div class="card__meta meta"><span>2026.10.12</span></div></div></a>
+      <a class="card card--quote span-3" href="#"><div class="card__body"><svg class="qmark" aria-hidden="true"><use href="#i-quote"/></svg><h3 class="card__title">引言卡片，给很短的文章。</h3><div class="card__meta meta"><span class="tag tag--sky">日常</span></div></div></a>
+      <div class="span-3"><a class="postrow" href="#" style="border-top:0"><div class="stamp stamp--sm"><b>18</b><small>Oct</small></div><div><h3 class="postrow__title">列表行</h3><p class="postrow__sum">归档和列表视图使用。</p></div><svg class="i postrow__go" aria-hidden="true"><use href="#i-arrow-r"/></svg></a></div>
+    </div>
+  </section>
+
+  <section class="g-section" id="nav">
+    <header><h2>导航</h2></header>
+    <div class="demo-box"><div class="tabs" role="tablist"><button class="tab" role="tab" aria-selected="true">文件夹标签<span class="n">3</span></button><button class="tab" role="tab" aria-selected="false">第二个<span class="n">8</span></button><button class="tab" role="tab" aria-selected="false">第三个</button></div>
+      <div style="padding:20px;border:1px solid var(--line);border-top:0;border-radius:0 0 20px 20px;background:var(--paper);color:var(--ink-2);font-size:14.5px">选中的标签和下面的面板连在一起，像文件夹的页签。</div></div>
+    <nav class="pager" aria-label="分页示例"><a href="#"><svg class="i"><use href="#i-arrow-l"/></svg></a><a href="#" aria-current="page">1</a><a href="#">2</a><a href="#">3</a><span class="is-gap">…</span><a href="#">6</a><a href="#"><svg class="i"><use href="#i-arrow-r"/></svg></a></nav>
+  </section>
+
+  <section class="g-section" id="moments">
+    <header><h2>动态：头像、气泡、心情、链接卡片、图片排版</h2></header>
+    <div class="g-grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">
+      <div class="g-cell"><div class="moment"><span class="avatar"><b class="avatar__initial" aria-hidden="true">s</b></span><div class="bubble moment__bubble"><p class="moment__text">气泡，尾巴朝向头像。</p></div></div></div>
+      <div class="g-cell"><div class="bubble bubble--pop" style="margin-right:10px"><p class="moment__text">尾巴朝右的气泡。</p></div></div>
+      <div class="g-cell"><a class="linkcard" href="#"><span class="linkcard__ico"><svg class="i"><use href="#i-link"/></svg></span><span><strong>链接卡片的标题</strong><small>example.com</small></span></a></div>
+    </div>
+    <div class="g-row" data-moods></div>
+    <div class="g-grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr))">
+      <div class="g-cell"><div class="moment__imgs n2"><div><img src="img/sky.svg" alt=""></div><div><img src="img/hills.svg" alt=""></div></div><small>2 张</small></div>
+      <div class="g-cell"><div class="moment__imgs n3"><div><img src="img/sky.svg" alt=""></div><div><img src="img/evening.svg" alt=""></div><div><img src="img/window.svg" alt=""></div></div><small>3 张：1 + 2</small></div>
+      <div class="g-cell"><div class="moment__imgs n4"><div><img src="img/sky.svg" alt=""></div><div><img src="img/evening.svg" alt=""></div><div><img src="img/hills.svg" alt=""></div><div><img src="img/window.svg" alt=""></div></div><small>4 张：2 × 2</small></div>
+    </div>
+  </section>
+
+  <section class="g-section" id="content">
+    <header><h2>文章内容块</h2></header>
+    <div class="prose" style="max-width:720px">
+      <div class="callout"><span class="callout__ico"><svg class="i"><use href="#i-bulb"/></svg></span><div><strong>提示</strong><p>浅蓝底，用来放小技巧。</p></div></div>
+      <div class="callout callout--note"><span class="callout__ico"><svg class="i"><use href="#i-info"/></svg></span><div><strong>备注</strong><p>浅灰底，用来放补充说明。</p></div></div>
+      <div class="callout callout--warn"><span class="callout__ico"><svg class="i"><use href="#i-alert"/></svg></span><div><strong>小心</strong><p>浅粉底，用来放容易踩的坑。</p></div></div>
+      <div class="callout callout--love"><span class="callout__ico"><svg class="i"><use href="#i-heart"/></svg></span><div><strong>喜欢</strong><p>粉色底，用来放想多说一句的话。</p></div></div>
+      <blockquote><span class="tape tape--dots"></span>引用是便签的样子，贴一条胶带。<footer>— 出处</footer></blockquote>
+      <div class="code"><div class="code__bar"><span class="code__file">example.py</span><button class="code__copy" type="button"><svg class="i"><use href="#i-copy"/></svg><span>复制</span></button></div><pre><code><span class="k">def</span> <span class="f">hello</span>(name):
+    <span class="c"># 代码块是浅灰底，不是深色</span>
+    <span class="k">return</span> <span class="s">f"你好，{name}"</span></code></pre></div>
+      <div class="table-wrap"><table><thead><tr><th>列一</th><th>列二</th><th>列三</th></tr></thead><tbody><tr><td>表格</td><td>有斑马纹</td><td>可横向滚动</td></tr><tr><td>第二行</td><td>浅灰底</td><td>1px 线</td></tr></tbody></table></div>
+      <p>行内元素：<a href="#">链接</a>、<code>inline code</code>、<kbd>⌘</kbd> + <kbd>K</kbd>、<strong>加粗</strong>。</p>
+      <ul><li>无序列表，圆点是浅粉色</li><li>第二项</li></ul>
+      <ol><li>有序列表，序号在浅蓝圆里</li><li>第二项</li></ol>
+    </div>
+  </section>
+
+  <section class="g-section" id="forms">
+    <header><h2>表单控件</h2></header>
+    <div class="g-grid" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))">
+      <div class="field"><label for="f1">单行输入</label><input class="input" id="f1" placeholder="提示文字"><small>说明文字写在下面。</small></div>
+      <div class="field"><label for="f2">下拉选择</label><select class="select" id="f2"><option>最新优先</option><option>最早优先</option></select></div>
+      <div class="field"><label for="f3">搜索框</label><div class="searchfield"><svg class="i"><use href="#i-search"/></svg><input class="input" id="f3" placeholder="搜一搜……"></div></div>
+      <div class="field" style="grid-column:1/-1"><label for="f4">多行输入</label><textarea class="textarea" id="f4" placeholder="写点什么……"></textarea></div>
+      <div class="g-cell"><label class="check"><input type="checkbox" checked><span class="check__box"><svg class="i"><use href="#i-check"/></svg></span>复选框（已选）</label><label class="check"><input type="checkbox"><span class="check__box"><svg class="i"><use href="#i-check"/></svg></span>复选框</label></div>
+      <div class="g-cell"><label class="radio"><input type="radio" name="r" checked><span class="radio__dot"></span>单选（已选）</label><label class="radio"><input type="radio" name="r"><span class="radio__dot"></span>单选</label></div>
+      <div class="g-cell"><label class="switch"><input type="checkbox" checked><span class="switch__track"></span>开关（开）</label><label class="switch"><input type="checkbox"><span class="switch__track"></span>开关（关）</label></div>
+      <div class="filedrop" style="grid-column:1/-1"><svg class="i"><use href="#i-image"/></svg><strong>把图片拖到这里</strong><span>或者点击选择文件 · JPG / PNG / WebP</span></div>
+    </div>
+  </section>
+
+  <section class="g-section" id="feedback">
+    <header><h2>反馈：提示条、弹窗、抽屉、骨架、空状态</h2><p>弹窗的遮罩是一层很浅的蓝白，不是黑色半透明。</p></header>
+    <div class="g-row">
+      <span class="toast"><span class="toast__ico"><svg class="i" style="width:16px;height:16px"><use href="#i-check"/></svg></span>已保存</span>
+      <span class="toast toast--rose"><span class="toast__ico"><svg class="i" style="width:16px;height:16px"><use href="#i-heart"/></svg></span>发布成功啦</span>
+      <button class="btn" type="button" data-open-dialog="#demo-dialog">打开弹窗</button>
+      <button class="btn" type="button" data-open-sheet="#demo-sheet">打开抽屉</button>
+    </div>
+    <div class="g-grid" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">
+      <div class="g-cell"><b>骨架屏</b><span class="skel" style="height:18px;width:70%"></span><span class="skel" style="height:14px"></span><span class="skel" style="height:14px;width:86%"></span></div>
+      <div class="empty"><strong>这里还什么都没有</strong><span>写下第一篇，这里就热闹了。</span></div>
+      <div class="g-cell" style="justify-items:center"><button class="ring-btn" type="button" aria-label="进度环示例" style="position:relative"><svg class="ring" viewBox="0 0 58 58" aria-hidden="true"><circle cx="29" cy="29" r="27" stroke="var(--line)"/><circle cx="29" cy="29" r="27" stroke="var(--rose-300)" style="stroke-dasharray:170;stroke-dashoffset:60"/></svg></button><small>回到顶部 · 进度环</small></div>
+    </div>
+  </section>
+
+  <section class="g-section" id="icons">
+    <header><h2>图标与涂鸦</h2><p>全部自绘，1.6px 圆头线；涂鸦 1.5px。</p></header>
+    <div class="icon-grid" data-icons></div>
+  </section>
+
+  <section class="g-section" id="motion">
+    <header><h2>滚动动效</h2><p>每个元素的入场、退场进度都是滚动位置的函数。规则、参数和测试页在<a class="text-link" href="fx-lab.html">动效实验室</a>。</p></header>
+  </section>
+</div>
+
+<dialog class="dialog" id="demo-dialog">
+  <h2>要发布这篇文章吗？</h2>
+  <p>发布后所有人都能看到。你也可以先存成草稿，晚点再说。</p>
+  <div class="dialog__actions"><button class="btn" type="button" data-close-dialog>先存草稿</button><button class="btn btn--fill" type="button" data-close-dialog>发布</button></div>
+</dialog>
+===extra===
+<div class="sheet" id="demo-sheet" role="dialog" aria-label="抽屉示例">
+  <div class="sheet__grab"></div>
+  <h2 style="font-size:16px;margin-bottom:6px">底部抽屉</h2>
+  <p style="color:var(--ink-2);font-size:14.5px">手机上用它放目录、更多菜单、筛选。点空白处或按 Esc 关闭。</p>
+</div>
+<script type="module" src="js/gallery.js"></script>

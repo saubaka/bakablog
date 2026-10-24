@@ -1,0 +1,125 @@
+title: 博客 · saubakaの博客
+desc: 代码、设计、日常。写得慢，但每篇都认真。
+nav: blog
+page: blog
+---
+<div class="wrap" data-blog>
+  <header class="page-head">
+    <span class="kicker" data-fx="pop" data-fx-intro="0"><svg class="i"><use href="#i-book"/></svg>博客</span>
+    <h1 data-fx="text" data-fx-intro="1">博客手记</h1>
+    <p data-fx="fade" data-fx-intro="2">代码、设计、日常。写得慢，但每篇都认真改过三遍。</p>
+  </header>
+
+  <div class="filters" data-fx="fade">
+    <div class="tabs" role="tablist" aria-label="分类">
+      <button class="tab" role="tab" data-cat="all" aria-selected="true">全部<span class="n">8</span></button>
+      <button class="tab" role="tab" data-cat="代码" aria-selected="false">代码<span class="n">3</span></button>
+      <button class="tab" role="tab" data-cat="日常" aria-selected="false">日常<span class="n">3</span></button>
+      <button class="tab" role="tab" data-cat="设计" aria-selected="false">设计<span class="n">1</span></button>
+      <button class="tab" role="tab" data-cat="随笔" aria-selected="false">随笔<span class="n">1</span></button>
+    </div>
+    <div class="filters__bar">
+      <div class="searchfield"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg><input class="input" type="search" data-q placeholder="在博客里搜一搜……" aria-label="搜索文章"></div>
+      <select class="select" data-sort aria-label="排序"><option value="new">最新优先</option><option value="old">最早优先</option></select>
+      <div class="viewtoggle" role="group" aria-label="显示方式">
+        <button type="button" data-view="grid" aria-pressed="true" aria-label="卡片"><svg class="i"><use href="#i-grid"/></svg></button>
+        <button type="button" data-view="list" aria-pressed="false" aria-label="列表"><svg class="i"><use href="#i-rows"/></svg></button>
+      </div>
+    </div>
+    <div class="filters__tags">
+      <span class="label">标签</span>
+      <button class="tag" data-tag="Flask" aria-pressed="false">Flask</button>
+      <button class="tag" data-tag="SQLite" aria-pressed="false">SQLite</button>
+      <button class="tag" data-tag="Vue" aria-pressed="false">Vue</button>
+      <button class="tag" data-tag="CSS" aria-pressed="false">CSS</button>
+      <button class="tag" data-tag="随手记" aria-pressed="false">随手记</button>
+      <button class="tag" data-tag="猫" aria-pressed="false">猫</button>
+    </div>
+    <div class="result-line"><span data-count>共 8 篇</span><a class="text-link" href="#"><svg class="i"><use href="#i-rss"/></svg>订阅文章</a></div>
+  </div>
+
+  <section style="margin-top:28px">
+    <div class="grid-6 grid-only" data-fx-stagger>
+      <a class="card card--side span-6" href="post.html" data-post data-cat="代码" data-tags="SQLite,备份,Flask" data-date="2026-10-18" data-href="post.html" data-title="SQLite 备份：我差点把自己的数据弄丢" data-sum="直接复制数据库文件，到底会出什么事？以及我现在用的三种备份写法。" data-fx="rise">
+        <div class="cover cv-sky cv-grid"><span class="badge cover__label"><svg class="i"><use href="#i-pin"/></svg>精选</span></div>
+        <div class="card__body">
+          <div class="card__tags"><span class="tag tag--rose">代码</span><span class="tag">SQLite</span><span class="tag">备份</span></div>
+          <h2 class="card__title">SQLite 备份：我差点把自己的数据弄丢</h2>
+          <p class="card__sum">直接复制数据库文件，到底会出什么事？以及我现在用的三种备份写法，和一次差点没救回来的周末。</p>
+          <div class="card__meta meta"><span><svg class="i"><use href="#i-calendar"/></svg>2026.10.18</span><span><svg class="i"><use href="#i-clock"/></svg>8 分钟</span></div>
+        </div>
+      </a>
+      <a class="card span-3" href="post.html" data-post data-cat="设计" data-tags="CSS,设计" data-date="2026-10-12" data-href="post.html" data-title="把线条调浅了一点点，页面就安静了" data-sum="一条 1px 的线，颜色深一档和浅一档，整页的气质完全不同。" data-fx="rise">
+        <div class="cover cv-rose cv-stripe"></div>
+        <div class="card__body">
+          <div class="card__tags"><span class="tag tag--rose">设计</span><span class="tag">CSS</span></div>
+          <h2 class="card__title">把线条调浅了一点点，页面就安静了</h2>
+          <p class="card__sum">一条 1px 的线，颜色深一档和浅一档，整页的气质完全不同。</p>
+          <div class="card__meta meta"><span><svg class="i"><use href="#i-calendar"/></svg>2026.10.12</span><span><svg class="i"><use href="#i-clock"/></svg>5 分钟</span></div>
+        </div>
+      </a>
+      <a class="card span-3" href="post.html" data-post data-cat="代码" data-tags="Vue,动效" data-date="2026-10-05" data-href="post.html" data-title="跟着滚动走的入场动画，我是这样做的" data-sum="不是“进入视野就播放”，而是进度跟着滚动位置走，倒着滚也能倒放。" data-fx="rise">
+        <div class="cover cv-mist cv-wave"></div>
+        <div class="card__body">
+          <div class="card__tags"><span class="tag tag--rose">代码</span><span class="tag">Vue</span><span class="tag">动效</span></div>
+          <h2 class="card__title">跟着滚动走的入场动画，我是这样做的</h2>
+          <p class="card__sum">不是“进入视野就播放”，而是进度跟着滚动位置走，倒着滚也能倒放。</p>
+          <div class="card__meta meta"><span><svg class="i"><use href="#i-calendar"/></svg>2026.10.05</span><span><svg class="i"><use href="#i-clock"/></svg>9 分钟</span></div>
+        </div>
+      </a>
+      <a class="card card--note span-2" href="post.html" data-post data-cat="随笔" data-tags="博客" data-date="2026-09-20" data-href="post.html" data-title="为什么我不给博客加评论区" data-sum="想说什么可以发邮件。我想把这里做成一个安静的地方。" data-fx="rise">
+        <span class="tape" style="left:22px;top:-11px"></span>
+        <div class="card__body">
+          <div class="card__tags"><span class="tag tag--rose">随笔</span></div>
+          <h2 class="card__title">为什么我不给博客加评论区</h2>
+          <p class="card__sum">想说什么可以发邮件。我想把这里做成一个安静的地方。</p>
+          <div class="card__meta meta"><span><svg class="i"><use href="#i-calendar"/></svg>2026.09.20</span></div>
+        </div>
+      </a>
+      <a class="card card--quote span-2" href="post.html" data-post data-cat="日常" data-tags="随手记" data-date="2026-09-28" data-href="post.html" data-title="周末的傍晚" data-sum="今天的傍晚像一碗粉色的汤，我看了很久。" data-fx="rise">
+        <div class="card__body">
+          <svg class="qmark" aria-hidden="true"><use href="#i-quote"/></svg>
+          <h2 class="card__title">今天的傍晚像一碗粉色的汤，我看了很久。</h2>
+          <div class="card__meta meta"><span class="tag tag--sky">日常</span><span>周末的傍晚 · 1 分钟</span></div>
+        </div>
+      </a>
+      <a class="card span-2" href="post.html" data-post data-cat="代码" data-tags="Flask,安全" data-date="2026-09-11" data-href="post.html" data-title="Flask 里最小的后台登录" data-sum="会话、限速、CSRF，一个人用的后台到底需要哪些。" data-fx="rise">
+        <div class="cover cover--short cv-sky cv-dots"></div>
+        <div class="card__body">
+          <div class="card__tags"><span class="tag tag--rose">代码</span><span class="tag">Flask</span></div>
+          <h2 class="card__title" style="font-size:18px">Flask 里最小的后台登录</h2>
+          <div class="card__meta meta"><span><svg class="i"><use href="#i-calendar"/></svg>2026.09.11</span><span><svg class="i"><use href="#i-clock"/></svg>7 分钟</span></div>
+        </div>
+      </a>
+      <a class="card span-3" href="post.html" data-post data-cat="日常" data-tags="咖啡,随手记" data-date="2026-08-30" data-href="post.html" data-title="雨天的咖啡和 bug" data-sum="下雨天更容易写出 bug，这不是玄学，是咖啡洒在了键盘上。" data-fx="rise">
+        <div class="cover cv-rose cv-wave"></div>
+        <div class="card__body">
+          <div class="card__tags"><span class="tag tag--rose">日常</span><span class="tag">咖啡</span></div>
+          <h2 class="card__title">雨天的咖啡和 bug</h2>
+          <p class="card__sum">下雨天更容易写出 bug，这不是玄学，是咖啡洒在了键盘上。</p>
+          <div class="card__meta meta"><span><svg class="i"><use href="#i-calendar"/></svg>2026.08.30</span><span><svg class="i"><use href="#i-clock"/></svg>3 分钟</span></div>
+        </div>
+      </a>
+      <a class="card span-3" href="post.html" data-post data-cat="日常" data-tags="猫" data-date="2026-08-14" data-href="post.html" data-title="给猫写的 README" data-sum="如果猫是一个项目，它的安装说明大概是这样的。" data-fx="rise">
+        <div class="cover cv-mist cv-dots"></div>
+        <div class="card__body">
+          <div class="card__tags"><span class="tag tag--rose">日常</span><span class="tag">猫</span></div>
+          <h2 class="card__title">给猫写的 README</h2>
+          <p class="card__sum">如果猫是一个项目，它的安装说明大概是这样的。</p>
+          <div class="card__meta meta"><span><svg class="i"><use href="#i-calendar"/></svg>2026.08.14</span><span><svg class="i"><use href="#i-clock"/></svg>2 分钟</span></div>
+        </div>
+      </a>
+    </div>
+    <div class="list-only" data-list></div>
+  </section>
+
+  <nav class="pager" aria-label="分页" style="margin-top:48px" data-fx="fade">
+    <a href="#" aria-label="上一页"><svg class="i"><use href="#i-arrow-l"/></svg></a>
+    <a href="#" aria-current="page">1</a>
+    <a href="#">2</a>
+    <a href="#">3</a>
+    <span class="is-gap">…</span>
+    <a href="#">6</a>
+    <a href="#" aria-label="下一页"><svg class="i"><use href="#i-arrow-r"/></svg></a>
+  </nav>
+</div>

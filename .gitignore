@@ -1,0 +1,31 @@
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+# runtime data (database, uploads, backups, local env)
+backend/data/
+backend/.env
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+# frontend
+node_modules/
+frontend/dist/
+# macOS
+.DS_Store
+._*
+# scratch
+/tmp/
+
+backend/data-qa/
+
+# private working notes for whoever continues the project (local only: never published, never deployed)
+/AGENTS.md
+docs/agent-memory/
+docs/handoff/
+
+.ruff_cache/

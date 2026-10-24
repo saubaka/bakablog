@@ -1,0 +1,209 @@
+{
+  "categories": [
+    {
+      "id": 1,
+      "slug": "dai-ma",
+      "name": "代码",
+      "description": "",
+      "sticker": "code",
+      "url": "/category/dai-ma",
+      "count": 3,
+      "show_on_shelf": true
+    },
+    {
+      "id": 2,
+      "slug": "she-ji",
+      "name": "设计",
+      "description": "",
+      "sticker": "sparkle",
+      "url": "/category/she-ji",
+      "count": 2,
+      "show_on_shelf": true
+    },
+    {
+      "id": 3,
+      "slug": "ri-chang",
+      "name": "日常",
+      "description": "",
+      "sticker": "smile",
+      "url": "/category/ri-chang",
+      "count": 3,
+      "show_on_shelf": true
+    },
+    {
+      "id": 4,
+      "slug": "sui-bi",
+      "name": "随笔",
+      "description": "",
+      "sticker": "quote",
+      "url": "/category/sui-bi",
+      "count": 2,
+      "show_on_shelf": true
+    }
+  ],
+  "tags": [
+    {
+      "id": 5,
+      "slug": "css",
+      "name": "CSS",
+      "color": "white",
+      "sticker": null,
+      "url": "/tag/css",
+      "count": 1,
+      "moment_count": 2
+    },
+    {
+      "id": 3,
+      "slug": "flask",
+      "name": "Flask",
+      "color": "sky",
+      "sticker": null,
+      "url": "/tag/flask",
+      "count": 2,
+      "moment_count": 0
+    },
+    {
+      "id": 1,
+      "slug": "sqlite",
+      "name": "SQLite",
+      "color": "rose",
+      "sticker": null,
+      "url": "/tag/sqlite",
+      "count": 1,
+      "moment_count": 1
+    },
+    {
+      "id": 7,
+      "slug": "vue",
+      "name": "Vue",
+      "color": "white",
+      "sticker": null,
+      "url": "/tag/vue",
+      "count": 1,
+      "moment_count": 0
+    },
+    {
+      "id": 15,
+      "slug": "qian-duan",
+      "name": "前端",
+      "color": "mist",
+      "sticker": null,
+      "url": "/tag/qian-duan",
+      "count": 0,
+      "moment_count": 1
+    },
+    {
+      "id": 8,
+      "slug": "dong-xiao",
+      "name": "动效",
+      "color": "sky",
+      "sticker": null,
+      "url": "/tag/dong-xiao",
+      "count": 1,
+      "moment_count": 0
+    },
+    {
+      "id": 4,
+      "slug": "bo-ke",
+      "name": "博客",
+      "color": "white",
+      "sticker": null,
+      "url": "/tag/bo-ke",
+      "count": 2,
+      "moment_count": 1
+    },
+    {
+      "id": 11,
+      "slug": "ka-fei",
+      "name": "咖啡",
+      "color": "white",
+      "sticker": null,
+      "url": "/tag/ka-fei",
+      "count": 1,
+      "moment_count": 1
+    },
+    {
+      "id": 2,
+      "slug": "bei-fen",
+      "name": "备份",
+      "color": "mist",
+      "sticker": null,
+      "url": "/tag/bei-fen",
+      "count": 1,
+      "moment_count": 0
+    },
+    {
+      "id": 13,
+      "slug": "ye-xiao",
+      "name": "夜宵",
+      "color": "white",
+      "sticker": null,
+      "url": "/tag/ye-xiao",
+      "count": 0,
+      "moment_count": 1
+    },
+    {
+      "id": 10,
+      "slug": "an-quan",
+      "name": "安全",
+      "color": "mist",
+      "sticker": null,
+      "url": "/tag/an-quan",
+      "count": 1,
+      "moment_count": 0
+    },
+    {
+      "id": 12,
+      "slug": "mao",
+      "name": "猫",
+      "color": "rose",
+      "sticker": null,
+      "url": "/tag/mao",
+      "count": 1,
+      "moment_count": 0
+    },
+    {
+      "id": 14,
+      "slug": "zhan-ming",
+      "name": "站名",
+      "color": "mist",
+      "sticker": null,
+      "url": "/tag/zhan-ming",
+      "count": 0,
+      "moment_count": 1
+    },
+    {
+      "id": 6,
+      "slug": "she-ji",
+      "name": "设计",
+      "color": "white",
+      "sticker": null,
+      "url": "/tag/she-ji",
+      "count": 2,
+      "moment_count": 2
+    },
+    {
+      "id": 9,
+      "slug": "sui-shou-ji",
+      "name": "随手记",
+      "color": "rose",
+      "sticker": null,
+      "url": "/tag/sui-shou-ji",
+      "count": 2,
+      "moment_count": 3
+    }
+  ],
+  "series": [
+    {
+      "id": 1,
+      "slug": "ba-bo-ke-zuo-cheng-zi-ji-xi-huan-de-yang-zi",
+      "title": "把博客做成自己喜欢的样子",
+      "description": "从配色、动效到后台，一点点把这个博客重新画一遍。",
+      "status": "ongoing",
+      "cover": null,
+      "url": "/series/ba-bo-ke-zuo-cheng-zi-ji-xi-huan-de-yang-zi",
+      "count": 5
+    }
+  ],
+  "total_posts": 10
+}

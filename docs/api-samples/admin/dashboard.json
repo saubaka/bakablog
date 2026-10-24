@@ -1,0 +1,196 @@
+{
+  "stats": {
+    "posts": {
+      "published": 10,
+      "draft": 1,
+      "scheduled": 1
+    },
+    "moments_month": 11,
+    "views_7d": 0,
+    "uniques_7d": 0,
+    "storage": {
+      "media_bytes": 56930,
+      "db_bytes": 791048,
+      "backup_bytes": 0
+    }
+  },
+  "views_series": [
+    {
+      "day": "2026-10-18",
+      "views": 0,
+      "uniques": 0
+    },
+    {
+      "day": "2026-10-19",
+      "views": 0,
+      "uniques": 0
+    },
+    {
+      "day": "2026-10-20",
+      "views": 0,
+      "uniques": 0
+    },
+    {
+      "day": "2026-10-21",
+      "views": 0,
+      "uniques": 0
+    },
+    {
+      "day": "2026-10-22",
+      "views": 0,
+      "uniques": 0
+    },
+    {
+      "day": "2026-10-23",
+      "views": 0,
+      "uniques": 0
+    },
+    {
+      "day": "2026-10-24",
+      "views": 0,
+      "uniques": 0
+    }
+  ],
+  "todo": [
+    {
+      "kind": "missing_cover",
+      "id": 12,
+      "title": "上线那天",
+      "admin_url": "/admin/posts/12"
+    },
+    {
+      "kind": "missing_cover",
+      "id": 3,
+      "title": "把线条调浅了一点点，页面就安静了",
+      "admin_url": "/admin/posts/3"
+    },
+    {
+      "kind": "missing_cover",
+      "id": 4,
+      "title": "跟着滚动走的入场动画，我是这样做的",
+      "admin_url": "/admin/posts/4"
+    },
+    {
+      "kind": "missing_cover",
+      "id": 10,
+      "title": "配色和线条：把一切都调浅",
+      "admin_url": "/admin/posts/10"
+    },
+    {
+      "kind": "missing_cover",
+      "id": 6,
+      "title": "周末的傍晚",
+      "admin_url": "/admin/posts/6"
+    }
+  ],
+  "recent": [
+    {
+      "at": "2026-10-24T12:34:51Z",
+      "action": "auth.login",
+      "actor": "sample_owner",
+      "target_type": "session",
+      "target_id": "1",
+      "summary": {
+        "device": "浏览器"
+      }
+    },
+    {
+      "at": "2026-10-24T12:34:51Z",
+      "action": "auth.setup",
+      "actor": "sample_owner",
+      "target_type": "user",
+      "target_id": "1",
+      "summary": {
+        "username": "sample_owner"
+      }
+    },
+    {
+      "at": "2026-10-24T12:34:51Z",
+      "action": "moment.create",
+      "actor": "system",
+      "target_type": "moment",
+      "target_id": "12",
+      "summary": {
+        "visibility": "public"
+      }
+    },
+    {
+      "at": "2026-10-24T12:34:51Z",
+      "action": "moment.create",
+      "actor": "system",
+      "target_type": "moment",
+      "target_id": "11",
+      "summary": {
+        "visibility": "public"
+      }
+    },
+    {
+      "at": "2026-10-24T12:34:51Z",
+      "action": "moment.create",
+      "actor": "system",
+      "target_type": "moment",
+      "target_id": "10",
+      "summary": {
+        "visibility": "public"
+      }
+    },
+    {
+      "at": "2026-10-24T12:34:51Z",
+      "action": "moment.create",
+      "actor": "system",
+      "target_type": "moment",
+      "target_id": "9",
+      "summary": {
+        "visibility": "public"
+      }
+    },
+    {
+      "at": "2026-10-24T12:34:51Z",
+      "action": "moment.create",
+      "actor": "system",
+      "target_type": "moment",
+      "target_id": "8",
+      "summary": {
+        "visibility": "public"
+      }
+    },
+    {
+      "at": "2026-10-24T12:34:51Z",
+      "action": "moment.create",
+      "actor": "system",
+      "target_type": "moment",
+      "target_id": "7",
+      "summary": {
+        "visibility": "public"
+      }
+    },
+    {
+      "at": "2026-10-24T12:34:51Z",
+      "action": "moment.create",
+      "actor": "system",
+      "target_type": "moment",
+      "target_id": "6",
+      "summary": {
+        "visibility": "public"
+      }
+    },
+    {
+      "at": "2026-10-24T12:34:51Z",
+      "action": "moment.create",
+      "actor": "system",
+      "target_type": "moment",
+      "target_id": "5",
+      "summary": {
+        "visibility": "public"
+      }
+    }
+  ],
+  "health": {
+    "version": "0.4.0",
+    "build": "dev",
+    "db_bytes": 791048,
+    "disk_free": 235037782016,
+    "last_backup": null,
+    "schema_ok": true
+  }
+}

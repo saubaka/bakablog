@@ -1,0 +1,10 @@
+/* The admin's stylesheet: the shared tokens, base, components, article text and motion rules, then the admin's own.
+   Same layer order as the public site (declared at the top of tokens.css); nothing is left unlayered. */
+@import '../../ui/css/tokens.css';
+@import '../../ui/css/base.css';
+@import '../../ui/css/components.css';
+@import '../../ui/css/prose.css';
+@import '../../ui/css/fx.css';
+@import './shell.css';
+@import './kit.css';
+@import './pages.css';

@@ -1,0 +1,40 @@
+[Unit]
+Description=Baka Blog (gunicorn)
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=bakablog
+Group=bakablog
+WorkingDirectory=/opt/bakablog/current/backend
+EnvironmentFile=/etc/bakablog/production.env
+Environment=PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+# 2 workers x 4 threads is plenty for one SQLite file (WAL); --keep-alive above the proxy's idle time avoids half-closed connections
+ExecStart=/opt/bakablog/venv/bin/gunicorn --workers 2 --threads 4 --bind 127.0.0.1:8080 --keep-alive 5 --timeout 120 --graceful-timeout 20 --max-requests 2000 --max-requests-jitter 200 --access-logfile - --error-logfile - wsgi:app
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=30
+
+# What the process may touch: its own data folder, nothing else; no new privileges, no devices, no kernel knobs
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ProtectClock=true
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=
+ReadWritePaths=/var/lib/bakablog
+UMask=0027
+
+[Install]
+WantedBy=multi-user.target

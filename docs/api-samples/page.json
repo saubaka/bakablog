@@ -1,0 +1,38 @@
+{
+  "id": 1,
+  "slug": "about",
+  "url": "/about",
+  "title": "关于",
+  "html": "<h2 id=\"你好我是-sau-baka\">你好，我是 sau_baka</h2>\n<p>写代码的人，偶尔画画，经常发呆。喜欢把东西做得安静一点——颜色浅一点，线条细一点，字号刚刚好。</p>\n<p>站名里的 Baka 是日语里的“笨蛋”。别人这么叫我的时候我会生气，自己这么叫的时候不会。</p>\n<h2 id=\"这个站是做什么的\">这个站是做什么的</h2>\n<ul>\n<li><strong>博客</strong>：认真写的文章，写得慢，但每一篇都改过三遍；</li>\n<li><strong>动态</strong>：碎碎念、随手拍的照片、看到的好链接，想到什么发什么；</li>\n<li>没有评论区，没有点赞，没有追踪你的东西。</li>\n</ul>\n<h2 id=\"它是怎么搭的\">它是怎么搭的</h2>\n<p>后端是 Flask 加一个 SQLite 文件，前端是 Vue 3。首屏大约 80 KB，在手机上也能很快打开。后台里每一个字都可以改。</p>\n<h2 id=\"联系我\">联系我</h2>\n<p>这里没有评论区。想说什么，请发邮件。</p>\n",
+  "toc": [
+    {
+      "id": "你好我是-sau-baka",
+      "text": "你好，我是 sau_baka",
+      "level": 2
+    },
+    {
+      "id": "这个站是做什么的",
+      "text": "这个站是做什么的",
+      "level": 2
+    },
+    {
+      "id": "它是怎么搭的",
+      "text": "它是怎么搭的",
+      "level": 2
+    },
+    {
+      "id": "联系我",
+      "text": "联系我",
+      "level": 2
+    }
+  ],
+  "template": "plain",
+  "updated_at": "2026-10-24T12:34:51Z",
+  "seo": {
+    "title": "关于",
+    "description": "",
+    "image": null,
+    "canonical": "https://blog.example/about",
+    "noindex": false
+  }
+}

@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="zh-CN" class="fx-pending">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>设计样张 · saubakaの博客 / Baka Blog</title>
+<meta name="description" content="阶段 P0：设计系统、滚动动效引擎和三张核心页面的静态样张。">
+<meta name="theme-color" content="#f7fbff">
+<script>
+/* before first paint: theme, motion level, and the guard that keeps [data-fx] elements hidden until the engine has positioned them */
+(function () {
+  var d = document.documentElement, m = null, t = null;
+  try { t = localStorage.getItem('bb:theme'); m = new URLSearchParams(location.search).get('motion') || localStorage.getItem('bb:motion'); } catch (e) {}
+  if (t) d.setAttribute('data-theme', t);
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) m = 'off';
+  if (m) d.setAttribute('data-fx-mode', m);
+  if (m === 'off') { d.classList.remove('fx-pending'); d.classList.add('fx-off'); }
+  setTimeout(function () { d.classList.remove('fx-pending'); }, 2600);
+})();
+</script>
+<noscript><style>html.fx-pending [data-fx]{opacity:1!important}</style></noscript>
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/pages.css">
+<link rel="stylesheet" href="css/fx.css">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+</head>
+<body data-page="hub">
+<a class="skip-link" href="#main">跳到正文</a>
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" focusable="false">
+<defs>
+
+<!-- ============ icons: 24x24, drawn with currentColor, 1.6 stroke, round joins (set by .i) ============ -->
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/></symbol>
+<symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6.8C10.3 5.5 7.6 5 4.5 5.4v12.1c3.1-.4 5.8.1 7.5 1.4 1.7-1.3 4.4-1.8 7.5-1.4V5.4c-3.1-.4-5.8.1-7.5 1.4zM12 6.8v12.1"/></symbol>
+<symbol id="i-chat" viewBox="0 0 24 24"><path d="M5.5 5h13A2 2 0 0 1 20.5 7v8a2 2 0 0 1-2 2H13l-4.2 3.2V17H5.5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01" stroke-width="2.4"/></symbol>
+<symbol id="i-smile" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8.6 13.8c.9 1.4 2 2.1 3.4 2.1s2.5-.7 3.4-2.1"/><path d="M9 9.6h.01M15 9.6h.01" stroke-width="2.4"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></symbol>
+<symbol id="i-more" viewBox="0 0 24 24"><path d="M5.5 12h.01M12 12h.01M18.5 12h.01" stroke-width="3"/></symbol>
+<symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+<symbol id="i-arrow-r" viewBox="0 0 24 24"><path d="M5 12h14m-5.5-5.5L19 12l-5.500 5.500"/></symbol>
+<symbol id="i-arrow-l" viewBox="0 0 24 24"><path d="M19 12H5m5.500-5.500L5 12l5.500 5.500"/></symbol>
+<symbol id="i-arrow-u" viewBox="0 0 24 24"><path d="M12 19V5m-5.500 5.500L12 5l5.500 5.500"/></symbol>
+<symbol id="i-arrow-d" viewBox="0 0 24 24"><path d="M12 5v14m-5.500-5.500L12 19l5.500-5.500"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><path d="M10.2 13.8a4 4 0 0 0 5.700 0l3-3a4 4 0 0 0-5.700-5.700l-1 1"/><path d="M13.8 10.2a4 4 0 0 0-5.700 0l-3 3a4 4 0 0 0 5.700 5.700l1-1"/></symbol>
+<symbol id="i-calendar" viewBox="0 0 24 24"><rect x="4" y="5.500" width="16" height="14.500" rx="3"/><path d="M4 10h16M8.500 3.500v4M15.500 3.500v4"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.500"/><path d="M12 7.500V12l3 2"/></symbol>
+<symbol id="i-tag" viewBox="0 0 24 24"><path d="M3.500 12.300V6a2.500 2.500 0 0 1 2.500-2.500h6.300a2.500 2.500 0 0 1 1.800.7l6.900 6.900a2.500 2.500 0 0 1 0 3.500l-6 6a2.500 2.500 0 0 1-3.500 0l-6.900-6.900a2.500 2.500 0 0 1-.7-1.800z"/><circle cx="8" cy="8" r="1.100"/></symbol>
+<symbol id="i-folder" viewBox="0 0 24 24"><path d="M3.500 7.500A2.500 2.500 0 0 1 6 5h3.800l2 2.500H18a2.500 2.500 0 0 1 2.500 2.500v6.500A2.500 2.500 0 0 1 18 19H6a2.500 2.500 0 0 1-2.500-2.500z"/></symbol>
+<symbol id="i-rss" viewBox="0 0 24 24"><path d="M5 5.500a13.500 13.500 0 0 1 13.500 13.500M5 11.200a7.800 7.800 0 0 1 7.800 7.800"/><circle cx="6.200" cy="18" r="1.300"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.500" y="8.500" width="11" height="11" rx="2.500"/><path d="M15.500 8.500V6.500A2.500 2.500 0 0 0 13 4H6.500A2.500 2.500 0 0 0 4 6.500V13a2.500 2.500 0 0 0 2.500 2.500h2"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.500 4.500 4.500L19 7.500"/></symbol>
+<symbol id="i-image" viewBox="0 0 24 24"><rect x="3.500" y="5" width="17" height="14" rx="3"/><circle cx="9" cy="10" r="1.500"/><path d="m4 17 4.500-4.200a1.500 1.500 0 0 1 2 0L15 17m-1.500-1.400 1.800-1.700a1.500 1.500 0 0 1 2 0l2.200 2"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="m12 4 2.300 4.900 5.300.7-3.900 3.700 1 5.300L12 16l-4.700 2.600 1-5.300L4.400 9.600l5.300-.7z"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="m14.500 4 5.500 5.500-2.200.8-3.100 3.100.4 3.400-1.400 1.400-3.200-3.200-5 5-.8-.8 5-5-3.200-3.200L8.200 9.600l3.400.4 3.100-3.100z"/></symbol>
+<symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4.500h5.500V10M19.500 4.500 11 13M17 14v3.500a2 2 0 0 1-2 2H6.500a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2H10"/></symbol>
+<symbol id="i-list" viewBox="0 0 24 24"><path d="M9 7h11M9 12h11M9 17h11"/><path d="M4.500 7h.01M4.500 12h.01M4.500 17h.01" stroke-width="2.600"/></symbol>
+<symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9.200 16.500h5.600M10 19.500h4M12 3.500a6 6 0 0 0-3.600 10.800c.6.500 1 1.200 1 2h5.200c0-.8.400-1.500 1-2A6 6 0 0 0 12 3.500z"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4.200 3.800 18.200a1.300 1.300 0 0 0 1.100 2h14.200a1.300 1.300 0 0 0 1.100-2z"/><path d="M12 9.800v4.200M12 17h.01" stroke-width="2"/></symbol>
+<symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 19.500S4.500 15 4.500 9.600A3.900 3.900 0 0 1 8.400 5.700c1.500 0 2.700.8 3.600 2 .9-1.200 2.100-2 3.600-2a3.900 3.900 0 0 1 3.900 3.900C19.500 15 12 19.500 12 19.500z"/></symbol>
+<symbol id="i-quote" viewBox="0 0 24 24"><path d="M9.500 7.500C6.500 8.500 5 11 5 14.500V17h5v-5H7.500c.1-1.800 1-3 2.500-3.800zM18.500 7.500c-3 1-4.500 3.500-4.500 7V17h5v-5h-2.500c.1-1.800 1-3 2.500-3.800z"/></symbol>
+<symbol id="i-code" viewBox="0 0 24 24"><path d="m8.500 8-4 4 4 4m7-8 4 4-4 4M13.500 5.500l-3 13"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24"><rect x="3.500" y="5.500" width="17" height="13" rx="3"/><path d="m4.500 8 7.500 5.500L19.500 8"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.500"/><path d="M12 11v5M12 8h.01" stroke-width="2"/></symbol>
+<symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h8M18 7h2M4 12h2M12 12h8M4 17h9M19 17h1"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="16" cy="17" r="2"/></symbol>
+<symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 4c.7 4.200 2.300 6.100 7 8-4.700 1.900-6.300 3.800-7 8-.7-4.200-2.300-6.100-7-8 4.700-1.900 6.300-3.800 7-8z"/></symbol>
+<symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="6.500" height="6.500" rx="1.800"/><rect x="13.500" y="4" width="6.500" height="6.500" rx="1.800"/><rect x="4" y="13.500" width="6.500" height="6.500" rx="1.800"/><rect x="13.500" y="13.500" width="6.500" height="6.500" rx="1.800"/></symbol>
+<symbol id="i-rows" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="5" rx="1.800"/><rect x="4" y="14" width="16" height="5" rx="1.800"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M19.500 14.500A7.500 7.500 0 0 1 9.500 4.500a7.500 7.500 0 1 0 10 10z"/></symbol>
+
+<!-- ============ doodles: 48x48, line art in currentColor, 1.5 stroke ============ -->
+<symbol id="d-star" viewBox="0 0 48 48"><path d="m24 7 4.600 9.700 10.700 1.400-7.800 7.400 2 10.500L24 30.800 14.500 36l2-10.500-7.800-7.400 10.700-1.400z"/></symbol>
+<symbol id="d-heart" viewBox="0 0 48 48"><path d="M24 39S8 29.500 8 18.500A8.500 8.500 0 0 1 16.500 10c3.200 0 5.900 1.700 7.500 4.300C25.600 11.700 28.300 10 31.500 10A8.500 8.500 0 0 1 40 18.500C40 29.500 24 39 24 39z"/></symbol>
+<symbol id="d-sparkle" viewBox="0 0 48 48"><path d="M24 6c1.200 8.500 4.500 12 14 18-9.500 6-12.800 9.500-14 18-1.200-8.500-4.500-12-14-18 9.500-6 12.800-9.500 14-18z"/></symbol>
+<symbol id="d-flower" viewBox="0 0 48 48"><circle cx="24" cy="24" r="4"/><path d="M24 20c-4-6-1-11 0-12 1 1 4 6 0 12zM28 24c6-4 11-1 12 0-1 1-6 4-12 0zM24 28c4 6 1 11 0 12-1-1-4-6 0-12zM20 24c-6 4-11 1-12 0 1-1 6-4 12 0z"/></symbol>
+<symbol id="d-paw" viewBox="0 0 48 48"><ellipse cx="24" cy="31" rx="8" ry="6.500"/><circle cx="12.500" cy="22" r="3.500"/><circle cx="20" cy="14.500" r="3.500"/><circle cx="28" cy="14.500" r="3.500"/><circle cx="35.500" cy="22" r="3.500"/></symbol>
+<symbol id="d-wave" viewBox="0 0 48 48"><path d="M5 26c4-8 7-8 10 0s7 8 10 0 7-8 10 0 5 6 8 2"/></symbol>
+<symbol id="d-loop" viewBox="0 0 48 48"><path d="M8 32C18 12 30 14 28 26S12 34 20 20 42 14 42 28"/></symbol>
+
+<!-- ============ mood stickers: 40x40 ============ -->
+<symbol id="mood-happy" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="var(--mf,#fdeef3)" stroke="var(--ml,#f3d6e2)" stroke-width="1.400"/><path d="M12.500 17q2.500-3.500 5 0M22.500 17q2.500-3.500 5 0M14 23q6 7 12 0" fill="none" stroke="#5d6c84" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="mood-energy" viewBox="0 0 40 40"><circle cx="20" cy="22" r="16" fill="var(--mf,#e6f1fc)" stroke="var(--ml,#dceaf7)" stroke-width="1.400"/><path d="M14.500 19v3M25.500 19v3M14 26h12q-1 5.500-6 5.500T14 26z" fill="none" stroke="#5d6c84" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 3.500v3.500M11.500 6.500l1.800 2.800M28.500 6.500l-1.800 2.800" stroke="#f2c6d8" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="mood-calm" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="var(--mf,#eff2f6)" stroke="var(--ml,#dceaf7)" stroke-width="1.400"/><path d="M12.500 18h5M22.500 18h5M16 25q4 3 8 0" fill="none" stroke="#5d6c84" stroke-width="1.800" stroke-linecap="round"/></symbol>
+<symbol id="mood-sleepy" viewBox="0 0 40 40"><circle cx="20" cy="21" r="16" fill="var(--mf,#e6f1fc)" stroke="var(--ml,#dceaf7)" stroke-width="1.400"/><path d="M12.500 19q2.500 3 5 0M22.500 19q2.500 3 5 0M18 26h4" fill="none" stroke="#5d6c84" stroke-width="1.800" stroke-linecap="round"/><path d="M28 5h5l-5 6h5" fill="none" stroke="#c3dcf4" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="mood-think" viewBox="0 0 40 40"><circle cx="18" cy="22" r="16" fill="var(--mf,#fdeef3)" stroke="var(--ml,#f3d6e2)" stroke-width="1.400"/><circle cx="13" cy="19.500" r="1.700" fill="#5d6c84"/><circle cx="23" cy="19.500" r="1.700" fill="#5d6c84"/><path d="M15 27h6" fill="none" stroke="#5d6c84" stroke-width="1.800" stroke-linecap="round"/><circle cx="31" cy="10" r="1.600" fill="#fff" stroke="#c3dcf4" stroke-width="1.200"/><circle cx="35" cy="5.500" r="2.400" fill="#fff" stroke="#c3dcf4" stroke-width="1.200"/></symbol>
+<symbol id="mood-party" viewBox="0 0 40 40"><circle cx="20" cy="22" r="16" fill="var(--mf,#fdeef3)" stroke="var(--ml,#f3d6e2)" stroke-width="1.400"/><path d="M12.500 20q2.500-3.500 5 0M22.500 20q2.500-3.500 5 0M15 26h10q-1 5-5 5t-5-5z" fill="none" stroke="#5d6c84" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 8l3 2.500M34 7l-3 2.500M20 2v3.500" stroke="#f2c6d8" stroke-width="2" stroke-linecap="round"/><circle cx="7" cy="16" r="1.400" fill="#c3dcf4"/><circle cx="34" cy="15" r="1.400" fill="#c3dcf4"/></symbol>
+
+</defs>
+</svg>
+
+<header class="site-header">
+  <div class="wrap site-header__in">
+    <a class="brand" href="home.html" aria-label="saubakaの博客 · Baka Blog，回到首页">
+      <span class="brand__text"><b>saubakaの博客</b><small>Baka Blog</small></span>
+    </a>
+    <nav class="nav" aria-label="主导航">
+      <span class="nav__ind" aria-hidden="true"></span>
+      <a href="home.html">首页</a>
+      <a href="blog.html">博客</a>
+      <a href="moments.html">动态</a>
+      <a href="archive.html">归档</a>
+      <a href="home.html#about">关于</a>
+    </nav>
+    <div class="site-header__tools">
+      <button class="icon-btn" data-open-search aria-label="搜索（快捷键 /）"><svg class="i"><use href="#i-search"/></svg></button>
+      <a class="icon-btn hide-sm" href="#" aria-label="订阅 RSS"><svg class="i"><use href="#i-rss"/></svg></a>
+    </div>
+  </div>
+</header>
+
+<main id="main" tabindex="-1">
+<div class="wrap">
+  <header class="page-head">
+    <span class="kicker" data-fx="pop" data-fx-intro="0"><svg class="i"><use href="#i-sparkle"/></svg>阶段 P0 · 设计样张</span>
+    <h1 data-fx="text" data-fx-intro="1">saubakaの博客 的样子</h1>
+    <p data-fx="fade" data-fx-intro="2">Baka Blog · sau_baka · 不是笨蛋！！<br>这里所有页面都是静态样张，没有后端，文字和图片都是示例。请在你的 Safari 里打开、滚一滚、缩一缩窗口，再告诉我哪里要改。</p>
+  </header>
+
+  <section class="section section--first" style="padding-top:8px">
+    <div class="hub-grid" data-fx-stagger>
+      <a class="card hub-card" href="home.html" data-fx="rise"><h3><svg class="i"><use href="#i-home"/></svg>首页</h3><p>开场、最近的文章、动态、书架、关于我。</p><span class="text-link">打开 <svg class="i"><use href="#i-arrow-r"/></svg></span></a>
+      <a class="card hub-card" href="blog.html" data-fx="rise"><h3><svg class="i"><use href="#i-book"/></svg>博客列表</h3><p>分类标签页、筛选、搜索、排序、卡片 / 列表切换（可以真的点）。</p><span class="text-link">打开 <svg class="i"><use href="#i-arrow-r"/></svg></span></a>
+      <a class="card hub-card" href="post.html" data-fx="rise"><h3><svg class="i"><use href="#i-code"/></svg>文章页</h3><p>目录、代码块、提示块、表格、图集、系列、上下篇。</p><span class="text-link">打开 <svg class="i"><use href="#i-arrow-r"/></svg></span></a>
+      <a class="card hub-card" href="moments.html" data-fx="rise"><h3><svg class="i"><use href="#i-chat"/></svg>动态</h3><p>时间线、气泡、心情、链接卡片、图片排版、灯箱。</p><span class="text-link">打开 <svg class="i"><use href="#i-arrow-r"/></svg></span></a>
+      <a class="card hub-card" href="archive.html" data-fx="rise"><h3><svg class="i"><use href="#i-calendar"/></svg>归档</h3><p>按年月的时间线。</p><span class="text-link">打开 <svg class="i"><use href="#i-arrow-r"/></svg></span></a>
+      <a class="card hub-card" href="404.html" data-fx="rise"><h3><svg class="i"><use href="#i-search"/></svg>404</h3><p>走丢了的页面。</p><span class="text-link">打开 <svg class="i"><use href="#i-arrow-r"/></svg></span></a>
+      <a class="card hub-card card--note" href="components.html" data-fx="rise"><span class="tape" style="left:22px;top:-11px"></span><h3><svg class="i"><use href="#i-sparkle"/></svg>设计系统</h3><p>配色（含实时对比度）、线条、字体、全部组件、图标。</p><span class="text-link">打开 <svg class="i"><use href="#i-arrow-r"/></svg></span></a>
+      <a class="card hub-card card--note" href="fx-lab.html" data-fx="rise"><span class="tape tape--sky" style="left:22px;top:-11px"></span><h3><svg class="i"><use href="#i-sliders"/></svg>动效实验室</h3><p>每种动效的数值、逐字折行测试、自检按钮。</p><span class="text-link">打开 <svg class="i"><use href="#i-arrow-r"/></svg></span></a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="split">
+      <div class="split__label"><h2 data-fx="text">请你看什么</h2><p data-fx="fade">按这张清单看，一遍就够。</p></div>
+      <ul class="checklist" data-fx-stagger>
+        <li data-fx="fade"><span class="check__box" style="background:var(--fill)"><svg class="i" style="opacity:1;scale:1"><use href="#i-check"/></svg></span><span><b>颜色和线条</b>：是不是足够浅、足够干净？有没有哪里让你觉得“灰”“重”？线条和统计卡片那种浅蓝是不是一致？</span></li>
+        <li data-fx="fade"><span class="check__box" style="background:var(--fill)"><svg class="i" style="opacity:1;scale:1"><use href="#i-check"/></svg></span><span><b>可爱程度</b>：涂鸦、胶带、邮戳、便利贴，是太多、刚好，还是不够？</span></li>
+        <li data-fx="fade"><span class="check__box" style="background:var(--fill)"><svg class="i" style="opacity:1;scale:1"><use href="#i-check"/></svg></span><span><b>滚动动效</b>：慢慢滚、快速甩、倒着滚。标题逐字上浮、卡片上浮、气泡侧滑，节奏舒服吗？右下角「设计面板」可以切换「标准 / 轻柔 / 关闭」。</span></li>
+        <li data-fx="fade"><span class="check__box" style="background:var(--fill)"><svg class="i" style="opacity:1;scale:1"><use href="#i-check"/></svg></span><span><b>手机宽度</b>：把窗口缩到最窄，或者用手机访问。底部胶囊导航、目录抽屉、卡片排列。</span></li>
+        <li data-fx="fade"><span class="check__box" style="background:var(--fill)"><svg class="i" style="opacity:1;scale:1"><use href="#i-check"/></svg></span><span><b>文章页顶部的细线</b>：读文章时屏幕最上方有一条 2px 的浅粉阅读进度线。如果你不喜欢屏幕上方有任何线，我就去掉它。</span></li>
+        <li data-fx="fade"><span class="check__box" style="background:var(--fill)"><svg class="i" style="opacity:1;scale:1"><use href="#i-check"/></svg></span><span><b>字体</b>：中文用系统圆体，英文用丸ゴ。在 Safari 里看是不是你想要的圆润感？</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="split">
+      <div class="split__label"><h2 data-fx="text">说明</h2></div>
+      <div class="stack" data-fx-stagger>
+        <div class="note note--sky" data-fx="rise"><h3>这些页面是怎么来的</h3><p style="font-size:14.5px;color:var(--ink-2)">纯 HTML / CSS / JS，没有安装任何依赖。样式分在同一套有序的层里，滚动动效是一个独立的小引擎。通过之后，这些样式和引擎会原样搬进 Vue 项目里。</p></div>
+        <div class="note" data-fx="rise"><h3>名字</h3><p style="font-size:14.5px;color:var(--ink-2)">站点名「saubakaの博客」、英文名 Baka Blog、作者 sau_baka、简介「不是笨蛋！！」。以后改名只改一处设置，页面里不写死。</p></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="site-footer__in">
+      <div class="site-footer__brand">
+        <div>
+          <strong style="font-size:18px">saubakaの博客</strong>
+          <p>不是笨蛋！！<br>写代码，记日常，偶尔拍点照片。</p>
+        </div>
+      </div>
+      <div>
+        <h2>浏览</h2>
+        <ul>
+          <li><a href="home.html"><svg class="i"><use href="#i-home"/></svg>首页</a></li>
+          <li><a href="blog.html"><svg class="i"><use href="#i-book"/></svg>博客</a></li>
+          <li><a href="moments.html"><svg class="i"><use href="#i-chat"/></svg>动态</a></li>
+          <li><a href="archive.html"><svg class="i"><use href="#i-calendar"/></svg>归档</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>订阅与联系</h2>
+        <ul>
+          <li><a href="#"><svg class="i"><use href="#i-rss"/></svg>文章 RSS</a></li>
+          <li><a href="#"><svg class="i"><use href="#i-rss"/></svg>动态 RSS</a></li>
+          <li><a href="mailto:hello@example.com"><svg class="i"><use href="#i-mail"/></svg>发邮件给我</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-footer__legal">
+      <span>© 2026 sau_baka · Baka Blog · 没有评论区，想说什么请发邮件</span>
+      <span>设计样张 · 页面里的文字和图片都是示例</span>
+    </div>
+  </div>
+</footer>
+
+<nav class="tabbar" aria-label="底部导航">
+  <span class="tabbar__ind" aria-hidden="true"></span>
+  <a href="home.html"><svg class="i"><use href="#i-home"/></svg>首页</a>
+  <a href="blog.html"><svg class="i"><use href="#i-book"/></svg>博客</a>
+  <a href="moments.html"><svg class="i"><use href="#i-chat"/></svg>动态</a>
+  <button type="button" data-open-search><svg class="i"><use href="#i-search"/></svg>搜索</button>
+  <button type="button" data-open-sheet="#more-sheet"><svg class="i"><use href="#i-more"/></svg>更多</button>
+</nav>
+<div class="sheet" id="more-sheet" role="dialog" aria-label="更多">
+  <div class="sheet__grab"></div>
+  <ul class="stack" style="gap:6px">
+    <li><a class="postrow" style="border:0;padding:12px 4px" href="archive.html"><svg class="i"><use href="#i-calendar"/></svg><strong>归档</strong></a></li>
+    <li><a class="postrow" style="border:0;padding:12px 4px" href="home.html#about"><svg class="i"><use href="#i-smile"/></svg><strong>关于</strong></a></li>
+    <li><a class="postrow" style="border:0;padding:12px 4px" href="#"><svg class="i"><use href="#i-rss"/></svg><strong>订阅 RSS</strong></a></li>
+    <li><a class="postrow" style="border:0;padding:12px 4px" href="components.html"><svg class="i"><use href="#i-sparkle"/></svg><strong>设计系统（样张）</strong></a></li>
+    <li><a class="postrow" style="border:0;padding:12px 4px" href="fx-lab.html"><svg class="i"><use href="#i-sliders"/></svg><strong>动效实验室（样张）</strong></a></li>
+  </ul>
+</div>
+
+<div class="backtop">
+  <button class="ring-btn" type="button" aria-label="回到顶部">
+    <svg class="ring" viewBox="0 0 58 58" aria-hidden="true"><circle cx="29" cy="29" r="27" stroke="var(--line)"/><circle class="fg" cx="29" cy="29" r="27" stroke="var(--rose-300)"/></svg>
+    <svg class="i" aria-hidden="true"><use href="#i-arrow-u"/></svg>
+  </button>
+</div>
+
+<dialog class="dialog dialog--search" id="search" aria-label="搜索">
+  <div class="searchbox">
+    <div class="searchbox__top">
+      <svg class="i"><use href="#i-search"/></svg>
+      <input class="input" type="search" placeholder="搜文章、动态、页面……" aria-label="搜索关键词" autocomplete="off">
+      <kbd>Esc</kbd>
+    </div>
+    <div class="searchbox__list" role="listbox" aria-label="搜索结果"></div>
+    <div class="searchbox__foot"><span>↑ ↓ 选择　↵ 打开</span><span>按 / 随时呼出</span></div>
+  </div>
+</dialog>
+
+
+<script type="module" src="js/site.js"></script>
+</body>
+</html>

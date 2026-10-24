@@ -1,0 +1,9 @@
+/* One entry for all styles. The order of the layers is declared at the top of tokens.css:
+   reset, tokens, base, components, layout, pages, fx, utilities. Every rule lives inside a layer; nothing is left unlayered. */
+@import './tokens.css';
+@import './base.css';
+@import './components.css';
+@import './layout.css';
+@import './prose.css';
+@import './pages.css';
+@import './fx.css';

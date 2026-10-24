@@ -1,0 +1,162 @@
+{
+  "top": {
+    "items": [
+      {
+        "id": null,
+        "region": "top",
+        "label": "首页",
+        "kind": "route",
+        "target": "/",
+        "sticker": "home",
+        "enabled": true
+      },
+      {
+        "id": null,
+        "region": "top",
+        "label": "博客",
+        "kind": "route",
+        "target": "/blog",
+        "sticker": "book",
+        "enabled": true
+      },
+      {
+        "id": null,
+        "region": "top",
+        "label": "动态",
+        "kind": "route",
+        "target": "/moments",
+        "sticker": "chat",
+        "enabled": true
+      },
+      {
+        "id": null,
+        "region": "top",
+        "label": "归档",
+        "kind": "route",
+        "target": "/archive",
+        "sticker": "calendar",
+        "enabled": true
+      },
+      {
+        "id": null,
+        "region": "top",
+        "label": "关于",
+        "kind": "page",
+        "target": "about",
+        "sticker": "smile",
+        "enabled": true
+      }
+    ],
+    "customized": false
+  },
+  "mobile": {
+    "items": [
+      {
+        "id": null,
+        "region": "mobile",
+        "label": "首页",
+        "kind": "route",
+        "target": "/",
+        "sticker": "home",
+        "enabled": true
+      },
+      {
+        "id": null,
+        "region": "mobile",
+        "label": "博客",
+        "kind": "route",
+        "target": "/blog",
+        "sticker": "book",
+        "enabled": true
+      },
+      {
+        "id": null,
+        "region": "mobile",
+        "label": "动态",
+        "kind": "route",
+        "target": "/moments",
+        "sticker": "chat",
+        "enabled": true
+      },
+      {
+        "id": null,
+        "region": "mobile",
+        "label": "搜索",
+        "kind": "action",
+        "target": "search",
+        "sticker": "search",
+        "enabled": true
+      },
+      {
+        "id": null,
+        "region": "mobile",
+        "label": "更多",
+        "kind": "action",
+        "target": "more",
+        "sticker": "more",
+        "enabled": true
+      }
+    ],
+    "customized": false
+  },
+  "footer": {
+    "items": [
+      {
+        "id": null,
+        "region": "footer",
+        "label": "首页",
+        "kind": "route",
+        "target": "/",
+        "sticker": "home",
+        "enabled": true
+      },
+      {
+        "id": null,
+        "region": "footer",
+        "label": "博客",
+        "kind": "route",
+        "target": "/blog",
+        "sticker": "book",
+        "enabled": true
+      },
+      {
+        "id": null,
+        "region": "footer",
+        "label": "动态",
+        "kind": "route",
+        "target": "/moments",
+        "sticker": "chat",
+        "enabled": true
+      },
+      {
+        "id": null,
+        "region": "footer",
+        "label": "归档",
+        "kind": "route",
+        "target": "/archive",
+        "sticker": "calendar",
+        "enabled": true
+      },
+      {
+        "id": null,
+        "region": "footer",
+        "label": "文章 RSS",
+        "kind": "link",
+        "target": "/feed/posts.xml",
+        "sticker": "rss",
+        "enabled": true
+      },
+      {
+        "id": null,
+        "region": "footer",
+        "label": "动态 RSS",
+        "kind": "link",
+        "target": "/feed/moments.xml",
+        "sticker": "rss",
+        "enabled": true
+      }
+    ],
+    "customized": false
+  },
+  "mobile_max": 5
+}

@@ -1,0 +1,62 @@
+@layer pages {
+
+  /* =============== article text: the server's sanitised Markdown HTML (docs/API.md section 6) ===============
+     Shared by the public pages and the admin preview, so what the author sees while writing is what visitors read. */
+  .prose { font-size: 17px; line-height: 1.95; color: var(--ink); }
+  .prose > * + * { margin-top: 1.3em; }
+  .prose h2 { font-size: 27px; margin-top: 2.4em; scroll-margin-top: 104px; }
+  .prose h2::before { content: ""; display: inline-block; width: .8em; height: .8em; margin-right: .5em; vertical-align: -.04em; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' fill='none' stroke='%23f2c6d8' stroke-width='3.500' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m24 7 4.600 9.700 10.700 1.400-7.800 7.400 2 10.500L24 30.800 14.500 36l2-10.500-7.800-7.400 10.700-1.400z'/%3E%3C/svg%3E") center / contain no-repeat; }
+  .prose h3 { font-size: 20px; margin-top: 2em; scroll-margin-top: 104px; }
+  .prose a { color: var(--link); font-weight: 600; text-decoration: underline; text-decoration-color: var(--sky-300); text-decoration-thickness: 2px; text-underline-offset: 5px; transition: text-decoration-color var(--dur-1) var(--ease); }
+  .prose a:hover { text-decoration-color: var(--link); }
+  .prose strong { font-weight: 700; }
+  .prose ul { display: grid; gap: .5em; padding-left: 1.5em; }
+  .prose ul > li { position: relative; }
+  .prose ul > li::before { content: ""; position: absolute; left: -1.15em; top: .8em; width: 7px; height: 7px; border-radius: 50%; background: var(--accent-graphic); }
+  .prose ol { counter-reset: o; display: grid; gap: .5em; padding-left: 2.1em; }
+  .prose ol > li { counter-increment: o; position: relative; }
+  .prose ol > li::before { content: counter(o); position: absolute; left: -2.1em; top: .32em; display: grid; place-items: center; width: 1.55em; height: 1.55em; border-radius: 50%; background: var(--fill); font-size: .8em; font-weight: 700; line-height: 1; }
+  .prose :not(pre) > code { padding: .1em .45em; border: 1px solid var(--line); border-radius: 8px; background: var(--neutral); font: .88em var(--mono); color: var(--ink); }
+  .prose kbd { padding: .1em .5em; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 8px; background: var(--paper); font: .85em var(--mono); }
+  .prose blockquote { position: relative; padding: 22px 26px 20px 28px; background: var(--accent-soft); border: 1px solid var(--accent-line); border-radius: 6px 24px 24px 24px; font-size: 16.5px; }
+  .prose blockquote::before {
+    content: ""; position: absolute; left: 22px; top: -11px; width: 76px; height: 22px; rotate: -4deg; pointer-events: none;
+    background: var(--rose-200); background: color-mix(in srgb, var(--rose-200) 82%, transparent);
+    clip-path: polygon(0 0, 4% 20%, 0 40%, 4% 60%, 0 80%, 4% 100%, 100% 100%, 96% 80%, 100% 60%, 96% 40%, 100% 20%, 96% 0);
+  }
+  html.no-tape .prose blockquote::before { display: none; }
+  .prose blockquote > * + * { margin-top: .8em; }
+  .prose .callout, .prose .code, .prose .table-wrap, .prose .fig, .prose .gallery, .prose details { margin-block: 1.9em; }
+  .prose hr { height: 12px; border: 0; margin: 2.6em 0; background: var(--sky-300); -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='12' viewBox='0 0 40 12'%3E%3Cpath d='M0 6q5-6 10 0t10 0 10 0 10 0' fill='none' stroke='%23000' stroke-width='1.600'/%3E%3C/svg%3E") repeat-x center / 40px 12px; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='12' viewBox='0 0 40 12'%3E%3Cpath d='M0 6q5-6 10 0t10 0 10 0 10 0' fill='none' stroke='%23000' stroke-width='1.600'/%3E%3C/svg%3E") repeat-x center / 40px 12px; }
+  .prose .contains-task-list { padding-left: 0; }
+  .prose .task-list-item { display: flex; align-items: flex-start; gap: 12px; }
+  .prose .task-list-item::before { display: none; }
+  .prose .task-list-item-checkbox {
+    appearance: none; -webkit-appearance: none; flex: none; width: 22px; height: 22px; margin: .3em 0 0; border: 1px solid var(--line); border-radius: 8px; background: var(--paper);
+    display: inline-grid; place-items: center;
+  }
+  .prose .task-list-item-checkbox:checked { background: var(--fill); }
+  .prose .task-list-item-checkbox:checked::after {
+    content: ""; width: 16px; height: 16px; background: var(--link);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.200' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.500 4.500 4.500L19 7.500'/%3E%3C/svg%3E") center / contain no-repeat;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.200' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.500 4.500 4.500L19 7.500'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+  .prose .task-list-item:has(:checked) { color: var(--ink-2); }
+  .prose sup a, .prose a.footnote-ref { display: inline-grid; place-items: center; min-width: 1.5em; height: 1.5em; padding: 0 .3em; border-radius: 8px; background: var(--fill); font-size: .75em; font-weight: 700; text-decoration: none; vertical-align: super; }
+  .footnotes { margin-top: 3em; padding-top: 1.2em; border-top: 1px dashed var(--line); color: var(--ink-2); font-size: 14px; line-height: 1.8; }
+  .footnotes .footnotes-sep { display: none; }
+  .footnotes-list { counter-reset: none; display: grid; gap: .5em; padding-left: 1.6em; list-style: decimal; }
+  .footnotes-list > li::before { display: none; }
+  .footnote-backref { margin-left: .4em; text-decoration: none; }
+  .prose mark { padding: 0 .2em; border-radius: 4px; background: var(--accent-strong); color: inherit; }
+  .prose details { padding: 12px 18px; background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-md); }
+  .prose summary { cursor: pointer; font-weight: 700; }
+  .prose details[open] summary { margin-bottom: .6em; }
+  .prose img.inline-img { margin-inline: .1em; }
+  .prose table { font-size: 15px; }
+
+  @media (max-width: 760px) {
+    .prose { font-size: 16.5px; }
+    .prose h2 { font-size: 23px; }
+  }
+}

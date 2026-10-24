@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Baka Blog maintenance every 5 minutes (it only does work when something is due: the daily backup, the daily clean-up)
+
+[Timer]
+OnCalendar=*-*-* *:0/5:00
+AccuracySec=10s
+Persistent=false
+Unit=bakablog-maintenance.service
+
+[Install]
+WantedBy=timers.target

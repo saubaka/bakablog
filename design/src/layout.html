@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN" class="fx-pending">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>{{title}}</title>
+<meta name="description" content="{{desc}}">
+<meta name="theme-color" content="#f7fbff">
+<script>
+/* before first paint: theme, motion level, and the guard that keeps [data-fx] elements hidden until the engine has positioned them */
+(function () {
+  var d = document.documentElement, m = null, t = null;
+  try { t = localStorage.getItem('bb:theme'); m = new URLSearchParams(location.search).get('motion') || localStorage.getItem('bb:motion'); } catch (e) {}
+  if (t) d.setAttribute('data-theme', t);
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) m = 'off';
+  if (m) d.setAttribute('data-fx-mode', m);
+  if (m === 'off') { d.classList.remove('fx-pending'); d.classList.add('fx-off'); }
+  setTimeout(function () { d.classList.remove('fx-pending'); }, 2600);
+})();
+</script>
+<noscript><style>html.fx-pending [data-fx]{opacity:1!important}</style></noscript>
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/pages.css">
+<link rel="stylesheet" href="css/fx.css">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+</head>
+<body data-page="{{page}}">
+<a class="skip-link" href="#main">跳到正文</a>
+{{sprite}}
+{{header}}
+<main id="main" tabindex="-1">
+{{body}}
+</main>
+{{footer}}
+{{tabbar}}
+{{backtop}}
+{{search}}
+{{extra}}
+<script type="module" src="js/site.js"></script>
+</body>
+</html>

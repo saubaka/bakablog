@@ -1,0 +1,94 @@
+{
+  "items": [
+    {
+      "id": 6,
+      "alt": "下雨的窗户",
+      "caption": "",
+      "width": 960,
+      "height": 672,
+      "color": "#e6f1fc",
+      "animated": false,
+      "src": "/media/d3deb8e4526a77dcc429a90663224c72/960.webp",
+      "srcset": "/media/d3deb8e4526a77dcc429a90663224c72/480.webp 480w, /media/d3deb8e4526a77dcc429a90663224c72/960.webp 960w, /media/d3deb8e4526a77dcc429a90663224c72/1600.webp 1000w",
+      "full": "/media/d3deb8e4526a77dcc429a90663224c72/1600.webp",
+      "variants": [
+        {
+          "size": 480,
+          "w": 480,
+          "h": 336,
+          "url": "/media/d3deb8e4526a77dcc429a90663224c72/480.webp"
+        },
+        {
+          "size": 960,
+          "w": 960,
+          "h": 672,
+          "url": "/media/d3deb8e4526a77dcc429a90663224c72/960.webp"
+        },
+        {
+          "size": 1600,
+          "w": 1000,
+          "h": 700,
+          "url": "/media/d3deb8e4526a77dcc429a90663224c72/1600.webp"
+        }
+      ],
+      "hash": "d3deb8e4526a77dcc429a90663224c72",
+      "filename": "window.png",
+      "kind": "image",
+      "mime": "image/png",
+      "bytes": 5987,
+      "orig_width": 1000,
+      "orig_height": 700,
+      "created_at": "2026-10-24T12:34:51Z",
+      "updated_at": "2026-10-24T12:34:51Z",
+      "deleted_at": null,
+      "usage_count": 2
+    },
+    {
+      "id": 5,
+      "alt": "远处淡蓝色的山",
+      "caption": "",
+      "width": 960,
+      "height": 640,
+      "color": "#e6f1fc",
+      "animated": false,
+      "src": "/media/e6ca34af7def8ec28205211939211af6/960.webp",
+      "srcset": "/media/e6ca34af7def8ec28205211939211af6/480.webp 480w, /media/e6ca34af7def8ec28205211939211af6/960.webp 960w, /media/e6ca34af7def8ec28205211939211af6/1600.webp 1200w",
+      "full": "/media/e6ca34af7def8ec28205211939211af6/1600.webp",
+      "variants": [
+        {
+          "size": 480,
+          "w": 480,
+          "h": 320,
+          "url": "/media/e6ca34af7def8ec28205211939211af6/480.webp"
+        },
+        {
+          "size": 960,
+          "w": 960,
+          "h": 640,
+          "url": "/media/e6ca34af7def8ec28205211939211af6/960.webp"
+        },
+        {
+          "size": 1600,
+          "w": 1200,
+          "h": 800,
+          "url": "/media/e6ca34af7def8ec28205211939211af6/1600.webp"
+        }
+      ],
+      "hash": "e6ca34af7def8ec28205211939211af6",
+      "filename": "hills.png",
+      "kind": "image",
+      "mime": "image/png",
+      "bytes": 7290,
+      "orig_width": 1200,
+      "orig_height": 800,
+      "created_at": "2026-10-24T12:34:51Z",
+      "updated_at": "2026-10-24T12:34:51Z",
+      "deleted_at": null,
+      "usage_count": 3
+    }
+  ],
+  "total": 6,
+  "page": 1,
+  "per": 2,
+  "pages": 3
+}

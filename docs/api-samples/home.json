@@ -1,0 +1,791 @@
+{
+  "blocks": [
+    {
+      "type": "hero",
+      "id": null,
+      "config": {
+        "note": "近况 · 正在把博客重新画一遍",
+        "title_lines": [
+          "我是 sau_baka，",
+          "不是笨蛋！！"
+        ],
+        "intro": "这里是我的小窝：博客里放认真写的文章，动态里放碎碎念和随手拍的照片。没有评论区——想说什么，请发邮件。",
+        "buttons": [
+          {
+            "label": "读博客",
+            "url": "/blog",
+            "style": "fill"
+          },
+          {
+            "label": "看动态",
+            "url": "/moments",
+            "style": "line"
+          },
+          {
+            "label": "订阅 RSS",
+            "url": "/feed/posts.xml",
+            "style": "link"
+          }
+        ],
+        "polaroid": {
+          "media_id": null,
+          "caption": "sau_baka，正在写代码",
+          "bubble": "哼，才不是为了谁才更新的！",
+          "media": null
+        },
+        "doodles": [
+          "star",
+          "heart",
+          "sparkle"
+        ]
+      },
+      "data": {}
+    },
+    {
+      "type": "latest_posts",
+      "id": null,
+      "config": {
+        "title": "最近的文章",
+        "intro": "写得慢，但每一篇都认真改过三遍。",
+        "count": 6,
+        "layout": "mixed"
+      },
+      "data": {
+        "posts": [
+          {
+            "id": 1,
+            "slug": "sqlite-backup",
+            "url": "/blog/sqlite-backup",
+            "title": "SQLite 备份：我差点把自己的数据弄丢",
+            "summary": "先说结论：别用 cp 去备份一个正在被写入的 SQLite 数据库。我就是这样做的，而且还成功了很多次——直到有一次没成功。 这个站用 SQLite 当数据库：一个文件，不用另外装服务，备份起来“应该很简单”。我的第一版备份脚本只有一行：…",
+            "cover": {
+              "id": 1,
+              "alt": "淡蓝色的天空",
+              "caption": "",
+              "width": 960,
+              "height": 640,
+              "color": "#e6f1fc",
+              "animated": false,
+              "src": "/media/348726c4e2463a5fe3390a14f8b9b8a6/960.webp",
+              "srcset": "/media/348726c4e2463a5fe3390a14f8b9b8a6/480.webp 480w, /media/348726c4e2463a5fe3390a14f8b9b8a6/960.webp 960w, /media/348726c4e2463a5fe3390a14f8b9b8a6/1600.webp 1200w",
+              "full": "/media/348726c4e2463a5fe3390a14f8b9b8a6/1600.webp",
+              "variants": [
+                {
+                  "size": 480,
+                  "w": 480,
+                  "h": 320,
+                  "url": "/media/348726c4e2463a5fe3390a14f8b9b8a6/480.webp"
+                },
+                {
+                  "size": 960,
+                  "w": 960,
+                  "h": 640,
+                  "url": "/media/348726c4e2463a5fe3390a14f8b9b8a6/960.webp"
+                },
+                {
+                  "size": 1600,
+                  "w": 1200,
+                  "h": 800,
+                  "url": "/media/348726c4e2463a5fe3390a14f8b9b8a6/1600.webp"
+                }
+              ]
+            },
+            "cover_alt": "",
+            "cover_focus": {
+              "x": 50.0,
+              "y": 50.0
+            },
+            "category": {
+              "id": 1,
+              "slug": "dai-ma",
+              "name": "代码",
+              "description": "",
+              "sticker": "code",
+              "url": "/category/dai-ma"
+            },
+            "tags": [
+              {
+                "id": 3,
+                "slug": "flask",
+                "name": "Flask",
+                "color": "sky",
+                "sticker": null,
+                "url": "/tag/flask"
+              },
+              {
+                "id": 1,
+                "slug": "sqlite",
+                "name": "SQLite",
+                "color": "rose",
+                "sticker": null,
+                "url": "/tag/sqlite"
+              },
+              {
+                "id": 2,
+                "slug": "bei-fen",
+                "name": "备份",
+                "color": "mist",
+                "sticker": null,
+                "url": "/tag/bei-fen"
+              }
+            ],
+            "series": {
+              "id": 1,
+              "slug": "ba-bo-ke-zuo-cheng-zi-ji-xi-huan-de-yang-zi",
+              "title": "把博客做成自己喜欢的样子",
+              "order": 3
+            },
+            "pinned": false,
+            "featured": true,
+            "card_style": "auto",
+            "published_at": "2026-10-20T12:34:51Z",
+            "updated_at": "2026-10-24T12:34:51Z",
+            "reading_minutes": 2,
+            "word_count": 736
+          },
+          {
+            "id": 3,
+            "slug": "lighter-lines",
+            "url": "/blog/lighter-lines",
+            "title": "把线条调浅了一点点，页面就安静了",
+            "summary": "一条 1px 的线，颜色深一档和浅一档，整页的气质完全不同。 我把所有的线统一成了同一个颜色。卡片、分隔线、输入框，都用它： 用了一个变量之后，“哪条线颜色不对”这类问题就从“满页找”变成了“搜一下变量名”。 真正让线条“显深”的，其实是卡…",
+            "cover": null,
+            "cover_alt": "",
+            "cover_focus": {
+              "x": 50.0,
+              "y": 50.0
+            },
+            "category": {
+              "id": 2,
+              "slug": "she-ji",
+              "name": "设计",
+              "description": "",
+              "sticker": "sparkle",
+              "url": "/category/she-ji"
+            },
+            "tags": [
+              {
+                "id": 5,
+                "slug": "css",
+                "name": "CSS",
+                "color": "white",
+                "sticker": null,
+                "url": "/tag/css"
+              },
+              {
+                "id": 6,
+                "slug": "she-ji",
+                "name": "设计",
+                "color": "white",
+                "sticker": null,
+                "url": "/tag/she-ji"
+              }
+            ],
+            "series": null,
+            "pinned": false,
+            "featured": false,
+            "card_style": "auto",
+            "published_at": "2026-10-14T12:34:51Z",
+            "updated_at": "2026-10-24T12:34:51Z",
+            "reading_minutes": 1,
+            "word_count": 264
+          },
+          {
+            "id": 4,
+            "slug": "scroll-motion",
+            "url": "/blog/scroll-motion",
+            "title": "跟着滚动走的入场动画，我是这样做的",
+            "summary": "不是“进入视野就播放”，而是进度跟着滚动位置走，倒着滚也能倒放。 元素的入场进度由它在屏幕里的位置直接算出来，所以跳转、前进后退、窗口缩放之后都不会卡在半透明： 它告诉你“进来了”或“出去了”，但不告诉你进来了多少。要做“跟着滚动走”，就得…",
+            "cover": null,
+            "cover_alt": "",
+            "cover_focus": {
+              "x": 50.0,
+              "y": 50.0
+            },
+            "category": {
+              "id": 1,
+              "slug": "dai-ma",
+              "name": "代码",
+              "description": "",
+              "sticker": "code",
+              "url": "/category/dai-ma"
+            },
+            "tags": [
+              {
+                "id": 7,
+                "slug": "vue",
+                "name": "Vue",
+                "color": "white",
+                "sticker": null,
+                "url": "/tag/vue"
+              },
+              {
+                "id": 8,
+                "slug": "dong-xiao",
+                "name": "动效",
+                "color": "sky",
+                "sticker": null,
+                "url": "/tag/dong-xiao"
+              }
+            ],
+            "series": {
+              "id": 1,
+              "slug": "ba-bo-ke-zuo-cheng-zi-ji-xi-huan-de-yang-zi",
+              "title": "把博客做成自己喜欢的样子",
+              "order": 4
+            },
+            "pinned": false,
+            "featured": false,
+            "card_style": "auto",
+            "published_at": "2026-10-07T12:34:51Z",
+            "updated_at": "2026-10-24T12:34:51Z",
+            "reading_minutes": 1,
+            "word_count": 243
+          },
+          {
+            "id": 10,
+            "slug": "palette-and-lines",
+            "url": "/blog/palette-and-lines",
+            "title": "配色和线条：把一切都调浅",
+            "summary": "极浅的蓝、浅灰和浅粉，只有文字是深一点的墨蓝灰。 全站只有一种线色：#dceaf7。 浅色背景上的文字必须够清楚：正文至少 4.5:1。我把这个检查写成了脚本，每次改配色都会跑一遍，包括四套主题。",
+            "cover": null,
+            "cover_alt": "",
+            "cover_focus": {
+              "x": 50.0,
+              "y": 50.0
+            },
+            "category": {
+              "id": 2,
+              "slug": "she-ji",
+              "name": "设计",
+              "description": "",
+              "sticker": "sparkle",
+              "url": "/category/she-ji"
+            },
+            "tags": [
+              {
+                "id": 6,
+                "slug": "she-ji",
+                "name": "设计",
+                "color": "white",
+                "sticker": null,
+                "url": "/tag/she-ji"
+              }
+            ],
+            "series": {
+              "id": 1,
+              "slug": "ba-bo-ke-zuo-cheng-zi-ji-xi-huan-de-yang-zi",
+              "title": "把博客做成自己喜欢的样子",
+              "order": 2
+            },
+            "pinned": false,
+            "featured": false,
+            "card_style": "auto",
+            "published_at": "2026-10-04T12:34:51Z",
+            "updated_at": "2026-10-24T12:34:51Z",
+            "reading_minutes": 1,
+            "word_count": 168
+          },
+          {
+            "id": 6,
+            "slug": "sunday-evening",
+            "url": "/blog/sunday-evening",
+            "title": "周末的傍晚",
+            "summary": "今天的傍晚像一碗粉色的汤，我看了很久。 下午三点是白的，四点半开始发蓝，到了六点，边上慢慢染了一圈粉。我就坐在窗边，什么也没做，只是确认这片天色还在。 不过我还是把它写下来了，因为明天我大概会忘。",
+            "cover": null,
+            "cover_alt": "",
+            "cover_focus": {
+              "x": 50.0,
+              "y": 50.0
+            },
+            "category": {
+              "id": 3,
+              "slug": "ri-chang",
+              "name": "日常",
+              "description": "",
+              "sticker": "smile",
+              "url": "/category/ri-chang"
+            },
+            "tags": [
+              {
+                "id": 9,
+                "slug": "sui-shou-ji",
+                "name": "随手记",
+                "color": "rose",
+                "sticker": null,
+                "url": "/tag/sui-shou-ji"
+              }
+            ],
+            "series": null,
+            "pinned": false,
+            "featured": false,
+            "card_style": "auto",
+            "published_at": "2026-09-30T12:34:51Z",
+            "updated_at": "2026-10-24T12:34:51Z",
+            "reading_minutes": 1,
+            "word_count": 109
+          },
+          {
+            "id": 5,
+            "slug": "no-comments",
+            "url": "/blog/no-comments",
+            "title": "为什么我不给博客加评论区",
+            "summary": "想说什么可以发邮件。我想把这里做成一个安静的地方。 没有评论区，也就没有垃圾评论、没有审核、没有“沙发”。剩下的只有文章本身。 文章末尾和“关于”页都有邮箱。写得长短都可以，我会回。",
+            "cover": null,
+            "cover_alt": "",
+            "cover_focus": {
+              "x": 50.0,
+              "y": 50.0
+            },
+            "category": {
+              "id": 4,
+              "slug": "sui-bi",
+              "name": "随笔",
+              "description": "",
+              "sticker": "quote",
+              "url": "/category/sui-bi"
+            },
+            "tags": [
+              {
+                "id": 4,
+                "slug": "bo-ke",
+                "name": "博客",
+                "color": "white",
+                "sticker": null,
+                "url": "/tag/bo-ke"
+              }
+            ],
+            "series": null,
+            "pinned": false,
+            "featured": false,
+            "card_style": "auto",
+            "published_at": "2026-09-22T12:34:51Z",
+            "updated_at": "2026-10-24T12:34:51Z",
+            "reading_minutes": 1,
+            "word_count": 187
+          }
+        ]
+      }
+    },
+    {
+      "type": "latest_moments",
+      "id": null,
+      "config": {
+        "title": "最近的动态",
+        "intro": "碎碎念、照片、链接，想到什么发什么。",
+        "count": 3
+      },
+      "data": {
+        "moments": [
+          {
+            "id": 1,
+            "url": "/moments/1",
+            "html": "<p>把博客的主色调浅了两档，终于不像在看监控大屏了。</p>\n",
+            "text": "把博客的主色调浅了两档，终于不像在看监控大屏了。",
+            "mood": {
+              "id": "energy",
+              "label": "元气"
+            },
+            "tags": [
+              {
+                "id": 5,
+                "slug": "css",
+                "name": "CSS",
+                "color": "white",
+                "sticker": null,
+                "url": "/tag/css"
+              },
+              {
+                "id": 6,
+                "slug": "she-ji",
+                "name": "设计",
+                "color": "white",
+                "sticker": null,
+                "url": "/tag/she-ji"
+              }
+            ],
+            "media": [],
+            "link_card": null,
+            "pinned": false,
+            "published_at": "2026-10-24T12:34:51Z"
+          },
+          {
+            "id": 2,
+            "url": "/moments/2",
+            "html": "<p>夜宵是一碗很烫的汤圆。</p>\n",
+            "text": "夜宵是一碗很烫的汤圆。",
+            "mood": {
+              "id": "happy",
+              "label": "开心"
+            },
+            "tags": [
+              {
+                "id": 13,
+                "slug": "ye-xiao",
+                "name": "夜宵",
+                "color": "white",
+                "sticker": null,
+                "url": "/tag/ye-xiao"
+              }
+            ],
+            "media": [
+              {
+                "id": 4,
+                "alt": "一碗汤圆",
+                "caption": "",
+                "width": 960,
+                "height": 640,
+                "color": "#e6f1fc",
+                "animated": false,
+                "src": "/media/f0dfa53841bfa6ed074e7faf7fa9756c/960.webp",
+                "srcset": "/media/f0dfa53841bfa6ed074e7faf7fa9756c/480.webp 480w, /media/f0dfa53841bfa6ed074e7faf7fa9756c/960.webp 960w, /media/f0dfa53841bfa6ed074e7faf7fa9756c/1600.webp 1200w",
+                "full": "/media/f0dfa53841bfa6ed074e7faf7fa9756c/1600.webp",
+                "variants": [
+                  {
+                    "size": 480,
+                    "w": 480,
+                    "h": 320,
+                    "url": "/media/f0dfa53841bfa6ed074e7faf7fa9756c/480.webp"
+                  },
+                  {
+                    "size": 960,
+                    "w": 960,
+                    "h": 640,
+                    "url": "/media/f0dfa53841bfa6ed074e7faf7fa9756c/960.webp"
+                  },
+                  {
+                    "size": 1600,
+                    "w": 1200,
+                    "h": 800,
+                    "url": "/media/f0dfa53841bfa6ed074e7faf7fa9756c/1600.webp"
+                  }
+                ]
+              },
+              {
+                "id": 3,
+                "alt": "凌晨的书桌",
+                "caption": "",
+                "width": 960,
+                "height": 640,
+                "color": "#e6f1fc",
+                "animated": false,
+                "src": "/media/2c4c1728ca68ff0192cfe5437ac653d1/960.webp",
+                "srcset": "/media/2c4c1728ca68ff0192cfe5437ac653d1/480.webp 480w, /media/2c4c1728ca68ff0192cfe5437ac653d1/960.webp 960w, /media/2c4c1728ca68ff0192cfe5437ac653d1/1600.webp 1200w",
+                "full": "/media/2c4c1728ca68ff0192cfe5437ac653d1/1600.webp",
+                "variants": [
+                  {
+                    "size": 480,
+                    "w": 480,
+                    "h": 320,
+                    "url": "/media/2c4c1728ca68ff0192cfe5437ac653d1/480.webp"
+                  },
+                  {
+                    "size": 960,
+                    "w": 960,
+                    "h": 640,
+                    "url": "/media/2c4c1728ca68ff0192cfe5437ac653d1/960.webp"
+                  },
+                  {
+                    "size": 1600,
+                    "w": 1200,
+                    "h": 800,
+                    "url": "/media/2c4c1728ca68ff0192cfe5437ac653d1/1600.webp"
+                  }
+                ]
+              }
+            ],
+            "link_card": null,
+            "pinned": false,
+            "published_at": "2026-10-23T12:34:51Z"
+          },
+          {
+            "id": 7,
+            "url": "/moments/7",
+            "html": "<p>有人问我站名里为什么有个“の”。因为好看，没有别的理由。</p>\n",
+            "text": "有人问我站名里为什么有个“の”。因为好看，没有别的理由。",
+            "mood": {
+              "id": "happy",
+              "label": "开心"
+            },
+            "tags": [
+              {
+                "id": 14,
+                "slug": "zhan-ming",
+                "name": "站名",
+                "color": "mist",
+                "sticker": null,
+                "url": "/tag/zhan-ming"
+              }
+            ],
+            "media": [],
+            "link_card": null,
+            "pinned": false,
+            "published_at": "2026-10-22T12:34:51Z"
+          }
+        ]
+      }
+    },
+    {
+      "type": "shelf",
+      "id": null,
+      "config": {
+        "title": "书架",
+        "intro": "按分类和标签翻一翻，找旧东西也方便。",
+        "tag_count": 14
+      },
+      "data": {
+        "categories": [
+          {
+            "id": 1,
+            "slug": "dai-ma",
+            "name": "代码",
+            "description": "",
+            "sticker": "code",
+            "url": "/category/dai-ma",
+            "count": 3,
+            "show_on_shelf": true
+          },
+          {
+            "id": 2,
+            "slug": "she-ji",
+            "name": "设计",
+            "description": "",
+            "sticker": "sparkle",
+            "url": "/category/she-ji",
+            "count": 2,
+            "show_on_shelf": true
+          },
+          {
+            "id": 3,
+            "slug": "ri-chang",
+            "name": "日常",
+            "description": "",
+            "sticker": "smile",
+            "url": "/category/ri-chang",
+            "count": 3,
+            "show_on_shelf": true
+          },
+          {
+            "id": 4,
+            "slug": "sui-bi",
+            "name": "随笔",
+            "description": "",
+            "sticker": "quote",
+            "url": "/category/sui-bi",
+            "count": 2,
+            "show_on_shelf": true
+          }
+        ],
+        "tags": [
+          {
+            "id": 5,
+            "slug": "css",
+            "name": "CSS",
+            "color": "white",
+            "sticker": null,
+            "url": "/tag/css",
+            "count": 1,
+            "moment_count": 2,
+            "size": 2
+          },
+          {
+            "id": 3,
+            "slug": "flask",
+            "name": "Flask",
+            "color": "sky",
+            "sticker": null,
+            "url": "/tag/flask",
+            "count": 2,
+            "moment_count": 0,
+            "size": 3
+          },
+          {
+            "id": 1,
+            "slug": "sqlite",
+            "name": "SQLite",
+            "color": "rose",
+            "sticker": null,
+            "url": "/tag/sqlite",
+            "count": 1,
+            "moment_count": 1,
+            "size": 2
+          },
+          {
+            "id": 7,
+            "slug": "vue",
+            "name": "Vue",
+            "color": "white",
+            "sticker": null,
+            "url": "/tag/vue",
+            "count": 1,
+            "moment_count": 0,
+            "size": 2
+          },
+          {
+            "id": 15,
+            "slug": "qian-duan",
+            "name": "前端",
+            "color": "mist",
+            "sticker": null,
+            "url": "/tag/qian-duan",
+            "count": 0,
+            "moment_count": 1,
+            "size": 1
+          },
+          {
+            "id": 8,
+            "slug": "dong-xiao",
+            "name": "动效",
+            "color": "sky",
+            "sticker": null,
+            "url": "/tag/dong-xiao",
+            "count": 1,
+            "moment_count": 0,
+            "size": 2
+          },
+          {
+            "id": 4,
+            "slug": "bo-ke",
+            "name": "博客",
+            "color": "white",
+            "sticker": null,
+            "url": "/tag/bo-ke",
+            "count": 2,
+            "moment_count": 1,
+            "size": 3
+          },
+          {
+            "id": 11,
+            "slug": "ka-fei",
+            "name": "咖啡",
+            "color": "white",
+            "sticker": null,
+            "url": "/tag/ka-fei",
+            "count": 1,
+            "moment_count": 1,
+            "size": 2
+          },
+          {
+            "id": 2,
+            "slug": "bei-fen",
+            "name": "备份",
+            "color": "mist",
+            "sticker": null,
+            "url": "/tag/bei-fen",
+            "count": 1,
+            "moment_count": 0,
+            "size": 2
+          },
+          {
+            "id": 13,
+            "slug": "ye-xiao",
+            "name": "夜宵",
+            "color": "white",
+            "sticker": null,
+            "url": "/tag/ye-xiao",
+            "count": 0,
+            "moment_count": 1,
+            "size": 1
+          },
+          {
+            "id": 10,
+            "slug": "an-quan",
+            "name": "安全",
+            "color": "mist",
+            "sticker": null,
+            "url": "/tag/an-quan",
+            "count": 1,
+            "moment_count": 0,
+            "size": 2
+          },
+          {
+            "id": 12,
+            "slug": "mao",
+            "name": "猫",
+            "color": "rose",
+            "sticker": null,
+            "url": "/tag/mao",
+            "count": 1,
+            "moment_count": 0,
+            "size": 2
+          },
+          {
+            "id": 6,
+            "slug": "she-ji",
+            "name": "设计",
+            "color": "white",
+            "sticker": null,
+            "url": "/tag/she-ji",
+            "count": 2,
+            "moment_count": 2,
+            "size": 3
+          },
+          {
+            "id": 9,
+            "slug": "sui-shou-ji",
+            "name": "随手记",
+            "color": "rose",
+            "sticker": null,
+            "url": "/tag/sui-shou-ji",
+            "count": 2,
+            "moment_count": 3,
+            "size": 3
+          }
+        ]
+      }
+    },
+    {
+      "type": "about",
+      "id": null,
+      "config": {
+        "title": "关于我",
+        "intro": "不是笨蛋，只是比较慢。",
+        "text": [
+          "写代码的人，偶尔画画，经常发呆。喜欢把东西做得安静一点——颜色浅一点，线条细一点，字号刚刚好。",
+          "站名里的 Baka 是日语里的“笨蛋”。别人这么叫我的时候我会生气，自己这么叫的时候不会。"
+        ]
+      },
+      "data": {
+        "author": {
+          "name": "sau_baka",
+          "bio": "写代码的人，偶尔画画，经常发呆。喜欢把东西做得安静一点——颜色浅一点，线条细一点，字号刚刚好。",
+          "links": [
+            {
+              "label": "订阅",
+              "kind": "rss",
+              "url": "/feed/posts.xml"
+            }
+          ],
+          "avatar": null
+        }
+      }
+    },
+    {
+      "type": "now",
+      "id": null,
+      "config": {
+        "title": "近况",
+        "items": [
+          {
+            "icon": "code",
+            "text": "在做：重写这个博客"
+          },
+          {
+            "icon": "book",
+            "text": "在读：一本讲 SQLite 内部的小册子"
+          },
+          {
+            "icon": "heart",
+            "text": "在听：下雨的声音"
+          },
+          {
+            "icon": "smile",
+            "text": "在想：晚饭吃什么"
+          }
+        ]
+      },
+      "data": {}
+    }
+  ],
+  "site_version": 26
+}

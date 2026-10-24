@@ -1,0 +1,45 @@
+{
+  "name": "baka-blog-frontend",
+  "version": "0.4.0",
+  "private": true,
+  "type": "module",
+  "description": "saubakaの博客 / Baka Blog: public site, admin and preview frame (Vue 3).",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build && node scripts/postbuild.mjs",
+    "typecheck": "vue-tsc --noEmit",
+    "test": "vitest run",
+    "lint": "eslint src tests scripts",
+    "check": "npm run typecheck && npm run lint && npm run test",
+    "qa": "zsh qa/all.sh",
+    "qa:chromium": "zsh qa/all.sh chromium",
+    "qa:webkit": "zsh qa/all.sh webkit",
+    "shots": "node qa/shots.mjs",
+    "qa:admin": "zsh qa/admin.sh",
+    "qa:perf": "node qa/perf.mjs"
+  },
+  "dependencies": {
+    "vue": "3.5.44",
+    "vue-router": "4.6.4"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.11.3",
+    "@eslint/js": "9.39.5",
+    "@types/node": "24.19.2",
+    "@vitejs/plugin-vue": "6.0.10",
+    "@vue/test-utils": "2.5.1",
+    "eslint": "9.39.5",
+    "eslint-plugin-vue": "10.11.1",
+    "happy-dom": "20.14.6",
+    "playwright": "1.62.1",
+    "postcss": "8.5.6",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.72.0",
+    "vite": "7.3.7",
+    "vitest": "3.2.7",
+    "vue-tsc": "3.3.13"
+  }
+}

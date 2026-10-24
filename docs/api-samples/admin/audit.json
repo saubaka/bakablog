@@ -1,0 +1,68 @@
+{
+  "items": [
+    {
+      "id": 28,
+      "at": "2026-10-24T12:34:51Z",
+      "actor": "sample_owner",
+      "action": "auth.login",
+      "target_type": "session",
+      "target_id": "1",
+      "summary": {
+        "device": "浏览器"
+      },
+      "ip_prefix": "127.0.0.0/24"
+    },
+    {
+      "id": 27,
+      "at": "2026-10-24T12:34:51Z",
+      "actor": "sample_owner",
+      "action": "auth.setup",
+      "target_type": "user",
+      "target_id": "1",
+      "summary": {
+        "username": "sample_owner"
+      },
+      "ip_prefix": ""
+    },
+    {
+      "id": 26,
+      "at": "2026-10-24T12:34:51Z",
+      "actor": "system",
+      "action": "moment.create",
+      "target_type": "moment",
+      "target_id": "12",
+      "summary": {
+        "visibility": "public"
+      },
+      "ip_prefix": ""
+    },
+    {
+      "id": 25,
+      "at": "2026-10-24T12:34:51Z",
+      "actor": "system",
+      "action": "moment.create",
+      "target_type": "moment",
+      "target_id": "11",
+      "summary": {
+        "visibility": "public"
+      },
+      "ip_prefix": ""
+    },
+    {
+      "id": 24,
+      "at": "2026-10-24T12:34:51Z",
+      "actor": "system",
+      "action": "moment.create",
+      "target_type": "moment",
+      "target_id": "10",
+      "summary": {
+        "visibility": "public"
+      },
+      "ip_prefix": ""
+    }
+  ],
+  "total": 28,
+  "page": 1,
+  "per": 5,
+  "pages": 6
+}

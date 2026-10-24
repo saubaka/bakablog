@@ -1,0 +1,48 @@
+[project]
+name = "bakablog"
+version = "0.4.0"
+description = "saubakaの博客 / Baka Blog — backend (Flask + SQLAlchemy + SQLite)"
+requires-python = ">=3.12"
+dependencies = [
+  "Flask>=3.1,<3.2",
+  "SQLAlchemy>=2.0.36,<2.1",
+  "alembic>=1.14,<2",
+  "pydantic>=2.9,<3",
+  "markdown-it-py>=3.0,<5",
+  "mdit-py-plugins>=0.4,<0.6",
+  "Pygments>=2.18,<3",
+  "nh3>=0.2.18,<0.4",
+  "Pillow>=11,<13",
+  "pypinyin>=0.53,<0.60",
+  "pyotp>=2.9,<3",
+  "gunicorn>=23,<24",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8,<9",
+  "pytest-cov>=5,<8",
+  "ruff>=0.8",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q -p no:cacheprovider"
+filterwarnings = ["error::DeprecationWarning:app", "ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = ["migrations/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "S"]
+ignore = ["S101", "E501", "B008", "S311", "SIM108", "S105", "S106"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S", "B"]
+# search.py formats only ":k0, :k1" placeholders into its SQL; every value is a bound parameter
+"app/services/search.py" = ["S608"]
+# the smoke-test script talks to a URL its operator types in; it is not part of the application
+"scripts/*" = ["S310", "S603", "S607"]

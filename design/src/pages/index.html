@@ -1,0 +1,49 @@
+title: 设计样张 · saubakaの博客 / Baka Blog
+desc: 阶段 P0：设计系统、滚动动效引擎和三张核心页面的静态样张。
+nav:
+page: hub
+---
+<div class="wrap">
+  <header class="page-head">
+    <span class="kicker" data-fx="pop" data-fx-intro="0"><svg class="i"><use href="#i-sparkle"/></svg>阶段 P0 · 设计样张</span>
+    <h1 data-fx="text" data-fx-intro="1">saubakaの博客 的样子</h1>
+    <p data-fx="fade" data-fx-intro="2">Baka Blog · sau_baka · 不是笨蛋！！<br>这里所有页面都是静态样张，没有后端，文字和图片都是示例。请在你的 Safari 里打开、滚一滚、缩一缩窗口，再告诉我哪里要改。</p>
+  </header>
+
+  <section class="section section--first" style="padding-top:8px">
+    <div class="hub-grid" data-fx-stagger>
+      <a class="card hub-card" href="home.html" data-fx="rise"><h3><svg class="i"><use href="#i-home"/></svg>首页</h3><p>开场、最近的文章、动态、书架、关于我。</p><span class="text-link">打开 <svg class="i"><use href="#i-arrow-r"/></svg></span></a>
+      <a class="card hub-card" href="blog.html" data-fx="rise"><h3><svg class="i"><use href="#i-book"/></svg>博客列表</h3><p>分类标签页、筛选、搜索、排序、卡片 / 列表切换（可以真的点）。</p><span class="text-link">打开 <svg class="i"><use href="#i-arrow-r"/></svg></span></a>
+      <a class="card hub-card" href="post.html" data-fx="rise"><h3><svg class="i"><use href="#i-code"/></svg>文章页</h3><p>目录、代码块、提示块、表格、图集、系列、上下篇。</p><span class="text-link">打开 <svg class="i"><use href="#i-arrow-r"/></svg></span></a>
+      <a class="card hub-card" href="moments.html" data-fx="rise"><h3><svg class="i"><use href="#i-chat"/></svg>动态</h3><p>时间线、气泡、心情、链接卡片、图片排版、灯箱。</p><span class="text-link">打开 <svg class="i"><use href="#i-arrow-r"/></svg></span></a>
+      <a class="card hub-card" href="archive.html" data-fx="rise"><h3><svg class="i"><use href="#i-calendar"/></svg>归档</h3><p>按年月的时间线。</p><span class="text-link">打开 <svg class="i"><use href="#i-arrow-r"/></svg></span></a>
+      <a class="card hub-card" href="404.html" data-fx="rise"><h3><svg class="i"><use href="#i-search"/></svg>404</h3><p>走丢了的页面。</p><span class="text-link">打开 <svg class="i"><use href="#i-arrow-r"/></svg></span></a>
+      <a class="card hub-card card--note" href="components.html" data-fx="rise"><span class="tape" style="left:22px;top:-11px"></span><h3><svg class="i"><use href="#i-sparkle"/></svg>设计系统</h3><p>配色（含实时对比度）、线条、字体、全部组件、图标。</p><span class="text-link">打开 <svg class="i"><use href="#i-arrow-r"/></svg></span></a>
+      <a class="card hub-card card--note" href="fx-lab.html" data-fx="rise"><span class="tape tape--sky" style="left:22px;top:-11px"></span><h3><svg class="i"><use href="#i-sliders"/></svg>动效实验室</h3><p>每种动效的数值、逐字折行测试、自检按钮。</p><span class="text-link">打开 <svg class="i"><use href="#i-arrow-r"/></svg></span></a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="split">
+      <div class="split__label"><h2 data-fx="text">请你看什么</h2><p data-fx="fade">按这张清单看，一遍就够。</p></div>
+      <ul class="checklist" data-fx-stagger>
+        <li data-fx="fade"><span class="check__box" style="background:var(--fill)"><svg class="i" style="opacity:1;scale:1"><use href="#i-check"/></svg></span><span><b>颜色和线条</b>：是不是足够浅、足够干净？有没有哪里让你觉得“灰”“重”？线条和统计卡片那种浅蓝是不是一致？</span></li>
+        <li data-fx="fade"><span class="check__box" style="background:var(--fill)"><svg class="i" style="opacity:1;scale:1"><use href="#i-check"/></svg></span><span><b>可爱程度</b>：涂鸦、胶带、邮戳、便利贴，是太多、刚好，还是不够？</span></li>
+        <li data-fx="fade"><span class="check__box" style="background:var(--fill)"><svg class="i" style="opacity:1;scale:1"><use href="#i-check"/></svg></span><span><b>滚动动效</b>：慢慢滚、快速甩、倒着滚。标题逐字上浮、卡片上浮、气泡侧滑，节奏舒服吗？右下角「设计面板」可以切换「标准 / 轻柔 / 关闭」。</span></li>
+        <li data-fx="fade"><span class="check__box" style="background:var(--fill)"><svg class="i" style="opacity:1;scale:1"><use href="#i-check"/></svg></span><span><b>手机宽度</b>：把窗口缩到最窄，或者用手机访问。底部胶囊导航、目录抽屉、卡片排列。</span></li>
+        <li data-fx="fade"><span class="check__box" style="background:var(--fill)"><svg class="i" style="opacity:1;scale:1"><use href="#i-check"/></svg></span><span><b>文章页顶部的细线</b>：读文章时屏幕最上方有一条 2px 的浅粉阅读进度线。如果你不喜欢屏幕上方有任何线，我就去掉它。</span></li>
+        <li data-fx="fade"><span class="check__box" style="background:var(--fill)"><svg class="i" style="opacity:1;scale:1"><use href="#i-check"/></svg></span><span><b>字体</b>：中文用系统圆体，英文用丸ゴ。在 Safari 里看是不是你想要的圆润感？</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="split">
+      <div class="split__label"><h2 data-fx="text">说明</h2></div>
+      <div class="stack" data-fx-stagger>
+        <div class="note note--sky" data-fx="rise"><h3>这些页面是怎么来的</h3><p style="font-size:14.5px;color:var(--ink-2)">纯 HTML / CSS / JS，没有安装任何依赖。样式分在同一套有序的层里，滚动动效是一个独立的小引擎。通过之后，这些样式和引擎会原样搬进 Vue 项目里。</p></div>
+        <div class="note" data-fx="rise"><h3>名字</h3><p style="font-size:14.5px;color:var(--ink-2)">站点名「saubakaの博客」、英文名 Baka Blog、作者 sau_baka、简介「不是笨蛋！！」。以后改名只改一处设置，页面里不写死。</p></div>
+      </div>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,23 @@
+{
+  "version": "0.4.0",
+  "build": "dev",
+  "env": "testing",
+  "uptime_seconds": 0,
+  "python": "3.12.14",
+  "sqlite": "3.53.1",
+  "schema_revision": "0001",
+  "schema_head": "0001",
+  "site_version": 26,
+  "db_bytes": 791048,
+  "media_bytes": 56930,
+  "backup_bytes": 0,
+  "disk": {
+    "total": 494332366848,
+    "free": 235037691904
+  },
+  "search_rows": 25,
+  "last_backup": null,
+  "backups": 0,
+  "jobs": {},
+  "site_url": "https://blog.example"
+}

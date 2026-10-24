@@ -1,0 +1,166 @@
+{
+  "id": 1,
+  "slug": "sqlite-backup",
+  "url": "/blog/sqlite-backup",
+  "title": "SQLite 备份：我差点把自己的数据弄丢",
+  "summary": "先说结论：别用 cp 去备份一个正在被写入的 SQLite 数据库。我就是这样做的，而且还成功了很多次——直到有一次没成功。 这个站用 SQLite 当数据库：一个文件，不用另外装服务，备份起来“应该很简单”。我的第一版备份脚本只有一行：…",
+  "cover": {
+    "id": 1,
+    "alt": "淡蓝色的天空",
+    "caption": "",
+    "width": 960,
+    "height": 640,
+    "color": "#e6f1fc",
+    "animated": false,
+    "src": "/media/348726c4e2463a5fe3390a14f8b9b8a6/960.webp",
+    "srcset": "/media/348726c4e2463a5fe3390a14f8b9b8a6/480.webp 480w, /media/348726c4e2463a5fe3390a14f8b9b8a6/960.webp 960w, /media/348726c4e2463a5fe3390a14f8b9b8a6/1600.webp 1200w",
+    "full": "/media/348726c4e2463a5fe3390a14f8b9b8a6/1600.webp",
+    "variants": [
+      {
+        "size": 480,
+        "w": 480,
+        "h": 320,
+        "url": "/media/348726c4e2463a5fe3390a14f8b9b8a6/480.webp"
+      },
+      {
+        "size": 960,
+        "w": 960,
+        "h": 640,
+        "url": "/media/348726c4e2463a5fe3390a14f8b9b8a6/960.webp"
+      },
+      {
+        "size": 1600,
+        "w": 1200,
+        "h": 800,
+        "url": "/media/348726c4e2463a5fe3390a14f8b9b8a6/1600.webp"
+      }
+    ]
+  },
+  "cover_alt": "",
+  "cover_focus": {
+    "x": 50.0,
+    "y": 50.0
+  },
+  "category": {
+    "id": 1,
+    "slug": "dai-ma",
+    "name": "代码",
+    "description": "",
+    "sticker": "code",
+    "url": "/category/dai-ma",
+    "sort_order": 1,
+    "show_on_shelf": true
+  },
+  "tags": [
+    {
+      "id": 3,
+      "slug": "flask",
+      "name": "Flask",
+      "color": "sky",
+      "sticker": null,
+      "url": "/tag/flask"
+    },
+    {
+      "id": 1,
+      "slug": "sqlite",
+      "name": "SQLite",
+      "color": "rose",
+      "sticker": null,
+      "url": "/tag/sqlite"
+    },
+    {
+      "id": 2,
+      "slug": "bei-fen",
+      "name": "备份",
+      "color": "mist",
+      "sticker": null,
+      "url": "/tag/bei-fen"
+    }
+  ],
+  "series": {
+    "id": 1,
+    "slug": "ba-bo-ke-zuo-cheng-zi-ji-xi-huan-de-yang-zi",
+    "title": "把博客做成自己喜欢的样子",
+    "order": 3
+  },
+  "pinned": false,
+  "featured": true,
+  "card_style": "auto",
+  "published_at": "2026-10-20T12:34:51Z",
+  "updated_at": "2026-10-24T12:34:51.670096Z",
+  "reading_minutes": 2,
+  "word_count": 736,
+  "status": "published",
+  "view_count": 0,
+  "created_at": "2026-10-24T12:34:51Z",
+  "deleted_at": null,
+  "scheduled": false,
+  "summary_auto": true,
+  "category_id": 1,
+  "series_id": 1,
+  "series_order": 3,
+  "preview_path": "/blog/sqlite-backup",
+  "content_md": "先说结论：**别用 `cp` 去备份一个正在被写入的 SQLite 数据库**。我就是这样做的，而且还成功了很多次——直到有一次没成功。\n\n## 事情是这样的\n\n这个站用 SQLite 当数据库：一个文件，不用另外装服务，备份起来“应该很简单”。我的第一版备份脚本只有一行：\n\n```bash title=\"backup.sh\"\n# 每天凌晨三点跑一次\ncp /var/lib/blog/site.db /var/backups/site-$(date +%F).db\n```\n\n看起来没毛病。直到某个周末我想试试恢复，发现最近一份备份**打不开**，提示 `database disk image is malformed`。\n\n::: warn 当时的心情\n手心出汗，反复刷新，怀疑是不是自己手滑把库删了。（不是，我没有手滑，是我的备份有问题。）\n:::\n\n## 为什么直接复制文件不安全\n\nSQLite 的写入不是“一下子把文件改好”。复制的那一刻如果恰好有事务在写，你拿到的可能是写到一半的文件——页面对不上，自然打不开。\n\n### 开了 WAL 之后更要小心\n\n很多人（包括我）会打开 WAL 模式来提升并发。这时新写入的数据先进入 `site.db-wal`，要等“检查点”才会合并回主文件。只复制 `site.db`，就等于丢掉了还没合并的那部分。\n\n::: tip\n主文件、`-wal`、`-shm` 是一个整体。要么用 SQLite 自己提供的备份接口，要么保证复制期间没有任何写入。\n:::\n\n## 写法一：sqlite3 命令行的 .backup\n\n最省事的做法，一行搞定，写入进行时也能得到一致的副本：\n\n```bash title=\"backup.sh\"\nsqlite3 /var/lib/blog/site.db \".backup '/var/backups/site-$(date +%F).db'\"\n```\n\n## 写法二：在 Python 里调用 backup()\n\n应用本身是 Flask，我更想把备份写成一个函数，方便接到后台的“立即备份”按钮上。标准库里的 `sqlite3.Connection.backup` 正好够用：\n\n```python title=\"backup.py\"\nimport sqlite3\n\n\ndef backup(src_path: str, dst_path: str) -> None:\n    src = sqlite3.connect(src_path)\n    dst = sqlite3.connect(dst_path)\n    with dst:\n        src.backup(dst)   # 在线备份：写入进行时也能得到一致的副本\n    dst.close()\n    src.close()\n```\n\n![凌晨的书桌，一台笔记本和一只杯子](media:3 \"写这段代码的那个凌晨\"){.polaroid}\n\n## 写法三：VACUUM INTO\n\n它会生成一个整理过的、体积更小的副本，还顺便做了碎片整理。需要 SQLite 3.27 以上：\n\n```sql title=\"compact.sql\"\nVACUUM INTO '/var/backups/site-compact.db';\n```\n\n| 方法 | 要停写入吗 | 得到什么 | 适合 |\n| :-- | :-: | :-- | :-- |\n| `cp` 复制文件 | 要 | 原样文件（可能不完整） | 停机维护时 |\n| `.backup` | 不用 | 一致的副本 | 定时任务、命令行 |\n| `backup()` | 不用 | 一致的副本 | 写进应用里 |\n| `VACUUM INTO` | 不用 | 整理过的更小副本 | 想顺便瘦身 |\n\n## 恢复演练：不试一次就不算备份\n\n> 备份文件只有被成功恢复过，才算备份。\n\n每次备份完成后，我会马上打开副本做两件事：检查完整性，数一数关键表里的行数。\n\n```python title=\"verify.py\"\ncon = sqlite3.connect(dst_path)\nok = con.execute(\"PRAGMA integrity_check\").fetchone()[0]\nassert ok == \"ok\", ok\nposts = con.execute(\"SELECT COUNT(*) FROM posts\").fetchone()[0]\nprint(f\"完整性正常，文章 {posts} 篇\")\n```\n\n## 我现在的做法\n\n- [x] 用 `backup()` 做在线备份，不再 `cp`\n- [x] 每次备份后立刻校验完整性\n- [ ] 每月做一次真正的“恢复演练”（下个月记得！）\n\n![下雨的窗户](media:6)\n![粉色的傍晚](media:2)\n![远处淡蓝色的山](media:5)\n\n::: love 最后\n数据没丢，我也没哭。如果你也在用 SQLite，现在就去打开备份目录看一眼，真的。[^1]\n:::\n\n[^1]: 如果打开后发现备份不对，别慌，先别动原文件，从最近一份能通过校验的备份开始恢复。\n",
+  "show_toc": true,
+  "show_reading_time": true,
+  "show_author_card": false,
+  "seo": {
+    "title": "",
+    "description": "",
+    "image": null,
+    "canonical_url": ""
+  },
+  "toc": [
+    {
+      "id": "事情是这样的",
+      "text": "事情是这样的",
+      "level": 2
+    },
+    {
+      "id": "为什么直接复制文件不安全",
+      "text": "为什么直接复制文件不安全",
+      "level": 2
+    },
+    {
+      "id": "开了-wal-之后更要小心",
+      "text": "开了 WAL 之后更要小心",
+      "level": 3
+    },
+    {
+      "id": "写法一sqlite3-命令行的-backup",
+      "text": "写法一：sqlite3 命令行的 .backup",
+      "level": 2
+    },
+    {
+      "id": "写法二在-python-里调用-backup",
+      "text": "写法二：在 Python 里调用 backup()",
+      "level": 2
+    },
+    {
+      "id": "写法三vacuum-into",
+      "text": "写法三：VACUUM INTO",
+      "level": 2
+    },
+    {
+      "id": "恢复演练不试一次就不算备份",
+      "text": "恢复演练：不试一次就不算备份",
+      "level": 2
+    },
+    {
+      "id": "我现在的做法",
+      "text": "我现在的做法",
+      "level": 2
+    }
+  ],
+  "series_info": {
+    "id": 1,
+    "slug": "ba-bo-ke-zuo-cheng-zi-ji-xi-huan-de-yang-zi",
+    "title": "把博客做成自己喜欢的样子",
+    "description": "从配色、动效到后台，一点点把这个博客重新画一遍。",
+    "status": "ongoing",
+    "cover": null,
+    "url": "/series/ba-bo-ke-zuo-cheng-zi-ji-xi-huan-de-yang-zi",
+    "sort_order": 1
+  },
+  "autosave": null
+}

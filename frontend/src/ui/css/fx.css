@@ -1,0 +1,88 @@
+/* ==========================================================================
+   Scroll motion. The engine (js/fx.js) writes two numbers on each [data-fx] element:
+     --fx-in   0 -> 1  while the element enters from the bottom of the screen
+     --fx-out  0 -> 1  while it leaves through the top
+   Everything below is a pure function of those two numbers, so the picture is always the right one for the
+   current scroll position (anchor jumps, back/forward and rotation cannot leave anything half-faded).
+   Elements keep the default look (fully visible) without JS and in "off" mode.
+   transform properties used: translate / scale / rotate (so hover transforms on the same element do not collide).
+   ========================================================================== */
+@layer fx {
+
+  /* The motion numbers belong to the element that uses them: registered as numbers that do NOT inherit, so changing one on every frame of a scroll does not
+     invalidate the styles of everything inside the element (a card holds dozens of nodes). The two kinds of element whose CHILDREN need them
+     (a heading whose characters enter one by one, a cover whose picture zooms) get inheriting copies, --fx-tin / --fx-tout, written by the engine for those only. */
+  @property --fx-in { syntax: '<number>'; inherits: false; initial-value: 1; }
+  @property --fx-out { syntax: '<number>'; inherits: false; initial-value: 0; }
+  @property --fx-d { syntax: '<number>'; inherits: false; initial-value: 0; }
+  @property --m { syntax: '<number>'; inherits: false; initial-value: 1; }
+
+  html.fx-pending:not(.fx-off) [data-fx] { opacity: 0; }
+
+  html.fx-ready:not(.fx-off) [data-fx] { --m: calc(var(--fx-in, 1) * (1 - var(--fx-out, 0))); }
+  html.fx-ready:not(.fx-off) [data-fx][data-fx-state="active"] { will-change: transform, opacity; }
+
+  /* rise: cards, panels, rows */
+  html.fx-ready:not(.fx-off) [data-fx="rise"] {
+    opacity: var(--m);
+    translate: 0 calc((1 - var(--fx-in, 1)) * 28px * var(--fx-k, 1) - var(--fx-out, 0) * 20px * var(--fx-k, 1));
+    scale: calc(1 - .015 * (1 - var(--m)));
+  }
+  /* fade: paragraphs, list items, captions */
+  html.fx-ready:not(.fx-off) [data-fx="fade"] {
+    opacity: var(--m);
+    translate: 0 calc((1 - var(--fx-in, 1)) * 14px * var(--fx-k, 1) - var(--fx-out, 0) * 10px * var(--fx-k, 1));
+  }
+  /* pop: tags, badges, notes, stickers */
+  html.fx-ready:not(.fx-off) [data-fx="pop"] {
+    opacity: var(--m);
+    scale: calc(1 - .14 * (1 - var(--m)) * var(--fx-k, 1));
+    rotate: calc((1 - var(--fx-in, 1)) * var(--fx-rot, -3) * 1deg * var(--fx-k, 1));
+  }
+  /* slide: timeline bubbles, tabs. --fx-dx is -1 (from the left) or 1 (from the right) */
+  html.fx-ready:not(.fx-off) [data-fx="slide"] {
+    opacity: var(--m);
+    translate: calc((1 - var(--fx-in, 1)) * var(--fx-dx, -1) * 32px * var(--fx-k, 1) + var(--fx-out, 0) * var(--fx-dx, -1) * 14px * var(--fx-k, 1)) 0;
+  }
+  /* mask: covers and photos open like a curtain */
+  html.fx-ready:not(.fx-off) [data-fx="mask"] {
+    opacity: calc(.35 + .65 * var(--m));
+    clip-path: inset(calc((1 - var(--m)) * 9% * var(--fx-k, 1)) round var(--fx-r, 20px));
+  }
+  html.fx-ready:not(.fx-off) [data-fx="mask"] > img, html.fx-ready:not(.fx-off) [data-fx="mask"] > .cover {
+    scale: calc(1 + .06 * (1 - var(--fx-tin, 1) * (1 - var(--fx-tout, 0))) * var(--fx-k, 1));
+  }
+  /* draw: lines grow from their start */
+  html.fx-ready:not(.fx-off) [data-fx="draw-x"] { transform-origin: 0 50%; scale: var(--m) 1; }
+  html.fx-ready:not(.fx-off) [data-fx="draw-y"] { transform-origin: 50% 0; scale: 1 var(--m); }
+  /* spine: a long line that grows as the section is read (progress comes from how far the section has been scrolled) */
+  html.fx-ready:not(.fx-off) [data-fx="spine"] { transform-origin: 50% 0; scale: 1 var(--fx-in, 1); }
+  /* drift: tiny parallax, no fading */
+  html.fx-ready:not(.fx-off) [data-fx="drift"] { translate: 0 calc(var(--fx-d, 0) * var(--drift, 26px) * var(--fx-k, 1)); }
+
+  /* fully in place: no transform at all, so text stays crisp */
+  html.fx-ready:not(.fx-off) [data-fx]:not([data-fx="drift"], [data-fx="spine"])[data-fx-state="done"] {
+    opacity: 1; translate: none; scale: none; rotate: none; clip-path: none;
+  }
+
+  /* ---- per-character headings ---------------------------------------------------------------------------- */
+  .fx-w, .ph { display: inline-block; white-space: nowrap; }
+  .fx-c { display: inline-block; }
+  html.fx-ready:not(.fx-off) [data-fx="text"] { opacity: 1; }
+  html.fx-ready:not(.fx-off) [data-fx="text"] .fx-c {
+    --cp: clamp(0, calc((var(--fx-tin, 1) - var(--co, 0)) / (1 - var(--sp, .6))), 1);
+    --cq: clamp(0, calc((var(--fx-tout, 0) - var(--co, 0)) / (1 - var(--sp, .6))), 1);
+    opacity: calc(var(--cp) * (1 - var(--cq)));
+    translate: 0 calc((1 - var(--cp)) * .5em * var(--fx-k, 1) - var(--cq) * .32em * var(--fx-k, 1));
+  }
+  html.fx-ready:not(.fx-off) [data-fx="text"][data-fx-state="done"] .fx-c { opacity: 1; translate: none; }
+
+  /* ---- leaving the page (a menu click, a link): every piece of content takes its own small exit, not only the page as a whole ---- */
+  html.fx-ready:not(.fx-off) .page-leave-active [data-fx] { transition: opacity .16s var(--ease), translate .16s var(--ease), scale .16s var(--ease); opacity: 0 !important; translate: 0 calc(-10px * var(--fx-k, 1)) !important; scale: .985 !important; }
+  html.fx-ready:not(.fx-off) .page-leave-active [data-fx="text"] .fx-c { transition: opacity .16s var(--ease), translate .16s var(--ease); opacity: 0 !important; translate: 0 calc(-.2em * var(--fx-k, 1)) !important; }
+
+  /* ---- print and "reduce motion": everything is simply there --------------------------------------------- */
+  @media print {
+    [data-fx], .fx-c { opacity: 1 !important; translate: none !important; scale: none !important; rotate: none !important; clip-path: none !important; }
+  }
+}
