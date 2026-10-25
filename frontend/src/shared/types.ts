@@ -161,14 +161,12 @@ export interface PageHit { id: number; slug: string; url: string; title: string;
 /* ---- home blocks ---------------------------------------------------------------------------------------------------------- */
 export interface HeroButton { label: string; url: string; style: 'fill' | 'line' | 'link' }
 export type DoodleName = 'star' | 'heart' | 'sparkle' | 'flower' | 'paw' | 'wave' | 'loop'
-export interface Author { name: string; bio: string; avatar: Media | null; links: { label: string; kind: 'mail' | 'rss' | 'link'; url: string }[] }
+export interface Author { name: string; bio: string; avatar: Media | null; links: { label: string; kind: 'mail' | 'link'; url: string }[] }
 
 export interface HeroConfig {
   note: string
-  title_lines: string[]
   intro: string
   buttons: HeroButton[]
-  polaroid: { media_id: number | null; caption: string; bubble: string; media: Media | null }
   doodles: DoodleName[]
 }
 export type HomeBlock =
@@ -215,7 +213,7 @@ export interface SiteInfo {
   seo: { title: string; description: string; keywords: string[]; share_image: Media | null }
   footer: { icp: string; copyright: string; text: string }
   nav: { top: NavItem[]; mobile: NavItem[]; footer: NavItem[] }
-  features: { stats: boolean; search: boolean; rss: boolean }
+  features: { stats: boolean; search: boolean }
   moods: Mood[]
   origin: string
   version: string

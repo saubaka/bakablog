@@ -92,12 +92,11 @@ def test_home_page_head_data_and_body(admin, api):
     assert p.meta("og:type") == "website" and p.meta("og:site_name") == "saubakaの博客" and p.meta("og:url") == "http://localhost/" and p.meta("og:locale") == "zh_CN"
     assert p.meta("twitter:card") == "summary" and p.meta("theme-color") == "#f7fbff"
     assert {"rel": "canonical", "href": "http://localhost/"} in p.links
-    feeds = [ln["href"] for ln in p.links if ln.get("rel") == "alternate"]
-    assert feeds == ["http://localhost/feed/posts.xml", "http://localhost/feed/moments.xml"]
+    assert not [ln for ln in p.links if ln.get("rel") == "alternate"]   # no feeds
     assert p.jsonld[0]["@type"] == "WebSite" and p.jsonld[0]["name"] == "saubakaの博客" and p.jsonld[0]["author"]["name"] == "sau_baka"
     assert p.data["kind"] == "home" and p.data["status"] == 200 and p.data["site"]["name"] == "saubakaの博客"
     assert [b["type"] for b in p.data["data"]["blocks"]][0] == "hero" and p.data["path"] == "/"
-    assert '<main id="main" tabindex="-1">' in p.html and "我是 sau_baka，" in p.html and "首页上的文章" in p.html
+    assert '<main id="main" tabindex="-1">' in p.html and "saubakaの博客 Baka Blog" in p.html and "首页上的文章" in p.html
     assert '<div id="app">' in p.html and p.html.index('<div id="app">') < p.html.index('id="bb-data"')
 
 
@@ -229,7 +228,7 @@ def test_not_found_page_uses_the_configured_texts(admin, api):
 
 
 def test_api_paths_never_get_html(api):
-    for path in ("/api/nothing", "/api/posts/x/y", "/media/zzz", "/feed/other.xml"):
+    for path in ("/api/nothing", "/api/posts/x/y", "/media/zzz"):
         r = api.get(path)
         assert r.status_code == 404 and r.get_json()["error"]["code"] == "not_found", path
 

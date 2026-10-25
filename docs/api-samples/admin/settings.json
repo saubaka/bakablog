@@ -14,13 +14,7 @@
       "name": "sau_baka",
       "bio": "写代码的人，偶尔画画，经常发呆。喜欢把东西做得安静一点——颜色浅一点，线条细一点，字号刚刚好。",
       "avatar_media_id": null,
-      "links": [
-        {
-          "label": "订阅",
-          "kind": "rss",
-          "url": "/feed/posts.xml"
-        }
-      ]
+      "links": []
     },
     "appearance": {
       "theme": "default",
@@ -47,10 +41,6 @@
         "moments": true,
         "pages": true,
         "taxonomy": true
-      },
-      "rss": {
-        "full_text": true,
-        "items": 20
       }
     },
     "footer": {
@@ -82,13 +72,7 @@
       "name": "sau_baka",
       "bio": "写代码的人，偶尔画画，经常发呆。喜欢把东西做得安静一点——颜色浅一点，线条细一点，字号刚刚好。",
       "avatar_media_id": null,
-      "links": [
-        {
-          "label": "订阅",
-          "kind": "rss",
-          "url": "/feed/posts.xml"
-        }
-      ]
+      "links": []
     },
     "appearance": {
       "theme": "default",
@@ -115,10 +99,6 @@
         "moments": true,
         "pages": true,
         "taxonomy": true
-      },
-      "rss": {
-        "full_text": true,
-        "items": 20
       }
     },
     "footer": {
@@ -179,7 +159,6 @@
       "clock",
       "tag",
       "folder",
-      "rss",
       "copy",
       "check",
       "image",

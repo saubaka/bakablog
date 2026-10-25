@@ -13,8 +13,8 @@ declare module 'vue-router' {
   }
 }
 
-/** Addresses the Flask server answers itself (admin shell, feeds, API ...): never handled by the router, always a real page load. */
-const SERVER_PATHS = /^\/(admin|api|media|feed|assets)(\/|$)|^\/(sitemap\.xml|robots\.txt|favicon\.(ico|svg)|manifest\.webmanifest)$/
+/** Addresses the Flask server answers itself (admin shell, API ...): never handled by the router, always a real page load. */
+const SERVER_PATHS = /^\/(admin|api|media|assets)(\/|$)|^\/(sitemap\.xml|robots\.txt|favicon\.(ico|svg)|manifest\.webmanifest)$/
 export const isServerPath = (path: string): boolean => SERVER_PATHS.test(path)
 
 const stub = { render: () => null }

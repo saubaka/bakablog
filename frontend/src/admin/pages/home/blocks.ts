@@ -20,7 +20,7 @@ export const DOODLES: { value: string; label: string }[] = [
 
 export function defaultConfig(type: string): Record<string, unknown> {
   switch (type) {
-    case 'hero': return { note: '', title_lines: ['你好，'], intro: '', buttons: [], polaroid: { media_id: null, caption: '', bubble: '' }, doodles: [] }
+    case 'hero': return { note: '', intro: '', buttons: [], doodles: [] }
     case 'notice': return { text: '', starts_at: null, ends_at: null }
     case 'featured': return { title: '精选', mode: 'auto', post_ids: [], count: 3 }
     case 'latest_posts': return { title: '最近的文章', intro: '', count: 6, layout: 'mixed' }

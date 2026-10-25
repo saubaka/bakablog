@@ -26,7 +26,7 @@ def test_site_payload(api):
     assert s["theme"] == "default" and s["motion"] == "full" and s["code_theme"] == "frost"
     assert s["decor"] == {"tape": True, "doodles": True}
     assert s["texts"]["not_found_title"] == "这一页走丢了" and set(s["nav"]) == {"top", "mobile", "footer"}
-    assert s["features"] == {"stats": True, "search": True, "rss": True} and [m["id"] for m in s["moods"]][:3] == ["happy", "energy", "calm"]
+    assert s["features"] == {"stats": True, "search": True} and [m["id"] for m in s["moods"]][:3] == ["happy", "energy", "calm"]
     assert s["version"] == __version__ and s["build"] and s["origin"].startswith("http")
     assert "comments" not in str(s).lower()
 
@@ -241,51 +241,12 @@ def test_search_terms_are_anded(admin, api):
     assert {p["title"] for p in api.get("/api/search?q=苹果").get_json()["groups"]["posts"]} == {"甲", "乙"}
 
 
-# ---- feeds, sitemap, robots -------------------------------------------------------------------------------------------------------------------
-def test_posts_feed_is_valid_rss_with_absolute_links(admin, api, png):
-    mid = admin.upload(f"{A}/media", png(800, 600)).get_json()
-    make_post(admin, "RSS 文章", content_md=f"## 小节\n\n正文 [站内](/about)\n\n![图](media:{mid['id']})\n\n```py\nx = 1 < 2 and ']]>'\n```", tags=["订阅"],
-              category_id=admin.post(f"{A}/taxonomy/categories", {"name": "分类甲"}).get_json()["id"])
-    r = api.get("/feed/posts.xml")
-    assert r.status_code == 200 and r.headers["Content-Type"] == "application/rss+xml; charset=utf-8"
-    root = ET.fromstring(r.data)
-    assert root.tag == "rss" and root.find("channel/title").text == "saubakaの博客 · 文章"
-    item = root.find("channel/item")
-    assert item.find("title").text == "RSS 文章" and item.find("link").text.startswith("http://localhost/blog/")
-    assert item.find("guid").attrib["isPermaLink"] == "true" and item.find("pubDate").text.endswith("+0000")
-    assert {c.text for c in item.findall("category")} == {"分类甲", "订阅"}
-    full = item.find("{http://purl.org/rss/1.0/modules/content/}encoded").text
-    assert 'href="http://localhost/about"' in full and f'src="http://localhost/media/{mid["hash"]}/960.webp"' in full
-    assert f"http://localhost/media/{mid['hash']}/480.webp 480w" in full and "]]>" not in full.replace("]]]]><![CDATA[>", "")  # CDATA cannot be broken out of
-    admin.patch(f"{A}/settings/seo", {"rss": {"full_text": False, "items": 5}})
-    short = ET.fromstring(api.get("/feed/posts.xml").data).find("channel/item")
-    assert short.find("{http://purl.org/rss/1.0/modules/content/}encoded") is None and short.find("description").text
-
-
-def test_feed_length_follows_the_setting(admin, api):
-    for i in range(7):
-        make_post(admin, f"条目{i}", published_at=f"2026-05-0{i + 1}T00:00:00Z")
-    assert len(ET.fromstring(api.get("/feed/posts.xml").data).findall("channel/item")) == 7
-    admin.patch(f"{A}/settings/seo", {"rss": {"full_text": True, "items": 5}})
-    items = ET.fromstring(api.get("/feed/posts.xml").data).findall("channel/item")
-    assert [i.find("title").text for i in items] == ["条目6", "条目5", "条目4", "条目3", "条目2"]
-
-
-def test_moments_feed(admin, api, png):
-    mid = admin.upload(f"{A}/media", png(300, 200)).get_json()["id"]
-    make_moment(admin, "带图的动态 **粗**", media=[{"media_id": mid, "alt": "一张图"}], link_card={"url": "https://example.com/a", "title": "例子"})
-    make_moment(admin, "x" * 80)
-    root = ET.fromstring(api.get("/feed/moments.xml").data)
-    items = root.findall("channel/item")
-    assert len(items) == 2 and root.find("channel/title").text == "saubakaの博客 · 动态"
-    assert items[1].find("title").text == "带图的动态 粗" and items[0].find("title").text == "x" * 40 + "…"
-    body = items[1].find("description").text
-    assert "<strong>粗</strong>" in body and "http://localhost/media/" in body and "例子" in body
-
-
-def test_empty_site_feeds_are_still_valid(api):
-    assert ET.fromstring(api.get("/feed/posts.xml").data).find("channel/item") is None
-    assert ET.fromstring(api.get("/feed/moments.xml").data).find("channel/item") is None
+# ---- sitemap, robots ----------------------------------------------------------------------------------------------------------------------
+def test_there_are_no_feeds(admin, api):
+    make_post(admin, "没有订阅源")
+    for path in ("/feed/posts.xml", "/feed/moments.xml"):
+        assert api.get(path).status_code == 404, path
+    assert "rss" not in api.get("/").get_data(as_text=True).lower() and "/feed/" not in api.get("/sitemap.xml").get_data(as_text=True)
 
 
 def test_sitemap_lists_public_addresses_only(admin, api):
@@ -316,7 +277,7 @@ def test_robots_txt(admin, api):
 def test_site_url_setting_controls_absolute_addresses(app, admin, api):
     app.extensions["bb_config"] = app.extensions["bb_config"].with_overrides(site_url="https://blog.example")
     make_post(admin, "绝对地址")
-    assert "https://blog.example/blog/" in api.get("/feed/posts.xml").get_data(as_text=True)
+    assert "https://blog.example/blog/" in api.get("/sitemap.xml").get_data(as_text=True)
     assert "https://blog.example/sitemap.xml" in api.get("/robots.txt").get_data(as_text=True)
     assert api.get("/api/site").get_json()["origin"] == "https://blog.example"
 

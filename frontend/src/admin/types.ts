@@ -91,9 +91,9 @@ export interface Vocab {
 }
 export interface SettingsGroups {
   site: { name: string; name_en: string; tagline: string; description: string; language: string; timezone: string; logo_media_id: number | null; favicon_media_id: number | null }
-  author: { name: string; bio: string; avatar_media_id: number | null; links: { label: string; kind: 'mail' | 'rss' | 'link'; url: string }[] }
+  author: { name: string; bio: string; avatar_media_id: number | null; links: { label: string; kind: 'mail' | 'link'; url: string }[] }
   appearance: { theme: string; decor: { tape: boolean; doodles: boolean }; motion: string; code_theme: string; texts: { not_found_title: string; not_found_text: string; error_title: string; error_text: string } }
-  seo: { title: string; description: string; keywords: string[]; share_image_media_id: number | null; robots_extra: string; sitemap: { moments: boolean; pages: boolean; taxonomy: boolean }; rss: { full_text: boolean; items: number } }
+  seo: { title: string; description: string; keywords: string[]; share_image_media_id: number | null; robots_extra: string; sitemap: { moments: boolean; pages: boolean; taxonomy: boolean } }
   footer: { icp: string; copyright: string; text: string }
   stats: { enabled: boolean }
   backup: { enabled: boolean; hour: number; keep: number }

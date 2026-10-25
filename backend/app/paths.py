@@ -1,9 +1,9 @@
-"""Public URL scheme, defined once. The sitemap, feeds, search results, navigation and the Vue router all follow it."""
+"""Public URL scheme, defined once. The sitemap, search results, navigation and the Vue router all follow it."""
 from __future__ import annotations
 
 # Slugs a standalone page may not use: they are real routes or prefixes of the app.
 RESERVED_PAGE_SLUGS = frozenset({
-    "blog", "moments", "archive", "search", "category", "tag", "series", "admin", "api", "feed", "media", "assets",
+    "blog", "moments", "archive", "search", "category", "tag", "series", "admin", "api", "media", "assets",
     "static", "sitemap.xml", "robots.txt", "favicon.ico", "setup", "login", "logout", "404", "500", "index", "p",
 })
 

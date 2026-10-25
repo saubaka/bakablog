@@ -26,7 +26,7 @@ def admin_rules(app):
 PUBLIC_ROUTES = {
     ("GET", "/api/health"), ("GET", "/api/site"), ("GET", "/api/home"), ("GET", "/api/posts"), ("GET", "/api/posts/<slug>"), ("GET", "/api/archive"),
     ("GET", "/api/taxonomy"), ("GET", "/api/moments"), ("GET", "/api/moments/<int:moment_id>"), ("GET", "/api/pages/<slug>"), ("GET", "/api/search"),
-    ("POST", "/api/track"), ("GET", "/media/<media_hash>/<int:size>.webp"), ("GET", "/feed/posts.xml"), ("GET", "/feed/moments.xml"),
+    ("POST", "/api/track"), ("GET", "/media/<media_hash>/<int:size>.webp"),
     ("GET", "/sitemap.xml"), ("GET", "/robots.txt"), ("GET", "/assets/<path:filename>"), ("GET", "/<name>"), ("GET", "/<path:path>"), ("GET", "/"),
 }
 
@@ -125,7 +125,7 @@ def test_an_admin_cookie_sent_to_public_urls_changes_nothing(app, admin, api):
         assert api.get(url, headers=header).status_code == 404, url
     body = api.get("/api/posts", headers=header).get_data(as_text=True)
     assert "秘密" not in body and "秘密" not in api.get("/api/moments", headers=header).get_data(as_text=True)
-    for url in ("/", "/blog", "/archive", "/feed/posts.xml", "/sitemap.xml"):
+    for url in ("/", "/blog", "/archive", "/sitemap.xml"):
         assert "秘密" not in api.get(url, headers=header).get_data(as_text=True), url
     found = api.get("/api/search?q=秘密", headers=header).get_json()
     assert found["total"] == 0 and found["groups"] == {"posts": [], "moments": [], "pages": []}
@@ -141,7 +141,7 @@ def test_nothing_public_mentions_hidden_content_anywhere(admin, api):
     make_moment(admin, "机密动态", visibility="private")
     make_page(admin, "机密页面", slug="secret-page", status="draft")
     urls = ["/", "/blog", "/archive", "/moments", "/search?q=机密", "/api/site", "/api/home", "/api/posts", "/api/posts?q=机密", "/api/archive", "/api/taxonomy",
-            "/api/moments", "/api/search?q=机密", "/api/search?q=机密标签", "/feed/posts.xml", "/feed/moments.xml", "/sitemap.xml", "/robots.txt"]
+            "/api/moments", "/api/search?q=机密", "/api/search?q=机密标签", "/sitemap.xml", "/robots.txt"]
     for url in urls:
         text = api.get(url).get_data(as_text=True)
         text = text.replace('"q":"机密"', "").replace('"q":"机密标签"', "")  # a search page repeats what was searched for; that is not a hit
@@ -174,7 +174,7 @@ def test_hostile_strings_in_admin_filters_are_harmless(admin, q):
 def test_security_headers_are_on_every_kind_of_response(admin, api, png):
     p = make_post(admin, "头部")
     m = admin.upload("/api/admin/media", png(100, 100)).get_json()
-    urls = ["/", f"/blog/{p['slug']}", "/nowhere", "/api/site", "/api/nothing", "/feed/posts.xml", "/sitemap.xml", "/robots.txt", m["src"], "/admin", "/api/admin/auth/status"]
+    urls = ["/", f"/blog/{p['slug']}", "/nowhere", "/api/site", "/api/nothing", "/sitemap.xml", "/robots.txt", m["src"], "/admin", "/api/admin/auth/status"]
     for url in urls:
         h = api.get(url).headers
         assert h["X-Content-Type-Options"] == "nosniff" and h["Referrer-Policy"] == "strict-origin-when-cross-origin", url
@@ -184,7 +184,7 @@ def test_security_headers_are_on_every_kind_of_response(admin, api, png):
 
 
 def test_csp_is_strict_everywhere(api):
-    for url in ("/", "/blog", "/admin", "/api/site", "/feed/posts.xml"):
+    for url in ("/", "/blog", "/admin", "/api/site", "/sitemap.xml"):
         csp = api.get(url).headers["Content-Security-Policy"]
         assert "unsafe-inline" not in csp and "unsafe-eval" not in csp and "*" not in csp and "http:" not in csp and "https:" not in csp, (url, csp)
         assert "default-src 'none'" in csp and "base-uri 'none'" in csp
@@ -195,8 +195,8 @@ def test_the_site_never_references_third_party_hosts(admin, api, png):
     p = make_post(admin, "无第三方", content_md=f"![图](media:{mid})\n\n[站内](/about) 和 ![远程](https://tracker.example/pixel.png)", tags=["x"])
     make_moment(admin, "动态", media=[{"media_id": mid}])
     make_page(admin, "关于", slug="about")
-    allowed = ("localhost", "www.w3.org", "schema.org", "purl.org", "www.sitemaps.org")
-    for url in ("/", f"/blog/{p['slug']}", "/blog", "/moments", "/archive", "/about", "/feed/posts.xml", "/feed/moments.xml", "/sitemap.xml", "/nowhere"):
+    allowed = ("localhost", "www.w3.org", "schema.org", "www.sitemaps.org")
+    for url in ("/", f"/blog/{p['slug']}", "/blog", "/moments", "/archive", "/about", "/sitemap.xml", "/nowhere"):
         text = api.get(url).get_data(as_text=True)
         # only addresses that are loaded automatically matter (src / href of link, script, img, srcset)
         loaded = re.findall(r'<(?:img|script|link|source|iframe)\b[^>]*?(?:src|href)="(https?://[^"]+)"', text)

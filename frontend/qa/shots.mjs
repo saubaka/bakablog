@@ -16,7 +16,7 @@ for (const w of widths.split(',').map(Number)) {
       // fixed layers would land in the middle of a full-page capture; lazy pictures only load near the viewport: make them eager
       // (the page's CSP forbids injected <style> elements, so this goes through the CSSOM, like the motion engine does)
       await page.evaluate(async () => {
-        document.querySelectorAll('.backtop, .readbar, .tabbar, .topline, .toc-fab').forEach((e) => e.style.setProperty('display', 'none', 'important'))
+        document.querySelectorAll('.readbar, .tabbar, .topline, .toc-fab').forEach((e) => e.style.setProperty('display', 'none', 'important'))
         const imgs = [...document.images]
         imgs.forEach((i) => { i.loading = 'eager' })
         await Promise.race([Promise.all(imgs.map((i) => (i.complete ? null : new Promise((r) => { i.onload = i.onerror = r })))), new Promise((r) => setTimeout(r, 5000))])

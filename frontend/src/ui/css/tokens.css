@@ -92,7 +92,6 @@
     /* ---- layout -------------------------------------------------------------------------------------------- */
     --wrap: 1120px;
     --reading: 720px;
-    --header-h: 88px;
     --bar-h: 64px;       /* the bottom menu bar (phones and tablets), without the safe area */
     --fx-k: 1;
 

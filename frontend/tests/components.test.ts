@@ -74,9 +74,9 @@ describe('Phrase', () => {
 
 describe('NavLink', () => {
   const link = (to: string, props: Record<string, unknown> = {}) => mount(NavLink, { props: { to, ...props }, slots: { default: 'x' }, global: { plugins } })
-  it('internal addresses are router links; feeds, mail, other sites and the admin are plain links', () => {
+  it('internal addresses are router links; the sitemap, mail, other sites and the admin are plain links', () => {
     expect(link('/blog').get('a').attributes('href')).toBe('/blog')
-    expect(link('/feed/posts.xml').get('a').attributes('href')).toBe('/feed/posts.xml')
+    expect(link('/sitemap.xml').get('a').attributes('href')).toBe('/sitemap.xml')
     expect(link('/admin').get('a').attributes('target')).toBeUndefined()
     expect(link('mailto:a@b.c').get('a').attributes('href')).toBe('mailto:a@b.c')
     const ext = link('https://example.com/x', { external: true }).get('a')

@@ -42,4 +42,4 @@ make rehearse    # 在临时目录里排练安装、更新、四种失败回滚�
 
 ## 版本与状态
 
-当前 0.4.0。P0 设计、P1 后端、P2 前台、P3 后台、P4 打磨、P5 部署材料已完成并自动化验证（Chromium + WebKit），已部署并对外开放。还没有在真实 Safari 和手机上验收（Playwright 的 WebKit 与 Safari 同源，但不是同一个构建）。详见各文档里的「局限」。
+当前 0.5.0。P0 设计、P1 后端、P2 前台、P3 后台、P4 打磨、P5 部署材料已完成并自动化验证（Chromium + WebKit），已部署并对外开放。还没有在真实 Safari 和手机上验收（Playwright 的 WebKit 与 Safari 同源，但不是同一个构建）。详见各文档里的「局限」。

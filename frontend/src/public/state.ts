@@ -56,6 +56,6 @@ function emptySite(): SiteInfo {
     author: { name: '', bio: '', avatar: null, links: [] }, theme: 'default', decor: { tape: true, doodles: true },
     motion: 'full', code_theme: 'frost', texts: { not_found_title: '', not_found_text: '', error_title: '', error_text: '' },
     seo: { title: '', description: '', keywords: [], share_image: null }, footer: { icp: '', copyright: '', text: '' },
-    nav: { top: [], mobile: [], footer: [] }, features: { stats: true, search: true, rss: true }, moods: [], origin: '', version: '', build: '', site_version: 0,
+    nav: { top: [], mobile: [], footer: [] }, features: { stats: true, search: true }, moods: [], origin: '', version: '', build: '', site_version: 0,
   }
 }

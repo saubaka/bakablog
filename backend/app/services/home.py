@@ -21,10 +21,16 @@ def customized(session: Session) -> bool:
 
 
 def _current(block_type: str, config: dict) -> dict:
-    """A stored config as it is understood today: a doodle that was retired from the vocabulary is dropped instead of failing the next save."""
-    if block_type == "hero" and isinstance(config.get("doodles"), list):
-        return {**config, "doodles": [d for d in config["doodles"] if d in defaults.DOODLES]}
-    return config
+    """A stored config as it is understood today: what was retired (the photo card and the typed title of the hero, a doodle that left the vocabulary,
+    the RSS button) is dropped instead of failing the next save or showing a dead link."""
+    if block_type != "hero":
+        return config
+    out = {k: v for k, v in config.items() if k not in ("polaroid", "title_lines")}
+    if isinstance(out.get("doodles"), list):
+        out["doodles"] = [d for d in out["doodles"] if d in defaults.DOODLES]
+    if isinstance(out.get("buttons"), list):
+        out["buttons"] = [b for b in out["buttons"] if not str(b.get("url", "")).startswith("/feed/")]
+    return out
 
 
 def admin_blocks(session: Session) -> list[dict]:
@@ -43,12 +49,6 @@ def validate_config(block_type: str, config: dict, index: int) -> dict:
         raise ApiError(422, "invalid", f"「{block_type}」模块的设置有问题。", fields=fields) from exc
 
 
-def _media_ids(block_type: str, config: dict) -> list[int]:
-    if block_type == "hero":
-        return [config.get("polaroid", {}).get("media_id")]
-    return []
-
-
 def replace(session: Session, blocks: list[dict]) -> list[dict]:
     types = [b["type"] for b in blocks]
     if len(set(types)) != len(types):
@@ -56,23 +56,13 @@ def replace(session: Session, blocks: list[dict]) -> list[dict]:
     clean = []
     for i, block in enumerate(blocks):
         config = validate_config(block["type"], block.get("config") or {}, i)
-        for mid in _media_ids(block["type"], config):
-            if mid is not None:
-                media = session.get(Media, mid)
-                if media is None or media.deleted_at is not None:
-                    raise ApiError(422, "invalid", "媒体库里没有这张图片。", fields={f"blocks.{i}.config.polaroid.media_id": "图片不存在"})
         clean.append({"type": block["type"], "enabled": bool(block.get("enabled", True)), "config": config})
     for old in session.scalars(select(HomeBlock)):
         refs.clear(session, "home_block", old.id)
     session.execute(delete(HomeBlock))
-    rows = []
     for position, block in enumerate(clean):
-        row = HomeBlock(type=block["type"], enabled=block["enabled"], config=block["config"], sort_order=position)
-        session.add(row)
-        rows.append(row)
+        session.add(HomeBlock(type=block["type"], enabled=block["enabled"], config=block["config"], sort_order=position))
     session.flush()
-    for row in rows:
-        refs.sync(session, "home_block", row.id, _media_ids(row.type, row.config))
     settings.bump_site_version(session)
     return admin_blocks(session)
 
@@ -104,10 +94,7 @@ def resolve_public(session: Session, blocks: list[dict] | None = None) -> list[d
             continue
         kind, config = block["type"], copy.deepcopy(block["config"])
         data: dict = {}
-        if kind == "hero":
-            media = session.get(Media, config.get("polaroid", {}).get("media_id") or 0)
-            config.setdefault("polaroid", {})["media"] = media_out(media) if media is not None and media.deleted_at is None else None
-        elif kind == "notice":
+        if kind == "notice":
             if not _active_notice(config):
                 continue
         elif kind == "featured":

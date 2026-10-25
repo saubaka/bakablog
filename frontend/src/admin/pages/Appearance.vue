@@ -25,7 +25,7 @@ const TZ = ['Asia/Shanghai', 'Asia/Tokyo', 'Asia/Singapore', 'Asia/Hong_Kong', '
 const themes = [{ id: 'default', name: '糖霜', text: '均衡，默认', swatch: ['#f7fbff', '#e6f1fc', '#fdeef3'] }, { id: 'sky', name: '晴空', text: '蓝为主', swatch: ['#f3f9ff', '#e3effb', '#e3effb'] }, { id: 'sakura', name: '樱花', text: '粉为主', swatch: ['#fff8fb', '#fdeaf1', '#e6f1fc'] }, { id: 'fog', name: '云雾', text: '灰为主', swatch: ['#f8f9fb', '#e9eef5', '#eceff4'] }]
 const motionOptions = [{ value: 'full', label: '标准', hint: '滚动时元素逐个入场' }, { value: 'soft', label: '轻柔', hint: '位移更小' }, { value: 'off', label: '关闭', hint: '没有入场动效' }]
 const codeOptions = [{ value: 'frost', label: '糖霜' }, { value: 'blossom', label: '粉墨' }, { value: 'fog', label: '雾灰' }]
-const linkKinds = [{ value: 'mail', label: '邮箱' }, { value: 'rss', label: '订阅' }, { value: 'link', label: '链接' }]
+const linkKinds = [{ value: 'mail', label: '邮箱' }, { value: 'link', label: '链接' }]
 
 function fill(g: SettingsGroups): void {
   Object.assign(site, JSON.parse(JSON.stringify(g.site)))
@@ -62,7 +62,7 @@ const addLink = (): void => { if (author.links.length < 8) author.links.push({ l
         <h2>站点信息</h2>
         <div class="adm-form adm-form--2">
           <Field v-slot="{ id }" label="站点名" required :error="errors.site?.name"><input :id="id" v-model="site.name" class="input" maxlength="60"></Field>
-          <Field v-slot="{ id }" label="英文名" :error="errors.site?.name_en" hint="顶栏小字、标签页标题里用"><input :id="id" v-model="site.name_en" class="input" maxlength="60"></Field>
+          <Field v-slot="{ id }" label="英文名" :error="errors.site?.name_en" hint="首页大标题的第二行、标签页标题里用"><input :id="id" v-model="site.name_en" class="input" maxlength="60"></Field>
           <Field v-slot="{ id }" label="一句话简介（副标题）" :error="errors.site?.tagline"><input :id="id" v-model="site.tagline" class="input" maxlength="80"></Field>
           <Field v-slot="{ id }" label="语言" :error="errors.site?.language" hint="比如 zh-CN、en、ja"><input :id="id" v-model="site.language" class="input" maxlength="10"></Field>
           <Field v-slot="{ id }" label="站点描述" class="span-2" :error="errors.site?.description" hint="搜索结果和分享卡片里的默认描述"><textarea :id="id" v-model="site.description" class="textarea" rows="2" maxlength="300" /></Field>
@@ -82,11 +82,11 @@ const addLink = (): void => { if (author.links.length < 8) author.links.push({ l
           <Field v-slot="{ id }" label="简介" class="span-2" :error="errors.author?.bio"><textarea :id="id" v-model="author.bio" class="textarea" rows="3" maxlength="600" /></Field>
         </div>
         <div class="adm-links">
-          <h3 class="adm-h3">链接（邮箱、订阅、社交主页，最多 8 个）</h3>
+          <h3 class="adm-h3">链接（邮箱、社交主页，最多 8 个）</h3>
           <div v-for="(l, i) in author.links" :key="i" class="adm-linkrow">
             <input v-model="l.label" class="input" :aria-label="`第 ${i + 1} 个链接的名字`" placeholder="名字，如：发邮件" maxlength="20">
             <select v-model="l.kind" class="select" :aria-label="`第 ${i + 1} 个链接的类型`"><option v-for="k in linkKinds" :key="k.value" :value="k.value">{{ k.label }}</option></select>
-            <input v-model="l.url" class="input" :aria-label="`第 ${i + 1} 个链接的地址`" placeholder="mailto:… / https://… / /feed/posts.xml" spellcheck="false">
+            <input v-model="l.url" class="input" :aria-label="`第 ${i + 1} 个链接的地址`" placeholder="mailto:… / https://…" spellcheck="false">
             <button class="icon-btn icon-btn--ghost" type="button" :aria-label="`删除第 ${i + 1} 个链接`" @click="author.links.splice(i, 1)"><AIcon name="a-trash" /></button>
           </div>
           <p v-if="errors.author?.links" class="adm-field__error">{{ errors.author.links }}</p>

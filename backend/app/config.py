@@ -121,7 +121,7 @@ def load_config(overrides: Mapping | None = None, environ: Mapping | None = None
     if site_url and not site_url.startswith(("http://", "https://")):
         raise ConfigError("BLOG_SITE_URL must start with http:// or https://")
     if env == "production" and not site_url:
-        raise ConfigError("BLOG_SITE_URL must be set in production (feeds, the sitemap and canonical links must not depend on the Host header)")
+        raise ConfigError("BLOG_SITE_URL must be set in production (the sitemap and canonical links must not depend on the Host header)")
 
     dist = get("BLOG_FRONTEND_DIST")
     frontend_dist = Path(dist).expanduser().resolve() if dist else (REPO_DIR / "frontend" / "dist")

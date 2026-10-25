@@ -11,7 +11,7 @@ from app.errors import ApiError
 from app.models import Redirect
 from app.timeutil import utcnow
 
-_PROTECTED = ("/api/", "/admin", "/media/", "/feed/")
+_PROTECTED = ("/api/", "/admin", "/media/")
 MAX_HOPS = 5
 
 
@@ -42,7 +42,7 @@ def _check(source: str, target: str) -> None:
     if source == target:
         raise ApiError(422, "invalid", "来源和目标不能相同。", fields={"target": "不能和来源相同"})
     if source == "/" or source.startswith(_PROTECTED):
-        raise ApiError(422, "invalid", "这个路径不能设置重定向。", fields={"source": "不能是首页、/api、/admin、/media 或 /feed 下的路径"})
+        raise ApiError(422, "invalid", "这个路径不能设置重定向。", fields={"source": "不能是首页、/api、/admin 或 /media 下的路径"})
 
 
 def create(session: Session, source: str, target: str, status_code: int = 301, *, auto: bool = False) -> Redirect:

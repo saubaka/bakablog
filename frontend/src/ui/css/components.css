@@ -184,7 +184,6 @@
     background: var(--bb); border-left: 1px solid var(--line); border-bottom: 1px solid var(--line);
     border-radius: 0 0 0 4px; rotate: 45deg;
   }
-  .bubble--pop::before { left: auto; right: -7px; border-left: 0; border-bottom: 0; border-right: 1px solid var(--line); border-top: 1px solid var(--line); border-radius: 0 4px 0 0; }
   .mood { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
   .mood svg { width: 26px; height: 26px; }
 
@@ -354,13 +353,7 @@
   .hr-dash { border-top: 1px dashed var(--line); }
   .hr-wave { height: 12px; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='12' viewBox='0 0 40 12'%3E%3Cpath d='M0 6q5-6 10 0t10 0 10 0 10 0' fill='none' stroke='%23000' stroke-width='1.600'/%3E%3C/svg%3E") repeat-x center / 40px 12px; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='12' viewBox='0 0 40 12'%3E%3Cpath d='M0 6q5-6 10 0t10 0 10 0 10 0' fill='none' stroke='%23000' stroke-width='1.600'/%3E%3C/svg%3E") repeat-x center / 40px 12px; background: var(--sky-300); }
 
-  .ring-btn { position: relative; display: grid; place-items: center; width: 56px; height: 56px; border: 1px solid var(--line); border-radius: 50%; background: var(--paper); transition: transform var(--dur-2) var(--ease), opacity var(--dur-2) var(--ease); }
-  .ring-btn:hover { transform: translateY(-3px); }
-  .ring-btn svg.ring { position: absolute; inset: -1px; width: calc(100% + 2px); height: calc(100% + 2px); rotate: -90deg; fill: none; }
-  .ring-btn svg.ring circle { stroke-width: 3; stroke-linecap: round; }
-
   /* =============== additions for the real site =============== */
-  .tape--top { left: 50%; top: -12px; margin-left: -38px; }
   .tape--right { right: 28px; top: -11px; }
   .card--note > .tape { left: 22px; top: -11px; }
   .note--tilt { transform: rotate(-1.5deg); }

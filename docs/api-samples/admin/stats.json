@@ -2,11 +2,6 @@
   "days": 7,
   "series": [
     {
-      "day": "2026-10-18",
-      "views": 0,
-      "uniques": 0
-    },
-    {
       "day": "2026-10-19",
       "views": 0,
       "uniques": 0
@@ -33,6 +28,11 @@
     },
     {
       "day": "2026-10-24",
+      "views": 0,
+      "uniques": 0
+    },
+    {
+      "day": "2026-10-25",
       "views": 0,
       "uniques": 0
     }

@@ -318,7 +318,7 @@ await main(async (browser) => {
 
   await flow(browser, 'phone: bottom bar, drawer with motion switch, TOC drawer, search button', byName('post'), phone, async ({ page, check }) => {
     await check('tab bar visible', page.locator('.tabbar').isVisible())
-    await check('header nav hidden', !(await page.locator('.site-header .nav').isVisible()))
+    await check('side menu hidden', !(await page.locator('.thread--side').isVisible()))
     await page.click('.tabbar button:has-text("更多")')
     await page.waitForSelector('.sheet.is-open')
     await page.click('.motion-switch button:has-text("关闭")')
@@ -363,7 +363,7 @@ await main(async (browser) => {
   await flow(browser, 'internal links in article text navigate inside the app; links to the server do not', byName('post'), desktop, async ({ page, check, requests }) => {
     await page.evaluate(() => {
       const p = document.querySelector('.prose p')
-      p.insertAdjacentHTML('beforeend', ' <a id="t-in" href="/archive">归档</a> <a id="t-feed" href="/feed/posts.xml">订阅</a>')
+      p.insertAdjacentHTML('beforeend', ' <a id="t-in" href="/archive">归档</a>')
     })
     await page.click('#t-in')
     await waitPath(page, /^\/archive$/)

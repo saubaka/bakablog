@@ -21,14 +21,14 @@ import { debounced, useSubmit } from '../use'
 
 const loaded = ref(false)
 const origin = ref('')
-const seo = reactive<SettingsGroups['seo']>({ title: '', description: '', keywords: [], share_image_media_id: null, robots_extra: '', sitemap: { moments: true, pages: true, taxonomy: true }, rss: { full_text: true, items: 20 } })
+const seo = reactive<SettingsGroups['seo']>({ title: '', description: '', keywords: [], share_image_media_id: null, robots_extra: '', sitemap: { moments: true, pages: true, taxonomy: true } })
 const errors = ref<Record<string, string>>({})
 const busy = ref(false)
 onMounted(async () => { try { Object.assign(seo, JSON.parse(JSON.stringify((await loadSettings()).groups.seo))); loaded.value = true; origin.value = (await api.get<{ site_url: string }>('/system/status')).site_url } catch (e) { toastError(e instanceof AdminError ? e.message : '设置加载失败。') } })
 async function saveSeo(): Promise<void> {
   busy.value = true
   errors.value = {}
-  try { await saveGroup('seo', { ...seo }); toast('SEO 与订阅设置已保存。') } catch (e) { if (e instanceof AdminError) { errors.value = e.fields; toastError(e.firstField ? `${e.message}（${e.firstField}）` : e.message) } else toastError('保存没有成功。') } finally { busy.value = false }
+  try { await saveGroup('seo', { ...seo }); toast('SEO 设置已保存。') } catch (e) { if (e instanceof AdminError) { errors.value = e.fields; toastError(e.firstField ? `${e.message}（${e.firstField}）` : e.message) } else toastError('保存没有成功。') } finally { busy.value = false }
 }
 
 /* ---- redirects ---- */
@@ -57,7 +57,7 @@ const codeOptions = [{ value: 301, label: '301 永久' }, { value: 302, label: '
 
 <template>
   <div>
-    <PageHead title="SEO 与订阅" sub="搜索引擎、分享卡片、订阅源、站点地图，以及旧地址的重定向。" />
+    <PageHead title="SEO" sub="搜索引擎、分享卡片、站点地图，以及旧地址的重定向。" />
     <p v-if="!loaded" class="adm-boot" role="status">正在加载设置……</p>
     <div v-else class="adm-stack">
       <form class="adm-card adm-section" @submit.prevent="saveSeo">
@@ -65,14 +65,12 @@ const codeOptions = [{ value: 301, label: '301 永久' }, { value: 302, label: '
         <div class="adm-form adm-form--2">
           <Field v-slot="{ id }" label="默认标题" :error="errors.title" hint="留空用“站点名 · 副标题”"><input :id="id" v-model="seo.title" class="input" maxlength="120"></Field>
           <Field label="默认分享图" hint="文章没有自己的分享图和封面时用它"><MediaField v-model="seo.share_image_media_id" title="选择分享图" /></Field>
-          <Field label="规范域名" class="span-2" hint="所有绝对链接（订阅、站点地图、分享卡片）都用它。它写在服务器的环境变量 BLOG_SITE_URL 里，改完要重启服务，所以这里只读。"><p class="adm-readonly adm-mono">{{ origin || '（未设置）' }}</p></Field>
+          <Field label="规范域名" class="span-2" hint="所有绝对链接（站点地图、分享卡片）都用它。它写在服务器的环境变量 BLOG_SITE_URL 里，改完要重启服务，所以这里只读。"><p class="adm-readonly adm-mono">{{ origin || '（未设置）' }}</p></Field>
           <Field v-slot="{ id }" label="默认描述" class="span-2" :error="errors.description" hint="留空用站点描述"><textarea :id="id" v-model="seo.description" class="textarea" rows="2" maxlength="300" /></Field>
           <Field label="关键词" class="span-2" :error="errors.keywords" hint="可选，最多 15 个。现在的搜索引擎基本不看它了。"><TagInput v-model="seo.keywords" :max="15" label="关键词" /></Field>
         </div>
-        <h2 class="adm-section__sub">订阅与站点地图</h2>
+        <h2 class="adm-section__sub">站点地图</h2>
         <div class="adm-form adm-form--2">
-          <Field label="订阅内容"><Segmented :model-value="seo.rss.full_text ? 'full' : 'summary'" label="订阅内容" :options="[{ value: 'full', label: '全文' }, { value: 'summary', label: '只给摘要' }]" @update:model-value="(v) => (seo.rss.full_text = v === 'full')" /></Field>
-          <Field v-slot="{ id }" label="订阅条数" :error="errors['rss.items']" hint="5–100"><input :id="id" v-model.number="seo.rss.items" class="input" type="number" min="5" max="100"></Field>
           <div class="adm-switches span-2">
             <SwitchField v-model="seo.sitemap.moments" label="动态进站点地图" /><SwitchField v-model="seo.sitemap.pages" label="独立页面进站点地图" /><SwitchField v-model="seo.sitemap.taxonomy" label="分类、标签、系列进站点地图" />
           </div>

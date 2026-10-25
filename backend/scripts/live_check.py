@@ -110,7 +110,7 @@ def read_only(c: Client) -> dict:
     check(c.request("GET", "/nowhere-at-all")[0] == 404, "unknown page answers 404")
     s, h, b = c.request("GET", "/api/nothing")
     check(s == 404 and json.loads(b)["error"]["code"] == "not_found", "unknown API path answers a JSON 404")
-    check(c.request("GET", "/feed/posts.xml")[0] == 200 and c.request("GET", "/sitemap.xml")[0] == 200 and c.request("GET", "/robots.txt")[0] == 200, "feed, sitemap, robots")
+    check(c.request("GET", "/sitemap.xml")[0] == 200 and c.request("GET", "/robots.txt")[0] == 200, "sitemap, robots")
     check(c.request("GET", "/api/admin/auth/me")[0] == 401, "admin API refuses anonymous visitors")
     check(c.request("POST", "/api/admin/posts", body={"title": "x"})[0] in (401, 403), "admin writes refuse anonymous visitors")
     check(c.request("POST", "/api/track", raw=b'{"p": "/"}', headers={"DNT": "1", "Content-Type": "text/plain"})[0] == 204, "visit beacon answers 204")

@@ -6,7 +6,7 @@ const here = (p: string) => fileURLToPath(new URL(p, import.meta.url))
 const API = process.env.BLOG_API ?? 'http://127.0.0.1:5300'
 
 /* Paths the Flask server answers itself; everything else in dev is the public page shell (or the admin shell under /admin). */
-const SERVER_PREFIXES = ['/api/', '/media/', '/feed/', '/sitemap.xml', '/robots.txt']
+const SERVER_PREFIXES = ['/api/', '/media/', '/sitemap.xml', '/robots.txt']
 
 /** Dev server: any address without a file extension gets public.html (the history-mode router takes over).
     The Flask server writes <head> and the first-screen data into the real shell; in dev only the icon is filled in. */

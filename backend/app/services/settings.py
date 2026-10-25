@@ -72,7 +72,10 @@ def group(session: Session, name: str) -> dict:
     """The effective values of one group (defaults + what was stored)."""
     base = defaults.DEFAULT_SETTINGS[name]
     stored = get_raw(session, f"cfg.{name}")
-    return _prune(base, _merge(base, stored)) if isinstance(stored, dict) else copy.deepcopy(base)
+    out = _prune(base, _merge(base, stored)) if isinstance(stored, dict) else copy.deepcopy(base)
+    if name == "author":   # the RSS link kind was retired: a stored one would fail the next save and point nowhere
+        out["links"] = [link for link in out["links"] if link.get("kind") != "rss"]
+    return out
 
 
 def all_groups(session: Session) -> dict[str, dict]:

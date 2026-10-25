@@ -47,7 +47,7 @@ class SiteIn(_M):
 
 class AuthorLink(_M):
     label: str = Field(min_length=1, max_length=20)
-    kind: Literal["mail", "rss", "link"]
+    kind: Literal["mail", "link"]
     url: str = Field(min_length=1, max_length=300)
 
     @field_validator("url")
@@ -89,11 +89,6 @@ class SitemapIn(_M):
     taxonomy: bool
 
 
-class RssIn(_M):
-    full_text: bool
-    items: int = Field(ge=5, le=100)
-
-
 _ROBOTS_LINE = re.compile(r"^(#.*|(Disallow|Allow|Crawl-delay|User-agent|Noindex):\s*\S.*)$", re.I)
 
 
@@ -104,7 +99,6 @@ class SeoIn(_M):
     share_image_media_id: int | None = None
     robots_extra: str = Field(max_length=2000)
     sitemap: SitemapIn
-    rss: RssIn
 
     @field_validator("keywords")
     @classmethod

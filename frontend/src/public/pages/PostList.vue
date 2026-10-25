@@ -109,7 +109,6 @@ const pageTo = (n: number): RouteLocationRaw => ({ path: route.path, query: { ..
       </div>
       <div class="result-line">
         <span role="status">共 {{ data.total }} 篇</span>
-        <a v-if="site.features.rss" class="text-link" href="/feed/posts.xml"><Icon name="rss" />订阅文章</a>
       </div>
     </div>
 

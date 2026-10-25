@@ -83,7 +83,7 @@ def _mood_out(mood: str | None) -> dict | None:
 
 
 def post_card(post, *, admin: bool = False) -> dict:
-    """The compact shape used by lists, cards, feeds and search results."""
+    """The compact shape used by lists, cards and search results."""
     out = {
         "id": post.id,
         "slug": post.slug,

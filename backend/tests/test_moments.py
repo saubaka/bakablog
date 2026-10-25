@@ -131,9 +131,7 @@ def test_visibility_matrix(admin, api):
         assert api.get(f"/api/moments/{hidden['id']}").status_code == 404
         assert api.get(f"/moments/{hidden['id']}").status_code == 404
     assert api.get(f"/moments/{unl['id']}").status_code == 200
-    feed = api.get("/feed/moments.xml").get_data(as_text=True)
     sitemap = api.get("/sitemap.xml").get_data(as_text=True)
-    assert "公开的" in feed and all(t not in feed for t in ("仅链接的", "私密的", "未来的", "删掉的"))
     assert f"/moments/{pub['id']}<" in sitemap and all(f"/moments/{m['id']}<" not in sitemap for m in (unl, priv, future, gone))
     found = api.get("/api/search?q=的&type=moment").get_json()["groups"]["moments"] if False else None
     assert found is None

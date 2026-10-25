@@ -34,7 +34,7 @@ export const scanLines = (floatingSel) => {
     if (r.width >= 80 && r.height >= 40 && !/^(TR|TD|TH|TABLE|THEAD|TBODY|IMG|SVG|HTML|BODY|MAIN|IFRAME|INPUT|SELECT|TEXTAREA)$/i.test(e.tagName) && !(e instanceof SVGElement)) {
       const sides = ['Top', 'Right', 'Bottom', 'Left'].filter((sd) => parseFloat(cs[`border${sd}Width`]) > 0 && cs[`border${sd}Style`] !== 'none').length
       const rad = Math.max(...['TopLeft', 'TopRight', 'BottomRight', 'BottomLeft'].map((k) => parseFloat(cs[`border${k}Radius`]) || 0))
-      if (sides >= 3 && rad < 6 && !e.closest('.site-header, .tabs')) out.square.push(`${label(e)} ${Math.round(r.width)}x${Math.round(r.height)} r=${rad}`)
+      if (sides >= 3 && rad < 6 && !e.closest('.tabs')) out.square.push(`${label(e)} ${Math.round(r.width)}x${Math.round(r.height)} r=${rad}`)
     }
   })
   return out

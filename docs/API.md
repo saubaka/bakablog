@@ -1,6 +1,6 @@
 # API 参考
 
-后端（Flask）只有两类东西：**JSON 接口**（`/api/…`）和 **给浏览器的页面**（HTML 外壳 + 静态资源 + 订阅）。真实的响应样例在
+后端（Flask）只有两类东西：**JSON 接口**（`/api/…`）和 **给浏览器的页面**（HTML 外壳 + 静态资源 + 站点地图）。真实的响应样例在
 [`docs/api-samples/`](api-samples/)，由 `backend/scripts/dump_samples.py` 从一个全新的示例站生成，前端就是照它写的。
 本文里每个端点都写成 `` `方法 路径` `` 的形式，`backend/tests/test_docs.py` 会核对它和真实的路由一一对应——加了路由不写文档，测试会失败。
 
@@ -15,13 +15,13 @@
 | 时间 | 一律 ISO 8601 的 UTC，带 `Z`：`2026-10-18T09:30:00Z`；后台编辑令牌 `updated_at` 带微秒。“某天 / 某月”由站点时区（`/api/site` 的 `timezone`）决定 |
 | 缓存 | 公开 JSON：`Cache-Control: no-cache` + 弱 `ETag`，带 `If-None-Match` 得到 `304`；后台接口：`no-store`；图片：`public, max-age=31536000, immutable` |
 | 图片 | 响应里的图片对象是 `{id, alt, caption, width, height, color, animated, src, srcset, full, variants[]}`；`src` 是 960 宽那档，`color` 是占位底色 |
-| 链接 | 响应里的站内地址都是路径（`/blog/slug`）；绝对地址只出现在订阅、站点地图和 `seo.canonical` 里 |
+| 链接 | 响应里的站内地址都是路径（`/blog/slug`）；绝对地址只出现在站点地图和 `seo.canonical` 里 |
 | 没有 | 评论、留言、点赞、访客账号——没有对应的表，也没有对应的接口 |
 
 ### 公开地址方案
 
 `/` 首页 · `/blog` 列表 · `/blog/{slug}` 文章 · `/category/{slug}` · `/tag/{slug}` · `/series/{slug}` · `/archive` · `/moments` · `/moments/{id}` ·
-`/search` · `/{slug}` 独立页面（如 `/about`）· `/feed/posts.xml` · `/feed/moments.xml` · `/sitemap.xml` · `/robots.txt` · `/media/{hash}/{size}.webp` · `/admin…` 后台（其中 `/admin/preview-frame` 是后台“预览”用的页面：唯一允许被同源 iframe 嵌入的页面，样式与前台一致，内容由后台用 `postMessage` 送入）。
+`/search` · `/{slug}` 独立页面（如 `/about`）· `/sitemap.xml` · `/robots.txt` · `/media/{hash}/{size}.webp` · `/admin…` 后台（其中 `/admin/preview-frame` 是后台“预览”用的页面：唯一允许被同源 iframe 嵌入的页面，样式与前台一致，内容由后台用 `postMessage` 送入）。
 独立页面的别名不能占用这些保留词（`blog`、`moments`、`api`、`admin`……见 `app/paths.py`）。
 
 ## 2. 登录与 CSRF（后台接口）
@@ -50,7 +50,7 @@
 
 只有 `POST /api/track` 一个公开写入口，`backend/tests/test_security_inventory.py` 会盯着这件事。
 
-## 4. 浏览器页面、订阅与静态资源
+## 4. 浏览器页面与静态资源
 
 | 端点 | 说明 |
 |---|---|
@@ -58,15 +58,13 @@
 | `GET /{path}` | 所有公开页面和 `/admin…`：先查重定向表（301 / 302），再匹配上面的地址方案，返回前端外壳 + 服务端注入的 SEO；找不到时 `404` + 同一个外壳（Vue 画 404 页）|
 | `GET /{name}` | 根目录的静态文件（`favicon.ico`、`favicon.svg`、`manifest.webmanifest`…），其余交给上一条 |
 | `GET /assets/{filename}` | 前端构建产物（文件名带内容哈希，永久缓存） |
-| `GET /media/{media_hash}/{size}.webp` | 图片，`size` ∈ 480 / 960 / 1600，永久缓存，`Cross-Origin-Resource-Policy: cross-origin`（订阅阅读器要显示） |
-| `GET /feed/posts.xml` | 文章 RSS 2.0（全文或摘要、条数由后台设置） |
-| `GET /feed/moments.xml` | 动态 RSS |
+| `GET /media/{media_hash}/{size}.webp` | 图片，`size` ∈ 480 / 960 / 1600，永久缓存 |
 | `GET /sitemap.xml` | 站点地图（只含公开内容；动态 / 页面 / 分类标签可在后台开关） |
 | `GET /robots.txt` | 允许全站，禁止 `/api/` 与 `/admin`，追加后台配置的规则，指向站点地图 |
 
 **前端外壳的契约**（`frontend/dist/public.html`，没有构建产物时用内置的最小外壳）：
 
-- `<!--bb:head-->` 被替换成 `<title>`、描述、规范链接、Open Graph / Twitter、订阅链接、JSON-LD；
+- `<!--bb:head-->` 被替换成 `<title>`、描述、规范链接、Open Graph / Twitter、JSON-LD；
 - `<!--bb:data-->` 被替换成 `<script id="bb-data" type="application/json">{"path","kind","status","site","data"}</script>`——首屏数据，Vue 启动时直接用，不再多一次请求；
   `kind` ∈ `home blog post taxonomy archive moments moment page search 404 500`，`data` 与对应的 JSON 接口响应相同；
   列表页（`blog`、`taxonomy`）在 `data` 旁边多一个顶层键 `taxonomy`（= `GET /api/taxonomy`），分类标签页和标签云不用再请求一次；列表页每页 9 篇（地址里写了 `per` 则以它为准），与前台卡片网格的整行数对齐；

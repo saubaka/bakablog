@@ -1,7 +1,7 @@
 """Single-page-app shell with server-side SEO.
 
 Every public address gets the built Vue shell (frontend/dist/public.html) with
-  <!--bb:head-->  replaced by the real <title>, description, canonical, Open Graph / Twitter tags, feeds, JSON-LD,
+  <!--bb:head-->  replaced by the real <title>, description, canonical, Open Graph / Twitter tags, JSON-LD,
   <!--bb:data-->  replaced by the first-screen data as an inert JSON block (the app starts from it: no extra request),
   <!--bb:ssr-->   replaced by a semantic copy of the content (for crawlers, link previews and visitors without JavaScript).
 Unknown addresses answer 404 with the same shell, so the app draws its own 404 page. Redirects (301 / 302) are applied first.
@@ -138,8 +138,6 @@ def _head(s: dict, page: Page) -> str:
     tags += [
         f'<link rel="icon" href="{esc(favicon, quote=True)}">',
         '<meta name="theme-color" content="#f7fbff">',
-        f'<link rel="alternate" type="application/rss+xml" title="{esc(name, quote=True)} · 文章" href="{esc(s["origin"], quote=True)}/feed/posts.xml">',
-        f'<link rel="alternate" type="application/rss+xml" title="{esc(name, quote=True)} · 动态" href="{esc(s["origin"], quote=True)}/feed/moments.xml">',
     ]
     for block in page.jsonld:
         text = json.dumps(block, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
@@ -253,7 +251,7 @@ def _home(s: dict) -> Page:
     session = db()
     blocks = home.resolve_public(session)
     hero = next((b for b in blocks if b["type"] == "hero"), None)
-    lines = " ".join(hero["config"]["title_lines"]) if hero else s["name"]
+    lines = f"{s['name']} {s['name_en']}".strip() if hero else s["name"]
     latest = next((b for b in blocks if b["type"] == "latest_posts"), None)
     moments_block = next((b for b in blocks if b["type"] == "latest_moments"), None)
     body = f"<h1>{esc(lines)}</h1>" + (f"<p>{esc(hero['config'].get('intro', ''))}</p>" if hero else "")
@@ -421,7 +419,7 @@ def _clean(path: str) -> str:
 @bp.get("/", defaults={"path": ""})
 @bp.get("/<path:path>")
 def public_page(path: str):
-    if path.startswith(("api/", "media/", "feed/")) or path in ("api", "media", "feed"):
+    if path.startswith(("api/", "media/")) or path in ("api", "media"):
         raise ApiError(404)
     raw = "/" + path
     full = _clean(path)

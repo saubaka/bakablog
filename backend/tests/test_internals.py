@@ -209,9 +209,8 @@ def test_usage_lists_every_kind_of_user(admin, app):
     make_post(admin, "封面", cover_media_id=mid)
     make_moment(admin, "图", media=[{"media_id": mid}])
     admin.patch(f"{A}/settings/site", {"logo_media_id": mid})
-    admin.put(f"{A}/home", {"blocks": [{"type": "hero", "config": {"title_lines": ["x"], "polaroid": {"media_id": mid}}}]})
     kinds = {u["type"] for u in admin.get(f"{A}/media/{mid}/usage").get_json()["items"]}
-    assert kinds == {"post", "moment", "page", "setting", "home_block"} | ({"series"} if False else set())
+    assert kinds == {"post", "moment", "page", "setting"}
     with session_scope(app) as s:
         refs.sync(s, "series", series["id"], [mid])
         assert {u["type"] for u in refs.usage(s, mid)} >= {"series"}

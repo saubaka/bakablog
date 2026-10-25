@@ -136,24 +136,6 @@
         "target": "/archive",
         "sticker": "calendar",
         "enabled": true
-      },
-      {
-        "id": null,
-        "region": "footer",
-        "label": "文章 RSS",
-        "kind": "link",
-        "target": "/feed/posts.xml",
-        "sticker": "rss",
-        "enabled": true
-      },
-      {
-        "id": null,
-        "region": "footer",
-        "label": "动态 RSS",
-        "kind": "link",
-        "target": "/feed/moments.xml",
-        "sticker": "rss",
-        "enabled": true
       }
     ],
     "customized": false

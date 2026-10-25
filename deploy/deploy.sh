@@ -100,7 +100,7 @@ if [ -n "$URL" ]; then
   say "checking $URL from here"
   health="$(curl -fsS --max-time 15 "$URL/api/health")" || die "$URL/api/health did not answer"
   printf '%s' "$health" | grep -q "\"build\":\"$BUILD\"" || die "$URL reports a different build: $health"
-  for path in / /blog /moments /feed/posts.xml /sitemap.xml /admin/; do
+  for path in / /blog /moments /sitemap.xml /admin/; do
     code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "$URL$path")"
     [ "$code" = 200 ] || die "$URL$path answered $code"
   done

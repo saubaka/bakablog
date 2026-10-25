@@ -35,16 +35,16 @@ describe('which navigation entry is current', () => {
     expect(iconFor(item('x', '/y', { sticker: 'star' }), known)).toBe('star')
     expect(iconFor(item('x', '/y', { sticker: 'nope' }), known)).toBe('link')
     expect(iconFor(item('x', '/blog'), known)).toBe('book')
-    expect(iconFor(item('x', '/feed/posts.xml', { kind: 'link' }), known)).toBe('rss')
+    expect(iconFor(item('x', '/feed/posts.xml', { kind: 'link' }), known)).toBe('link')
     expect(iconFor(item('x', '', { kind: 'action', action: 'more' }), known)).toBe('more')
   })
 })
 
 describe('server paths are never handled by the router', () => {
-  it.each(['/admin', '/admin/posts', '/api/site', '/media/abc/960.webp', '/feed/posts.xml', '/assets/x.js', '/sitemap.xml', '/robots.txt', '/favicon.svg'])('%s', (p) => {
+  it.each(['/admin', '/admin/posts', '/api/site', '/media/abc/960.webp', '/assets/x.js', '/sitemap.xml', '/robots.txt', '/favicon.svg'])('%s', (p) => {
     expect(isServerPath(p)).toBe(true)
   })
-  it.each(['/', '/blog', '/blog/admin', '/administrator', '/apiary', '/about', '/moments/3'])('%s is an app page', (p) => {
+  it.each(['/', '/blog', '/blog/admin', '/administrator', '/apiary', '/about', '/moments/3', '/feed'])('%s is an app page', (p) => {
     expect(isServerPath(p)).toBe(false)
   })
 })

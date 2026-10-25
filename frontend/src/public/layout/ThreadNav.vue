@@ -13,6 +13,7 @@ import { currentIndex, iconFor } from '../nav'
 import { trackProgress } from '../progress'
 import { openMore, openSearch, scrollToTop } from '../ui'
 import { ICONS } from '../icons'
+import { site } from '../state'
 
 const props = defineProps<{ items: NavItem[]; variant: 'side' | 'bottom'; label: string }>()
 const route = useRoute()
@@ -69,6 +70,7 @@ function act(item: NavItem): void {
         <span class="thread__tag">{{ item.label }}</span>
       </NavLink>
     </template>
+    <button v-if="variant === 'side' && site.features.search" type="button" class="thread__search" aria-label="搜索（快捷键 /）" title="搜索（快捷键 /）" @click="openSearch"><Icon name="search" /></button>
     <span class="thread__heart" aria-hidden="true">
       <Icon name="heart" />
       <span :key="current" class="thread__label">{{ currentLabel }}</span>

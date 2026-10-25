@@ -42,7 +42,7 @@ curl -s -b jar.txt -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' 
 | `BLOG_SECRET_KEY` | 签名预览链接用；**生产必须设置，≥ 32 个字符** | 开发 / 测试自动生成并保存在 `data/.dev-secret` |
 | `BLOG_DATA_DIR` | 数据目录：`blog.sqlite`、`media/`、`backups/` | `backend/data` |
 | `BLOG_DB_PATH` | 单独指定数据库文件 | `$DATA_DIR/blog.sqlite` |
-| `BLOG_SITE_URL` | 规范域名（`https://…`，无末尾斜杠）；订阅、站点地图、`canonical` 用它 | 空 = 用请求自己的主机名 |
+| `BLOG_SITE_URL` | 规范域名（`https://…`，无末尾斜杠）；站点地图、`canonical` 用它 | 空 = 用请求自己的主机名 |
 | `BLOG_FRONTEND_DIST` | 前端构建目录（`public.html` / `admin.html` / `assets/`） | `<仓库>/frontend/dist`，不存在就用内置最小外壳 |
 | `BLOG_MAX_UPLOAD_MB` | 单张图片上限 | 12 |
 | `BLOG_COOKIE_SECURE` | 会话 Cookie 加 `Secure` | 生产默认 true |
@@ -80,7 +80,7 @@ backend/app/
   schemas/         后台设置与首页模块的校验（Pydantic）
   services/        业务：auth posts moments pages taxonomy media markdown search stats backup trash redirects nav home settings revisions refs …
   api/             蓝图：public、admin_*（每个后台端点都过 @admin_required）、media、health
-  seo/             订阅 / 站点地图 / robots，以及前端外壳的 SEO 注入（spa.py）
+  seo/             站点地图 / robots（sitemap.py），以及前端外壳的 SEO 注入（spa.py）
   jobs/            维护任务
 backend/migrations/   Alembic（0001 含 FTS5 虚表和审计日志“只增不改”触发器）
 backend/tests/        pytest
@@ -89,7 +89,7 @@ backend/tests/        pytest
 ## 几条值得记住的设计
 
 - **名字只写一处**：站点名、英文名、作者、简介和所有默认文案都在 `app/defaults.py`，运行时由后台设置覆盖；测试会扫描代码，发现别处写了站名就失败。
-- **可见性集中在 `services/visibility.py`**：列表、归档、订阅、站点地图、搜索、计数全走这几个条件（`published` 且发布时间已到且不在回收站）；仅链接可见的内容能打开但不进任何列表且 `noindex`；草稿 / 私密只能通过带签名的预览链接看。
+- **可见性集中在 `services/visibility.py`**：列表、归档、站点地图、搜索、计数全走这几个条件（`published` 且发布时间已到且不在回收站）；仅链接可见的内容能打开但不进任何列表且 `noindex`；草稿 / 私密只能通过带签名的预览链接看。
 - **Markdown 只有一条流水线**（`services/markdown.py`）：保存时渲染并存 HTML；预览接口用同一个函数；nh3 白名单逐项校验标签、属性、取值和 class 名，XSS 用例见 `tests/test_markdown.py`（含 1500 条随机组合）。
 - **图片永远不信任**：见 API.md 第 5 节“媒体库”；文件按内容哈希命名，永久缓存；`media_refs` 记录使用位置，替换 / 改替代文字 / 清除时自动重渲染用到它的内容。
 - **登录**：首次安装口令 → 唯一管理员；密码 scrypt；会话令牌只存哈希；CSRF 令牌绑定会话；失败记录立即提交（否则失败的请求会把自己的记录回滚掉，限速就失效）。

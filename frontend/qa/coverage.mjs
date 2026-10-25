@@ -17,7 +17,7 @@ const scan = (sel) => {
     if (r.width < 6 || r.height < 6) return
     if (el.closest('[aria-hidden="true"], .sr-only, dialog, .lightbox, .sheet, .searchbox, [inert]')) return
     if (el.closest('[data-fx]')) return
-    if (cs.position === 'fixed' || el.closest('.toc-fab, .backtop')) return                     // floating controls stay put; they do not scroll with the page
+    if (cs.position === 'fixed' || el.closest('.toc-fab')) return                     // floating controls stay put; they do not scroll with the page
     const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()) || /^(IMG|INPUT|SELECT|HR)$/.test(el.tagName) || el.matches('svg.doodle')
     if (!own) return                                                                                 // a container whose text lives in its (covered) children
     if (el.matches('svg') && !el.classList.contains('doodle')) return

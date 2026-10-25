@@ -2,7 +2,7 @@ import type { Router } from 'vue-router'
 import { isServerPath } from './router'
 
 /** Click handler for links inside HTML we did not render with Vue (article text, moment text): an internal link navigates inside
-    the app; anything else (other sites, feeds, the admin, new-tab clicks, downloads) is left to the browser. Links stay real links. */
+    the app; anything else (other sites, the sitemap, the admin, new-tab clicks, downloads) is left to the browser. Links stay real links. */
 export function internalLink(e: MouseEvent, router: Router): boolean {
   const a = (e.target as HTMLElement).closest('a')
   if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return false

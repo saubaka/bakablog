@@ -9,7 +9,7 @@ import SectionSplit from './SectionSplit.vue'
 
 defineProps<{ title: string; intro?: string; text: string[]; author: Author; now: { title: string; items: { icon: string; text: string }[] } | null; id?: string }>()
 const href = (url: string): string => (url.includes('@') && !/^[a-z]+:/i.test(url) && !url.startsWith('/') ? `mailto:${url}` : url)
-const icon = (kind: string): string => (kind === 'mail' ? 'mail' : kind === 'rss' ? 'rss' : 'link')
+const icon = (kind: string): string => (kind === 'mail' ? 'mail' : 'link')
 </script>
 
 <template>

@@ -1,5 +1,5 @@
 {
-  "version": "0.4.0",
+  "version": "0.5.0",
   "build": "dev",
   "env": "testing",
   "uptime_seconds": 0,
@@ -13,7 +13,7 @@
   "backup_bytes": 0,
   "disk": {
     "total": 494332366848,
-    "free": 235037691904
+    "free": 232547917824
   },
   "search_rows": 25,
   "last_backup": null,

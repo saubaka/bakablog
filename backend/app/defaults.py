@@ -33,7 +33,7 @@ DOODLES = ("star", "heart", "sparkle", "flower", "paw", "wave", "loop")
 # icon ids of the hand-drawn sprite (design/src/partials/sprite.svg); stickers on categories, tags and nav items use them
 ICONS = (
     "home", "book", "chat", "smile", "search", "menu", "more", "close", "arrow-r", "arrow-l", "arrow-u", "arrow-d", "link",
-    "calendar", "clock", "tag", "folder", "rss", "copy", "check", "image", "star", "pin", "external", "list", "bulb", "alert",
+    "calendar", "clock", "tag", "folder", "copy", "check", "image", "star", "pin", "external", "list", "bulb", "alert",
     "heart", "quote", "code", "mail", "info", "sliders", "sparkle", "grid", "rows", "moon",
 )
 HOME_BLOCK_TYPES = ("hero", "featured", "latest_posts", "latest_moments", "shelf", "about", "now", "notice")
@@ -60,8 +60,8 @@ DEFAULT_SETTINGS: dict[str, dict] = {
         "name": AUTHOR_NAME,
         "bio": AUTHOR_BIO,
         "avatar_media_id": None,
-        # {"label": "发邮件", "kind": "mail" | "rss" | "link", "url": "..."}
-        "links": [{"label": "订阅", "kind": "rss", "url": "/feed/posts.xml"}],
+        # {"label": "发邮件", "kind": "mail" | "link", "url": "..."}
+        "links": [],
     },
     "appearance": {
         "theme": "default",
@@ -82,7 +82,6 @@ DEFAULT_SETTINGS: dict[str, dict] = {
         "share_image_media_id": None,
         "robots_extra": "",
         "sitemap": {"moments": True, "pages": True, "taxonomy": True},
-        "rss": {"full_text": True, "items": 20},
     },
     "footer": {"icp": "", "copyright": "", "text": SITE_DESCRIPTION},
     "stats": {"enabled": True},
@@ -92,14 +91,11 @@ DEFAULT_SETTINGS: dict[str, dict] = {
 DEFAULT_HOME_BLOCKS: list[dict] = [
     {"type": "hero", "enabled": True, "config": {
         "note": "近况 · 正在把博客重新画一遍",
-        "title_lines": [f"我是 {AUTHOR_NAME}，", TAGLINE],
         "intro": "这里是我的小窝：博客里放认真写的文章，动态里放碎碎念和随手拍的照片。没有评论区——想说什么，请发邮件。",
         "buttons": [
             {"label": "读博客", "url": "/blog", "style": "fill"},
             {"label": "看动态", "url": "/moments", "style": "line"},
-            {"label": "订阅 RSS", "url": "/feed/posts.xml", "style": "link"},
         ],
-        "polaroid": {"media_id": None, "caption": f"{AUTHOR_NAME}，正在写代码", "bubble": "哼，才不是为了谁才更新的！"},
         "doodles": ["star", "heart", "sparkle"],
     }},
     {"type": "notice", "enabled": False, "config": {"text": "", "starts_at": None, "ends_at": None}},
@@ -152,10 +148,5 @@ DEFAULT_NAV: dict[str, list[tuple[str, str, str, str | None]]] = {
         ("博客", "route", "/blog", "book"),
         ("动态", "route", "/moments", "chat"),
         ("归档", "route", "/archive", "calendar"),
-        ("文章 RSS", "link", "/feed/posts.xml", "rss"),
-        ("动态 RSS", "link", "/feed/moments.xml", "rss"),
     ],
 }
-
-# Lines the public API sends when nothing is configured; also what feeds and the SEO shell fall back to.
-EMPTY_FEED_TITLE = "还没有内容"

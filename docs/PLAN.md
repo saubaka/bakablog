@@ -1,7 +1,9 @@
 # 轻量化博客项目规划（Flask + Vue 3）
 
 状态：已确认（站名 saubakaの博客 / Baka Blog，作者 sau_baka，简介「不是笨蛋！！」，其余按默认）。
-**P0 设计样张已完成**（`design/`，2026-10-22）；**P1 后端基础已完成**（见 [BACKEND.md](BACKEND.md) 和 [API.md](API.md)）；**P2 前台已完成**（见 [FRONTEND.md](FRONTEND.md)）；**P3 后台已完成**（见 [ADMIN.md](ADMIN.md)：5.2 覆盖表逐行勾选、审计全绿）；**P4 打磨已完成**（体积与性能预算达标，演示内容重写）；**P5 部署材料已完成并在本机完整排练**（见 [../deploy/README.md](../deploy/README.md)）。版本 0.4.0，Chromium + WebKit 自动化检查通过。已部署并对外开放；还没有在真实 Safari 和手机上验收。
+**P0 设计样张已完成**（`design/`，2026-10-22）；**P1 后端基础已完成**（见 [BACKEND.md](BACKEND.md) 和 [API.md](API.md)）；**P2 前台已完成**（见 [FRONTEND.md](FRONTEND.md)）；**P3 后台已完成**（见 [ADMIN.md](ADMIN.md)：5.2 覆盖表逐行勾选、审计全绿）；**P4 打磨已完成**（体积与性能预算达标，演示内容重写）；**P5 部署材料已完成并在本机完整排练**（见 [../deploy/README.md](../deploy/README.md)）。版本 0.5.0，Chromium + WebKit 自动化检查通过。已部署并对外开放；还没有在真实 Safari 和手机上验收。
+
+**2026-10-25 的改动（以代码和 FRONTEND.md 为准，下面的原文没有逐句改）**：① 删除置顶的顶栏（站名 / 搜索 / RSS）——首页大标题改为「站点名 + 英文名大写」（来自站点设置，两行），旧的手写标题文字（`title_lines`）一并删除；桌面端的搜索入口改为竖线尾部的一颗小按钮；② 首页开场右侧的拍立得相框（含胶带、日期邮戳、爱心占位、说明文字、气泡）删除，只留背景涂鸦，`hero.polaroid` 设置删除；③ 全站 RSS 删除（`/feed/*.xml`、`<link rel=alternate>`、SEO 设置里的订阅选项、导航里的 RSS 项、作者链接的 RSS 类型、图标）；站点地图和 robots 仍在（`app/seo/sitemap.py`）；④ 右下角带进度环的“回到顶部”按钮删除，换成右边缘的**吊牌进度条**（用户从五个草案里选定，见 FRONTEND.md）。库里已存的旧数据（订阅链接、爱心占位图设置等）读取时被忽略，不会报错。
 
 ---
 

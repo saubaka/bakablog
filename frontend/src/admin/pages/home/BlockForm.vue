@@ -7,7 +7,6 @@ import type { AdminPostCard, ListPage } from '../../types'
 import AIcon from '../../ui/AIcon'
 import Field from '../../ui/Field.vue'
 import IconPicker from '../../ui/IconPicker.vue'
-import MediaField from '../../ui/MediaField.vue'
 import Segmented from '../../ui/Segmented.vue'
 import { DOODLES } from './blocks'
 
@@ -16,11 +15,9 @@ const props = defineProps<{ type: string; config: Cfg; errors: Record<string, st
 const err = (path: string): string | undefined => props.errors[path]
 
 const c = computed(() => props.config)
-const lines = computed<string[]>(() => c.value.title_lines)
 const buttons = computed<{ label: string; url: string; style: string }[]>(() => c.value.buttons)
 const paras = computed<string[]>(() => c.value.text)
 const nowItems = computed<{ icon: string; text: string }[]>(() => c.value.items)
-function addLine(): void { if (c.value.title_lines.length < 2) c.value.title_lines.push('') }
 function addButton(): void { if (c.value.buttons.length < 3) c.value.buttons.push({ label: '按钮', url: '/blog', style: 'line' }) }
 function toggleDoodle(name: string): void {
   const list: string[] = c.value.doodles
@@ -56,15 +53,7 @@ const styles = [{ value: 'fill', label: '实心' }, { value: 'line', label: '描
   <div class="adm-form adm-form--2">
     <template v-if="type === 'hero'">
       <Field v-slot="{ id }" label="小标签" :error="err('note')" hint="大标题上面的一小行，例如“近况 · 正在重画博客”"><input :id="id" v-model="c.note" class="input" maxlength="60"></Field>
-      <Field label="标题（最多两行）" :error="err('title_lines')">
-        <div class="adm-lines">
-          <div v-for="(_, i) in lines" :key="i" class="adm-lines__row">
-            <input v-model="lines[i]" class="input" maxlength="40" :aria-label="`标题第 ${i + 1} 行`">
-            <button v-if="lines.length > 1" class="icon-btn icon-btn--ghost" type="button" :aria-label="`删除第 ${i + 1} 行`" @click="c.title_lines.splice(i, 1)"><AIcon name="a-trash" /></button>
-          </div>
-          <button v-if="c.title_lines.length < 2" class="btn btn--sm btn--ghost" type="button" @click="addLine"><AIcon name="a-plus" />加一行</button>
-        </div>
-      </Field>
+      <Field label="大标题" hint="用站点名和英文名，在“外观”里修改。"><p class="adm-readonly">站点名 + 英文名</p></Field>
       <Field v-slot="{ id }" label="简介" class="span-2" :error="err('intro')"><textarea :id="id" v-model="c.intro" class="textarea" rows="3" maxlength="300" /></Field>
       <div class="span-2 adm-sub">
         <h3>按钮（最多 3 个）</h3>
@@ -77,9 +66,6 @@ const styles = [{ value: 'fill', label: '实心' }, { value: 'line', label: '描
         </div>
         <button v-if="c.buttons.length < 3" class="btn btn--sm btn--ghost" type="button" @click="addButton"><AIcon name="a-plus" />加一个按钮</button>
       </div>
-      <Field label="拍立得照片" class="span-2" hint="留空会显示一颗爱心占位图"><MediaField v-model="c.polaroid.media_id" title="选择拍立得照片" /></Field>
-      <Field v-slot="{ id }" label="照片说明" :error="err('polaroid.caption')"><input :id="id" v-model="c.polaroid.caption" class="input" maxlength="60"></Field>
-      <Field v-slot="{ id }" label="气泡里的话" :error="err('polaroid.bubble')"><input :id="id" v-model="c.polaroid.bubble" class="input" maxlength="80"></Field>
       <Field label="装饰涂鸦（最多 3 个）" class="span-2" :error="err('doodles')">
         <div class="adm-chips" role="group" aria-label="装饰涂鸦">
           <button v-for="d in DOODLES" :key="d.value" class="adm-chip" type="button" :aria-pressed="c.doodles.includes(d.value)" @click="toggleDoodle(d.value)">{{ d.label }}</button>

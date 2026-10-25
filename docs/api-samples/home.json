@@ -5,10 +5,6 @@
       "id": null,
       "config": {
         "note": "近况 · 正在把博客重新画一遍",
-        "title_lines": [
-          "我是 sau_baka，",
-          "不是笨蛋！！"
-        ],
         "intro": "这里是我的小窝：博客里放认真写的文章，动态里放碎碎念和随手拍的照片。没有评论区——想说什么，请发邮件。",
         "buttons": [
           {
@@ -20,19 +16,8 @@
             "label": "看动态",
             "url": "/moments",
             "style": "line"
-          },
-          {
-            "label": "订阅 RSS",
-            "url": "/feed/posts.xml",
-            "style": "link"
           }
         ],
-        "polaroid": {
-          "media_id": null,
-          "caption": "sau_baka，正在写代码",
-          "bubble": "哼，才不是为了谁才更新的！",
-          "media": null
-        },
         "doodles": [
           "star",
           "heart",
@@ -138,8 +123,8 @@
             "pinned": false,
             "featured": true,
             "card_style": "auto",
-            "published_at": "2026-10-20T12:34:51Z",
-            "updated_at": "2026-10-24T12:34:51Z",
+            "published_at": "2026-10-21T00:47:38Z",
+            "updated_at": "2026-10-25T00:47:38Z",
             "reading_minutes": 2,
             "word_count": 736
           },
@@ -185,8 +170,8 @@
             "pinned": false,
             "featured": false,
             "card_style": "auto",
-            "published_at": "2026-10-14T12:34:51Z",
-            "updated_at": "2026-10-24T12:34:51Z",
+            "published_at": "2026-10-15T00:47:38Z",
+            "updated_at": "2026-10-25T00:47:38Z",
             "reading_minutes": 1,
             "word_count": 264
           },
@@ -237,8 +222,8 @@
             "pinned": false,
             "featured": false,
             "card_style": "auto",
-            "published_at": "2026-10-07T12:34:51Z",
-            "updated_at": "2026-10-24T12:34:51Z",
+            "published_at": "2026-10-08T00:47:38Z",
+            "updated_at": "2026-10-25T00:47:38Z",
             "reading_minutes": 1,
             "word_count": 243
           },
@@ -281,8 +266,8 @@
             "pinned": false,
             "featured": false,
             "card_style": "auto",
-            "published_at": "2026-10-04T12:34:51Z",
-            "updated_at": "2026-10-24T12:34:51Z",
+            "published_at": "2026-10-05T00:47:38Z",
+            "updated_at": "2026-10-25T00:47:38Z",
             "reading_minutes": 1,
             "word_count": 168
           },
@@ -320,8 +305,8 @@
             "pinned": false,
             "featured": false,
             "card_style": "auto",
-            "published_at": "2026-09-30T12:34:51Z",
-            "updated_at": "2026-10-24T12:34:51Z",
+            "published_at": "2026-10-01T00:47:38Z",
+            "updated_at": "2026-10-25T00:47:38Z",
             "reading_minutes": 1,
             "word_count": 109
           },
@@ -359,8 +344,8 @@
             "pinned": false,
             "featured": false,
             "card_style": "auto",
-            "published_at": "2026-09-22T12:34:51Z",
-            "updated_at": "2026-10-24T12:34:51Z",
+            "published_at": "2026-09-23T00:47:38Z",
+            "updated_at": "2026-10-25T00:47:38Z",
             "reading_minutes": 1,
             "word_count": 187
           }
@@ -407,7 +392,7 @@
             "media": [],
             "link_card": null,
             "pinned": false,
-            "published_at": "2026-10-24T12:34:51Z"
+            "published_at": "2026-10-25T00:47:38Z"
           },
           {
             "id": 2,
@@ -496,7 +481,7 @@
             ],
             "link_card": null,
             "pinned": false,
-            "published_at": "2026-10-23T12:34:51Z"
+            "published_at": "2026-10-24T00:47:38Z"
           },
           {
             "id": 7,
@@ -520,7 +505,7 @@
             "media": [],
             "link_card": null,
             "pinned": false,
-            "published_at": "2026-10-22T12:34:51Z"
+            "published_at": "2026-10-23T00:47:38Z"
           }
         ]
       }
@@ -749,13 +734,7 @@
         "author": {
           "name": "sau_baka",
           "bio": "写代码的人，偶尔画画，经常发呆。喜欢把东西做得安静一点——颜色浅一点，线条细一点，字号刚刚好。",
-          "links": [
-            {
-              "label": "订阅",
-              "kind": "rss",
-              "url": "/feed/posts.xml"
-            }
-          ],
+          "links": [],
           "avatar": null
         }
       }

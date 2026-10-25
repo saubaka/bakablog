@@ -1,6 +1,6 @@
 [project]
 name = "bakablog"
-version = "0.4.0"
+version = "0.5.0"
 description = "saubakaの博客 / Baka Blog — backend (Flask + SQLAlchemy + SQLite)"
 requires-python = ">=3.12"
 dependencies = [

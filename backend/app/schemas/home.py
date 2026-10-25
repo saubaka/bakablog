@@ -28,27 +28,11 @@ class Button(_M):
         raise ValueError("需要站内路径或 http(s) 链接")
 
 
-class Polaroid(_M):
-    media_id: int | None = None
-    caption: str = Field(default="", max_length=60)
-    bubble: str = Field(default="", max_length=80)
-
-
 class Hero(_M):
     note: str = Field(default="", max_length=60)
-    title_lines: list[str] = Field(min_length=1, max_length=2)
     intro: str = Field(default="", max_length=300)
     buttons: list[Button] = Field(default_factory=list, max_length=3)
-    polaroid: Polaroid = Field(default_factory=Polaroid)
     doodles: list[Literal["star", "heart", "sparkle", "flower", "paw", "wave", "loop"]] = Field(default_factory=list, max_length=3)
-
-    @field_validator("title_lines")
-    @classmethod
-    def _lines(cls, v: list[str]) -> list[str]:
-        out = [ln.strip()[:40] for ln in v if ln.strip()]
-        if not out:
-            raise ValueError("至少写一行标题")
-        return out
 
 
 class Featured(_M):

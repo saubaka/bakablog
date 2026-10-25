@@ -97,10 +97,10 @@ const cssOf = (list) => list.filter((r) => r.endsWith('.css')).map((r) => readFi
 const publicCss = cssOf(refs)
 const adminCss = cssOf(adminRefs)
 const previewCss = cssOf(previewRefs)
-if (!publicCss.includes('.site-header')) fail('the public stylesheet lost its layout rules (.site-header)')
-if (adminCss.includes('.site-header') || adminCss.includes('.tabbar')) fail("the public page's layout rules reach the admin (they would restyle admin elements)")
+if (!publicCss.includes('.thread--side')) fail('the public stylesheet lost its layout rules (.thread--side)')
+if (adminCss.includes('.thread--side') || adminCss.includes('.tabbar')) fail("the public page's layout rules reach the admin (they would restyle admin elements)")
 if (publicCss.includes('.adm-') || previewCss.includes('.adm-')) fail("the admin's styles reach the public page")
-if (!previewCss.includes('.site-header')) fail('the preview frame has no public stylesheet')
+if (!previewCss.includes('.thread--side')) fail('the preview frame has no public stylesheet')
 
 /* ---- everything else in assets/ is listed for the record ----------------------------------------------------------------- */
 const all = readdirSync(join(dist, 'assets')).map((f) => [f, statSync(join(dist, 'assets', f)).size])

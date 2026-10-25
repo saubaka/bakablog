@@ -16,11 +16,6 @@
   },
   "views_series": [
     {
-      "day": "2026-10-18",
-      "views": 0,
-      "uniques": 0
-    },
-    {
       "day": "2026-10-19",
       "views": 0,
       "uniques": 0
@@ -47,6 +42,11 @@
     },
     {
       "day": "2026-10-24",
+      "views": 0,
+      "uniques": 0
+    },
+    {
+      "day": "2026-10-25",
       "views": 0,
       "uniques": 0
     }
@@ -85,7 +85,7 @@
   ],
   "recent": [
     {
-      "at": "2026-10-24T12:34:51Z",
+      "at": "2026-10-25T00:47:38Z",
       "action": "auth.login",
       "actor": "sample_owner",
       "target_type": "session",
@@ -95,7 +95,7 @@
       }
     },
     {
-      "at": "2026-10-24T12:34:51Z",
+      "at": "2026-10-25T00:47:38Z",
       "action": "auth.setup",
       "actor": "sample_owner",
       "target_type": "user",
@@ -105,7 +105,7 @@
       }
     },
     {
-      "at": "2026-10-24T12:34:51Z",
+      "at": "2026-10-25T00:47:38Z",
       "action": "moment.create",
       "actor": "system",
       "target_type": "moment",
@@ -115,7 +115,7 @@
       }
     },
     {
-      "at": "2026-10-24T12:34:51Z",
+      "at": "2026-10-25T00:47:38Z",
       "action": "moment.create",
       "actor": "system",
       "target_type": "moment",
@@ -125,7 +125,7 @@
       }
     },
     {
-      "at": "2026-10-24T12:34:51Z",
+      "at": "2026-10-25T00:47:38Z",
       "action": "moment.create",
       "actor": "system",
       "target_type": "moment",
@@ -135,7 +135,7 @@
       }
     },
     {
-      "at": "2026-10-24T12:34:51Z",
+      "at": "2026-10-25T00:47:38Z",
       "action": "moment.create",
       "actor": "system",
       "target_type": "moment",
@@ -145,7 +145,7 @@
       }
     },
     {
-      "at": "2026-10-24T12:34:51Z",
+      "at": "2026-10-25T00:47:38Z",
       "action": "moment.create",
       "actor": "system",
       "target_type": "moment",
@@ -155,7 +155,7 @@
       }
     },
     {
-      "at": "2026-10-24T12:34:51Z",
+      "at": "2026-10-25T00:47:38Z",
       "action": "moment.create",
       "actor": "system",
       "target_type": "moment",
@@ -165,7 +165,7 @@
       }
     },
     {
-      "at": "2026-10-24T12:34:51Z",
+      "at": "2026-10-25T00:47:38Z",
       "action": "moment.create",
       "actor": "system",
       "target_type": "moment",
@@ -175,7 +175,7 @@
       }
     },
     {
-      "at": "2026-10-24T12:34:51Z",
+      "at": "2026-10-25T00:47:38Z",
       "action": "moment.create",
       "actor": "system",
       "target_type": "moment",
@@ -186,10 +186,10 @@
     }
   ],
   "health": {
-    "version": "0.4.0",
+    "version": "0.5.0",
     "build": "dev",
     "db_bytes": 791048,
-    "disk_free": 235037782016,
+    "disk_free": 232548032512,
     "last_backup": null,
     "schema_ok": true
   }

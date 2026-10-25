@@ -3,17 +3,6 @@
   .wrap { width: min(var(--wrap), calc(100% - 64px)); margin-inline: auto; }
   .wrap--read { width: min(var(--reading), calc(100% - 48px)); }
 
-  /* =============== header =============== */
-  .site-header { position: sticky; top: 0; z-index: 60; background: var(--bg); border-bottom: 1px solid var(--line); }
-  .site-header__in { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: var(--header-h); }
-  .brand { display: inline-flex; align-items: center; gap: 12px; min-width: 0; }
-  .brand__logo { width: auto; height: 40px; max-width: 120px; flex: none; object-fit: contain; }
-  .brand__text { display: grid; gap: 1px; line-height: 1.25; min-width: 0; }
-  .brand__text b { font-size: 19px; font-weight: 700; letter-spacing: .01em; white-space: nowrap; }
-  .brand__text small { font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-2); }
-
-  .site-header__tools { display: flex; align-items: center; gap: 8px; }
-
   /* =============== menu: a thread with beads ===============
      The beads are the entries, the heart is "you are here" and rides along the thread, the pink stitch sews from the current bead towards the next
      one as the page is read. Wide screens: a vertical thread on the left edge. Phones and tablets (up to --tablet 1100px): a horizontal thread in a
@@ -49,7 +38,7 @@
     .thread--side {
       --gap: clamp(44px, calc((100vh - 300px) / max(var(--n) - 1, 1)), 88px);
       display: block; position: fixed; z-index: 40; left: 3px; width: 26px; height: calc((var(--n) - 1) * var(--gap));
-      top: calc(50% + var(--header-h) / 2 - var(--n) * var(--gap) / 2 + 12px);
+      top: calc(50% - var(--n) * var(--gap) / 2 + 12px);
     }
     .thread--side .thread__line { left: 50%; margin-left: -1px; width: 2px; top: -28px; height: calc(100% + var(--gap) + 28px); background: linear-gradient(to bottom, var(--sky-300) var(--dash), transparent var(--dash)) 0 0 / 2px calc(var(--dash) * 2) repeat-y; }
     .thread--side .thread__stitch { left: 50%; margin-left: -1px; width: 2px; top: 0; height: var(--gap); translate: 0 calc(var(--i) * var(--gap)); }
@@ -64,6 +53,9 @@
     .thread--side .thread__tag { position: absolute; left: 34px; top: 50%; translate: -8px -50%; padding: 3px 11px; border: 1px solid var(--line); border-radius: var(--r-pill); background: var(--paper); font-size: 12.5px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity var(--dur-2) var(--ease), translate var(--dur-3) var(--spring); }
     .thread--side .thread__bead[aria-current="page"] .thread__tag { display: none; }
     .thread--side .thread__bead:focus-visible .thread__tag { opacity: 1; translate: 0 -50%; }
+    .thread--side .thread__search { position: absolute; left: 0; top: calc(100% + var(--gap) + 30px); width: 26px; height: 26px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: var(--paper); color: var(--ink-2); transition: color var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease), scale var(--dur-2) var(--spring); }
+    .thread--side .thread__search .i { width: 14px; height: 14px; }
+    .thread--side .thread__search:hover, .thread--side .thread__search:focus-visible { color: var(--rose-ink); border-color: var(--rose-line); scale: 1.12; }
     .thread--side .thread__heart { left: 0; width: 26px; height: 26px; top: calc((var(--i) + var(--pull-nav, 0)) * var(--gap) - 13px); }
     .thread--side.is-moving .thread__heart, html[data-pull="back"] .thread--side .thread__heart { transition: opacity var(--dur-2) var(--ease), scale var(--dur-3) var(--spring), top .8s var(--spring); }
     .thread--side .thread__heart .i { width: 14px; height: 14px; }
@@ -107,6 +99,27 @@
   html.fx-off .thread, html.fx-off .thread * { transition: none !important; animation: none !important; }
   @media (prefers-reduced-motion: reduce) { .thread, .thread * { transition: none !important; animation: none !important; } }
 
+  /* =============== the hanging progress tag (public/layout/ProgressTag.vue) ===============
+     A dashed thread at the right edge that starts at the height of the menu's topmost pin; the tag hangs on it and rides down as the page is read. Its place, swing and
+     fade come from script (--pt-top / --pt-len on the layer, translate / rotate / opacity on the parts); borders stay --line / --rose-line, the thread and the ring are graphics colours. */
+  .ptag { --pt-x: 42px; position: fixed; z-index: 45; top: 0; right: 0; width: 0; height: 0; pointer-events: none; }
+  .ptag[data-away] { visibility: hidden; }
+  .ptag__line { position: fixed; top: var(--pt-top, 28px); right: calc(var(--pt-x) - 1px); width: 2px; height: var(--pt-len, 300px); background: linear-gradient(to bottom, var(--sky-300) 5px, transparent 5px) 0 0 / 2px 10px repeat-y; }
+  .ptag__line::before { content: ""; position: absolute; left: 50%; top: -4px; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--sky-300); background: var(--bg); }
+  .ptag__tag { position: fixed; top: 0; right: calc(var(--pt-x) - 24px); width: 48px; display: block; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; pointer-events: auto; }
+  .ptag__swing { display: grid; justify-items: center; transform-origin: 50% 3.5px; }
+  .ptag__ring { width: 7px; height: 7px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--rose-300); background: var(--paper); }
+  .ptag__string { width: 1.5px; height: 9px; background: var(--rose-300); }
+  .ptag__pill { min-width: 42px; padding: 2px 8px; border: 1px solid var(--rose-line); border-radius: var(--r-pill); background: var(--paper); color: var(--rose-ink); font-size: 11.5px; font-weight: 700; line-height: 1.5; text-align: center; font-variant-numeric: tabular-nums; transition: scale var(--dur-2) var(--spring); }
+  .ptag__tag:hover .ptag__pill, .ptag__tag:focus-visible .ptag__pill { scale: 1.08; }
+  .ptag__tag:active .ptag__pill { scale: .94; }
+  html.fx-off .ptag__pill { transition: none; }
+  @media (max-width: 1100px) {
+    .ptag { --pt-x: 26px; }
+    .ptag__line { opacity: .55; }
+    .ptag__pill { min-width: 38px; padding-inline: 6px; font-size: 11px; }
+  }
+
   /* =============== turning the page by scrolling past its edge (public/pull.ts) ===============
      The stage is the page and its foot: while it is pulled it gets `translate` and `opacity` from script, and nothing at all when it rests (a transformed box would
      become the containing block of fixed children). Fixed buttons inside the page are hidden meanwhile. */
@@ -118,14 +131,12 @@
   .site-footer { position: relative; margin-top: var(--s-8); border-top: 1px dashed var(--line); background: var(--bg); }
   .site-footer__legal { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; padding: 28px 0 36px; color: var(--ink-2); font-size: 12.5px; }   /* the footer's own dashed top line is the only line */
   .site-footer__legal a:hover { color: var(--ink); text-decoration: underline; }
-  .backtop { position: fixed; z-index: 65; right: 24px; bottom: 24px; opacity: 0; translate: 0 12px; pointer-events: none; }
-  .backtop.is-on { opacity: 1; translate: 0 0; pointer-events: auto; }
 
   /* =============== page sections =============== */
   .section { position: relative; padding: var(--s-8) 0; border-top: 1px dashed var(--line); }
   .section--first { border-top: 0; }
   .split { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 9fr); gap: 56px; align-items: start; }
-  .split__label { position: sticky; top: calc(var(--header-h) + 28px); display: grid; gap: 14px; justify-items: start; }
+  .split__label { position: sticky; top: 28px; display: grid; gap: 14px; justify-items: start; }
   .split__label h2 { font-size: 26px; line-height: 1.35; }
   .split__label p { color: var(--ink-2); font-size: 14.5px; line-height: 1.8; }
   .page-head { display: grid; gap: 14px; justify-items: start; padding: 64px 0 40px; }
@@ -138,7 +149,7 @@
 
   /* =============== print: the article and nothing around it =============== */
   @media print {
-    .site-header, .tabbar, .backtop, .readbar, .toc, .toc-fab, .topline, .sheet, .scrim, .site-footer, .skip-link, .pager { display: none !important; }
+    .tabbar, .ptag, .readbar, .toc, .toc-fab, .topline, .sheet, .scrim, .site-footer, .skip-link, .pager { display: none !important; }
     body { background: #fff; padding: 0; }
     .wrap, .wrap--read { width: 100%; }
   }
@@ -147,8 +158,6 @@
   /* the menu bar is along the bottom up to here: leave room for it, and keep the floating buttons above it */
   @media (max-width: 1100px) {
     body { padding-bottom: calc(var(--bar-h) + 40px + env(safe-area-inset-bottom)); }
-    .backtop { right: 16px; bottom: calc(var(--bar-h) + 20px + env(safe-area-inset-bottom)); }
-    .has-toc-fab .backtop { bottom: calc(var(--bar-h) + 84px + env(safe-area-inset-bottom)); }
   }
   @media (max-width: 1024px) {
     .wrap { width: min(var(--wrap), calc(100% - 48px)); }
@@ -159,11 +168,7 @@
     .span-6, .span-4 { grid-column: span 2; } .span-3, .span-2 { grid-column: span 1; }
   }
   @media (max-width: 760px) {
-    :root { --header-h: 68px; }
     .wrap, .wrap--read { width: calc(100% - 32px); }
-    .site-header { position: static; }
-    .site-header__tools .hide-sm { display: none; }
-    .brand__text b { font-size: 17px; }
     .section { padding: 52px 0; }
     .page-head { padding: 40px 0 28px; }
     .grid-6 { grid-template-columns: minmax(0, 1fr); gap: 18px; }

@@ -1,4 +1,4 @@
-"""What the public may see. Every public query (lists, feeds, sitemap, search, counts) goes through these predicates."""
+"""What the public may see. Every public query (lists, sitemap, search, counts) goes through these predicates."""
 from __future__ import annotations
 
 from datetime import datetime
@@ -10,7 +10,7 @@ from app.timeutil import utcnow
 
 
 def post_listed(now: datetime | None = None):
-    """Shown in lists, archive, feeds, sitemap, search: published, its time has come, not in the trash."""
+    """Shown in lists, archive, sitemap, search: published, its time has come, not in the trash."""
     return and_(Post.status == "published", Post.published_at <= (now or utcnow()), Post.deleted_at.is_(None))
 
 

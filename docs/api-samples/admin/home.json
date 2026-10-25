@@ -6,10 +6,6 @@
       "enabled": true,
       "config": {
         "note": "近况 · 正在把博客重新画一遍",
-        "title_lines": [
-          "我是 sau_baka，",
-          "不是笨蛋！！"
-        ],
         "intro": "这里是我的小窝：博客里放认真写的文章，动态里放碎碎念和随手拍的照片。没有评论区——想说什么，请发邮件。",
         "buttons": [
           {
@@ -21,18 +17,8 @@
             "label": "看动态",
             "url": "/moments",
             "style": "line"
-          },
-          {
-            "label": "订阅 RSS",
-            "url": "/feed/posts.xml",
-            "style": "link"
           }
         ],
-        "polaroid": {
-          "media_id": null,
-          "caption": "sau_baka，正在写代码",
-          "bubble": "哼，才不是为了谁才更新的！"
-        },
         "doodles": [
           "star",
           "heart",

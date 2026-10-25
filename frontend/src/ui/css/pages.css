@@ -1,7 +1,7 @@
 @layer pages {
 
   /* =============== home: hero =============== */
-  .hero { position: relative; padding: 40px 0 56px; }
+  .hero { position: relative; padding: 72px 0 56px; }
   .hero::before {
     content: ""; position: absolute; inset: 0; pointer-events: none;
     background-image: radial-gradient(var(--sky-200) 1.3px, transparent 1.7px); background-size: 24px 24px;
@@ -16,13 +16,7 @@
   .hl.has-split { box-shadow: none; }
   .hl .fx-c { box-shadow: inset 0 -.32em 0 var(--hl); }
 
-  .hero__visual { position: relative; display: grid; justify-items: center; padding: 28px 12px 36px; }
-  .polaroid--hero { width: min(360px, 100%); transform: rotate(2deg); padding: 16px 16px 18px; border-radius: 10px; }
-  .polaroid--hero .polaroid__pic { aspect-ratio: 1; display: grid; place-items: center; border-radius: 6px; }
-  .polaroid__blank { width: 34%; height: auto; color: var(--rose-300); stroke-width: 1.6; }
-  .polaroid--hero .stamp { position: absolute; right: -16px; bottom: -22px; rotate: -8deg; background: var(--paper); }
-  .hero__say { position: absolute; left: 50%; top: 62px; margin-left: -150px; max-width: 176px; padding: 11px 15px; font-size: 13.5px; font-weight: 700; line-height: 1.6; background: var(--paper); }
-  .hero__say::before { top: auto; bottom: -7px; right: 28px; rotate: -45deg; }
+  .hero__visual { position: relative; min-height: clamp(220px, 26vw, 320px); }
   .hero .doodle--a { position: absolute; left: 4%; top: 4%; width: 46px; height: 46px; color: var(--sky-300); }
   .hero .doodle--b { position: absolute; right: 2%; top: 10%; width: 40px; height: 40px; }
   .hero .doodle--c { position: absolute; right: 12%; bottom: -2%; width: 34px; height: 34px; color: var(--sky-300); }
@@ -69,7 +63,7 @@
   .post-layout > .post-head { grid-area: head; max-width: var(--reading); }
   .post-main { grid-area: main; min-width: 0; }
   .post-layout > .toc { grid-area: toc; }
-  .toc { position: sticky; top: calc(var(--header-h) + 28px); display: grid; gap: 12px; }
+  .toc { position: sticky; top: 28px; display: grid; gap: 12px; }
   .toc h2 { display: flex; align-items: center; gap: 8px; font-size: 13px; letter-spacing: .1em; color: var(--ink-2); text-transform: uppercase; }
   .toc ol { position: relative; display: grid; gap: 2px; border-left: 1px dashed var(--line); }
   .toc a { display: block; padding: 6px 14px; color: var(--ink-2); font-size: 13.5px; line-height: 1.6; border-radius: 0 10px 10px 0; transition: color var(--dur-1) var(--ease), background-color var(--dur-1) var(--ease); }
@@ -114,7 +108,7 @@
 
   /* =============== moments =============== */
   .moments-layout { display: grid; grid-template-columns: 190px minmax(0, 640px); gap: 64px; justify-content: center; align-items: start; }
-  .month-nav { position: sticky; top: calc(var(--header-h) + 28px); display: grid; gap: 26px; }
+  .month-nav { position: sticky; top: 28px; display: grid; gap: 26px; }
   .month-nav h2 { font-size: 13px; letter-spacing: .1em; color: var(--ink-2); text-transform: uppercase; margin-bottom: 8px; }
   .month-nav ol { position: relative; display: grid; gap: 2px; border-left: 1px dashed var(--line); }
   .month-nav a { display: flex; justify-content: space-between; gap: 8px; padding: 6px 14px; color: var(--ink-2); font-size: 14px; font-weight: 600; border-radius: 0 10px 10px 0; }
@@ -164,7 +158,7 @@
   /* =============== archive =============== */
   .archive { display: grid; gap: 56px; }
   .archive__year { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 40px; align-items: start; }
-  .archive__year > h2 { position: sticky; top: calc(var(--header-h) + 24px); font-size: 56px; line-height: 1; letter-spacing: 0; color: var(--ink-2); }
+  .archive__year > h2 { position: sticky; top: 24px; font-size: 56px; line-height: 1; letter-spacing: 0; color: var(--ink-2); }
   .archive__year > h2 > span { display: inline-block; box-shadow: inset 0 -.28em 0 var(--fill-strong); }
   .archive__year > h2 small { display: block; margin-top: 10px; color: var(--ink-2); font-size: 13px; letter-spacing: .06em; }
   .archive__list { position: relative; display: grid; gap: 0; padding-left: 32px; }
@@ -222,18 +216,16 @@
     .archive__year > h2 { position: static; font-size: 44px; }
   }
   @media (max-width: 1024px) {
-    .hero__grid { grid-template-columns: minmax(0, 1fr); gap: 36px; }
-    .hero__visual { order: -1; justify-items: center; padding-top: 12px; }
-    .polaroid--hero { width: min(260px, 70%); }
+    .hero__grid { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+    .hero__visual { order: -1; min-height: 76px; }
     .about { grid-template-columns: minmax(0, 1fr); }
     .related { grid-template-columns: minmax(0, 1fr); }
     .filters__bar { grid-template-columns: minmax(0, 1fr) 140px auto; }
   }
   @media (max-width: 760px) {
-    .hero { padding: 16px 0 52px; }
+    .hero { padding: 24px 0 52px; }
     .hero__title { margin: 18px 0 16px; }
     .hero__lead { font-size: 16px; }
-    .hero__say { margin-left: -112px; top: 40px; max-width: 150px; font-size: 12.5px; padding: 9px 12px; }
     .hero .doodle--b { right: 4%; top: 2%; }
     .about__card { grid-template-columns: minmax(0, 1fr); padding: 22px; gap: 16px; }
     .post-head { padding: 36px 0 22px; }

@@ -6,7 +6,7 @@ if [ $# -gt 0 ]; then engines=("$@"); else engines=(chromium webkit); fi
 fail=0
 for engine in $engines; do
   echo "################ $engine"
-  for audit in overflow lines contrast focus nav pull text fx coverage csp a11y flows; do
+  for audit in overflow lines contrast focus nav pull hangtag text fx coverage csp a11y flows; do
     echo "=== $audit ($engine)"
     out=$(BROWSER=$engine node qa/$audit.mjs 2>&1); code=$?
     print -r -- "$out" | tail -${TAILN:-8}

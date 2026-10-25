@@ -159,7 +159,7 @@ def register(app: Flask, cfg: Config) -> None:
         h.setdefault("Cross-Origin-Resource-Policy", "same-origin")
         path = request.path
         if "Content-Security-Policy" not in h:
-            if path.startswith(("/api/", "/feed/", "/sitemap", "/robots")):
+            if path.startswith(("/api/", "/sitemap", "/robots")):
                 h["Content-Security-Policy"] = CSP_API
             elif path.startswith("/admin"):
                 h["Content-Security-Policy"] = CSP_ADMIN

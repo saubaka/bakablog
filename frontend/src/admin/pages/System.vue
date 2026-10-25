@@ -16,7 +16,7 @@ const error = ref('')
 const JOBS: { name: string; label: string; text: string }[] = [
   { name: 'reindex', label: '重建搜索索引', text: '搜索结果不对劲、或者直接改过数据库之后用。' },
   { name: 'thumbnails', label: '补生成缩略图', text: '重新生成缺失的图片尺寸。' },
-  { name: 'cache', label: '刷新站点缓存', text: '让公开页面和 RSS 立刻重新生成。' },
+  { name: 'cache', label: '刷新站点缓存', text: '让公开页面立刻重新生成。' },
   { name: 'vacuum', label: '整理数据库', text: '回收空闲空间，可能需要几秒。' },
   { name: 'housekeeping', label: '日常清理', text: '清理过期的登录会话和旧的统计数据。' },
   { name: 'trash', label: '清理回收站', text: '永久删除超过 30 天的内容。' },

@@ -23,7 +23,7 @@ def register_blueprints(app: Flask) -> None:
     for module in (media, admin_auth, admin_posts, admin_moments, admin_pages, admin_taxonomy, admin_site, admin_system):
         app.register_blueprint(module.bp)
 
-    from app.seo import feeds, spa
+    from app.seo import sitemap, spa
 
-    app.register_blueprint(feeds.bp)
+    app.register_blueprint(sitemap.bp)
     app.register_blueprint(spa.bp)  # last: the catch-all for public addresses

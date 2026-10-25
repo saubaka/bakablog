@@ -31,8 +31,8 @@ def admin_items(session: Session, region: str) -> list[dict]:
     rows = region_rows(session, region)
     if not rows:
         return _default_items(region)
-    return [{"id": r.id, "region": r.region, "label": r.label, "kind": r.kind, "target": r.target, "sticker": r.sticker, "enabled": r.enabled}
-            for r in rows]
+    return [{"id": r.id, "region": r.region, "label": r.label, "kind": r.kind, "target": r.target, "sticker": r.sticker if r.sticker in defaults.ICONS else None, "enabled": r.enabled}
+            for r in rows if not r.target.startswith("/feed/")]   # the RSS entries are gone: no dead link, and the retired icon would fail the next save
 
 
 def validate_item(session: Session, item: dict, *, check_targets: bool = True, index: int | None = None) -> dict:

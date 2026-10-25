@@ -252,18 +252,18 @@ try {
   })
 
   /* ---------- site configuration ---------- */
-  await step('home: open hero, change the title, the preview frame shows it before saving, save, public data changes, reset', async () => {
+  await step('home: open hero, change the intro, the preview frame shows it before saving, save, public data changes, reset', async () => {
     const { ctx, page } = await openAdmin(browser, '/home', 1440)
     await page.frameLocator('iframe.adm-pframe__frame').locator('.hero, .home').first().waitFor({ timeout: 10000 })
     await page.locator('.adm-navrow', { hasText: '首屏名片' }).getByRole('button', { name: '设置' }).click()
-    const line = page.getByLabel('标题第 1 行')
-    await line.fill(`预览里的新标题 ${stamp}`)
-    await page.frameLocator('iframe.adm-pframe__frame').getByText(`预览里的新标题 ${stamp}`).first().waitFor({ timeout: 8000 })
-    expect((await apiGet(ctx, '/home')).blocks[0].config.title_lines[0] !== `预览里的新标题 ${stamp}`, 'the public home already changed before saving')
+    const intro = page.getByLabel('简介', { exact: true })
+    await intro.fill(`预览里的新简介 ${stamp}`)
+    await page.frameLocator('iframe.adm-pframe__frame').getByText(`预览里的新简介 ${stamp}`).first().waitFor({ timeout: 8000 })
+    expect((await apiGet(ctx, '/home')).blocks[0].config.intro !== `预览里的新简介 ${stamp}`, 'the public home already changed before saving')
     await page.getByRole('button', { name: '保存首页' }).click()
     await toast(page, '首页已保存')
     const saved = await apiGet(ctx, '/home')
-    expect(JSON.stringify(saved).includes(`预览里的新标题 ${stamp}`), 'public home lacks the new title')
+    expect(JSON.stringify(saved).includes(`预览里的新简介 ${stamp}`), 'public home lacks the new intro')
     page.once('dialog', () => undefined)
     await page.getByRole('button', { name: '恢复默认' }).click()
     await page.getByRole('dialog').getByRole('button', { name: '恢复默认' }).click()
@@ -342,7 +342,7 @@ try {
     const { ctx, page } = await openAdmin(browser, '/seo', 1280)
     await page.getByLabel('默认描述').fill(`QA 描述 ${stamp}`)
     await page.getByRole('button', { name: '保存', exact: true }).first().click()
-    await toast(page, 'SEO 与订阅设置已保存')
+    await toast(page, 'SEO 设置已保存')
     await page.getByRole('button', { name: '加一条' }).click()
     await page.getByRole('dialog').getByLabel(/来源/).fill(`/old-${stamp}`)
     await page.getByRole('dialog').getByLabel(/目标/).fill('/blog')

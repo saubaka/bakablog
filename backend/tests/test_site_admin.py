@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from app import defaults
+from app.services import settings
 from app.timeutil import iso, utcnow
 from tests.conftest import make_moment, make_page, make_post, png_bytes
 
@@ -33,7 +34,7 @@ def test_page_lifecycle_and_public_read(admin, api):
 
 
 def test_page_slugs_cannot_shadow_the_site(admin):
-    for slug in ("blog", "moments", "api", "admin", "feed", "media", "search", "archive", "tag", "category", "series", "sitemap.xml", "assets"):
+    for slug in ("blog", "moments", "api", "admin", "media", "search", "archive", "tag", "category", "series", "sitemap.xml", "assets"):
         r = admin.post(f"{A}/pages", {"title": "x", "slug": slug})
         assert r.status_code in (422,), slug
     auto = make_page(admin, "博客")  # pinyin of the title would be "bo-ke", fine; a title that slugifies to a reserved word is renamed
@@ -107,7 +108,7 @@ def test_default_navigation_is_resolved_for_visitors(api):
     assert [(i["label"], i["url"]) for i in nav["top"]] == [("首页", "/"), ("博客", "/blog"), ("动态", "/moments"), ("归档", "/archive")]  # 关于 hidden: no such page yet
     assert [(i["label"], i["url"], i["action"]) for i in nav["mobile"]] == [
         ("首页", "/", None), ("博客", "/blog", None), ("动态", "/moments", None), ("搜索", None, "search"), ("更多", None, "more")]
-    assert ("文章 RSS", "/feed/posts.xml") in [(i["label"], i["url"]) for i in nav["footer"]]
+    assert [(i["label"], i["url"]) for i in nav["footer"]] == [("首页", "/"), ("博客", "/blog"), ("动态", "/moments"), ("归档", "/archive")]
 
 
 def test_the_about_item_appears_once_the_page_exists(admin, api):
@@ -171,8 +172,8 @@ def test_default_home_layout(api):
     types = [b["type"] for b in api.get("/api/home").get_json()["blocks"]]
     assert types == ["hero", "latest_posts", "latest_moments", "shelf", "about", "now"]  # notice and featured are off by default
     hero = block(api, "hero")
-    assert hero["config"]["title_lines"] == [f"我是 {defaults.AUTHOR_NAME}，", defaults.TAGLINE] and len(hero["config"]["buttons"]) == 3
-    assert hero["config"]["polaroid"]["media"] is None
+    assert [b["url"] for b in hero["config"]["buttons"]] == ["/blog", "/moments"]
+    assert "title_lines" not in hero["config"] and "polaroid" not in hero["config"]   # the big title is the site's name now, and there is no photo card
     about = block(api, "about")
     assert about["data"]["author"]["name"] == defaults.AUTHOR_NAME and about["data"]["author"]["avatar"] is None
 
@@ -208,10 +209,11 @@ def test_home_customisation_validation_and_reset(admin, api, png):
 
 
 @pytest.mark.parametrize("blocks,needle", [
-    ([{"type": "hero", "config": {"title_lines": []}}], "blocks.0.config.title_lines"),
-    ([{"type": "hero", "config": {"title_lines": ["a"], "buttons": [{"label": "a", "url": "/x"}] * 4}}], "blocks.0.config.buttons"),
-    ([{"type": "hero", "config": {"title_lines": ["a"], "buttons": [{"label": "a", "url": "javascript:alert(1)"}]}}], "blocks.0.config.buttons.0.url"),
-    ([{"type": "hero", "config": {"title_lines": ["a"], "doodles": ["skull"]}}], "blocks.0.config.doodles.0"),
+    ([{"type": "hero", "config": {"title_lines": ["a"]}}], "blocks.0.config.title_lines"),
+    ([{"type": "hero", "config": {"polaroid": {"media_id": None}}}], "blocks.0.config.polaroid"),
+    ([{"type": "hero", "config": {"buttons": [{"label": "a", "url": "/x"}] * 4}}], "blocks.0.config.buttons"),
+    ([{"type": "hero", "config": {"buttons": [{"label": "a", "url": "javascript:alert(1)"}]}}], "blocks.0.config.buttons.0.url"),
+    ([{"type": "hero", "config": {"doodles": ["skull"]}}], "blocks.0.config.doodles.0"),
     ([{"type": "latest_posts", "config": {"count": 99}}], "blocks.0.config.count"),
     ([{"type": "latest_posts", "config": {"layout": "masonry"}}], "blocks.0.config.layout"),
     ([{"type": "now", "config": {"items": [{"icon": "nope", "text": "x"}]}}], "blocks.0.config.items.0.icon"),
@@ -224,21 +226,44 @@ def test_home_block_validation(admin, blocks, needle):
     assert r.status_code == 422 and needle in r.get_json()["error"]["fields"], r.get_json()
 
 
-def test_home_rejects_duplicates_unknown_types_and_missing_pictures(admin):
+def test_home_rejects_duplicates_and_unknown_types(admin):
     assert admin.put(f"{A}/home", {"blocks": [{"type": "shelf"}, {"type": "shelf"}]}).get_json()["error"]["code"] == "duplicate"
     assert admin.put(f"{A}/home", {"blocks": [{"type": "comments"}]}).status_code == 422
-    hero = {"type": "hero", "config": {"title_lines": ["你好"], "polaroid": {"media_id": 4242}}}
-    assert admin.put(f"{A}/home", {"blocks": [hero]}).status_code == 422
 
 
-def test_hero_picture_is_resolved_and_tracked_as_used(admin, api, png):
-    mid = admin.upload(f"{A}/media", png(300, 300)).get_json()["id"]
-    hero = {"type": "hero", "config": {"title_lines": ["你好"], "polaroid": {"media_id": mid, "caption": "我"}}}
-    assert admin.put(f"{A}/home", {"blocks": [hero]}).status_code == 200
-    assert block(api, "hero")["config"]["polaroid"]["media"]["id"] == mid
-    assert any(u["type"] == "home_block" for u in admin.get(f"{A}/media/{mid}").get_json()["usage"])
-    admin.put(f"{A}/home", {"blocks": [{"type": "shelf"}]})
-    assert admin.get(f"{A}/media/{mid}").get_json()["usage"] == []
+def test_a_hero_stored_before_the_redesign_is_read_in_its_current_shape(admin, api, app):
+    """The photo card, the typed title and the RSS button were retired: an old stored hero opens without them and saves again."""
+    from app.db import session_scope
+    from app.models import HomeBlock
+
+    old = {"note": "n", "title_lines": ["你好"], "intro": "", "polaroid": {"media_id": None, "caption": "c", "bubble": "b"}, "doodles": ["star", "cloud"],
+           "buttons": [{"label": "读", "url": "/blog", "style": "fill"}, {"label": "订阅 RSS", "url": "/feed/posts.xml", "style": "link"}]}
+    with session_scope(app) as s:
+        s.add(HomeBlock(type="hero", enabled=True, config=old, sort_order=0))
+        settings.bump_site_version(s)
+    config = block(api, "hero")["config"]
+    assert set(config) == {"note", "intro", "buttons", "doodles"} and config["doodles"] == ["star"] and [b["url"] for b in config["buttons"]] == ["/blog"]
+    saved = [{k: v for k, v in b.items() if k != "id"} for b in admin.get(f"{A}/home").get_json()["blocks"]]
+    assert admin.put(f"{A}/home", {"blocks": saved}).status_code == 200
+
+
+def test_rss_leftovers_in_stored_settings_and_navigation_are_ignored(admin, api, app):
+    """Retired RSS data: the author's subscribe link, the footer entries and their icon do not reach visitors and do not block the next save."""
+    from app.db import session_scope
+    from app.models import NavItem
+
+    with session_scope(app) as s:
+        settings.set_raw(s, "cfg.author", {"links": [{"label": "订阅", "kind": "rss", "url": "/feed/posts.xml"}, {"label": "邮件", "kind": "mail", "url": "mailto:a@b.example"}]})
+        settings.set_raw(s, "cfg.seo", {"rss": {"full_text": True, "items": 20}, "title": "t"})
+        s.add(NavItem(region="footer", sort_order=0, label="文章 RSS", kind="link", target="/feed/posts.xml", sticker="rss", enabled=True))
+        s.add(NavItem(region="footer", sort_order=1, label="首页", kind="route", target="/", sticker="rss", enabled=True))
+        settings.bump_site_version(s)
+    assert [link["kind"] for link in api.get("/api/site").get_json()["author"]["links"]] == ["mail"]
+    assert [(i["label"], i["sticker"]) for i in api.get("/api/site").get_json()["nav"]["footer"]] == [("首页", None)]
+    assert "rss" not in admin.get(f"{A}/settings").get_json()["groups"]["seo"]
+    items = [{k: v for k, v in i.items() if k not in ("id", "region")} for i in admin.get(f"{A}/nav").get_json()["footer"]["items"]]
+    assert admin.put(f"{A}/nav/footer", {"items": items}).status_code == 200
+    assert admin.patch(f"{A}/settings/author", {"links": [{"label": "邮件", "kind": "mail", "url": "mailto:a@b.example"}]}).status_code == 200
 
 
 def test_featured_block_auto_and_manual(admin, api):
@@ -309,7 +334,6 @@ def test_settings_patch_merges_and_changes_the_public_site(admin, api):
     site = api.get("/api/site").get_json()
     assert site["name"] == "新的站名" and site["tagline"] == "新的简介" and site["name_en"] == "Baka Blog"
     assert "<title>新的站名 · 新的简介</title>" in api.get("/").get_data(as_text=True)
-    assert "新的站名" in api.get("/feed/posts.xml").get_data(as_text=True)
     admin.patch(f"{A}/settings/appearance", {"theme": "sakura", "decor": {"doodles": False}})
     look = api.get("/api/site").get_json()
     assert look["theme"] == "sakura" and look["decor"] == {"tape": True, "doodles": False}
@@ -324,7 +348,8 @@ def test_settings_patch_merges_and_changes_the_public_site(admin, api):
     ("appearance", {"theme": "midnight"}, "theme"), ("appearance", {"motion": "turbo"}, "motion"), ("appearance", {"code_theme": "dark"}, "code_theme"),
     ("author", {"links": [{"label": "x", "kind": "link", "url": "javascript:alert(1)"}]}, "links.0.url"),
     ("author", {"links": [{"label": "x", "kind": "fax", "url": "https://x.com"}]}, "links.0.kind"),
-    ("seo", {"robots_extra": "Delete: everything"}, "robots_extra"), ("seo", {"rss": {"full_text": True, "items": 1000}}, "rss.items"),
+    ("seo", {"robots_extra": "Delete: everything"}, "robots_extra"),
+    ("seo", {"rss": {"full_text": True, "items": 20}}, "rss"), ("author", {"links": [{"label": "x", "kind": "rss", "url": "/feed/posts.xml"}]}, "links.0.kind"),
     ("backup", {"hour": 24}, "hour"), ("backup", {"keep": 0}, "keep"), ("stats", {"enabled": "maybe"}, "enabled"),
 ])
 def test_settings_validation(admin, group, payload, field):
@@ -410,7 +435,7 @@ def test_redirect_crud_and_application(admin, api):
 @pytest.mark.parametrize("payload", [
     {"source": "no-slash", "target": "/x"}, {"source": "//evil.example", "target": "/x"}, {"source": "/a", "target": "javascript:alert(1)"},
     {"source": "/a", "target": "relative"}, {"source": "/a", "target": "/a"}, {"source": "/", "target": "/x"}, {"source": "/api/health", "target": "/x"},
-    {"source": "/admin/users", "target": "/x"}, {"source": "/media/abc/960.webp", "target": "/x"}, {"source": "/feed/posts.xml", "target": "/x"},
+    {"source": "/admin/users", "target": "/x"}, {"source": "/media/abc/960.webp", "target": "/x"},
     {"source": "/has space", "target": "/x"}, {"source": "/a", "target": "/x", "status_code": 307}, {"source": "/a"},
 ])
 def test_redirect_validation(admin, payload):

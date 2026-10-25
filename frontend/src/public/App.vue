@@ -3,14 +3,14 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterView, useRouter } from 'vue-router'
 import Lightbox from './components/Lightbox.vue'
 import Sprite from '@/ui/components/Sprite.vue'
-import BackTop from './layout/BackTop.vue'
+import ProgressTag from './layout/ProgressTag.vue'
 import SearchDialog from './layout/SearchDialog.vue'
 import SiteFooter from './layout/SiteFooter.vue'
-import SiteHeader from './layout/SiteHeader.vue'
 import TabBar from './layout/TabBar.vue'
+import ThreadNav from './layout/ThreadNav.vue'
 import { viewKey } from './router'
 import { startPull, turning } from './pull'
-import { loading, page, type PageState } from './state'
+import { loading, page, site, type PageState } from './state'
 import { openSearch } from './ui'
 import { applyPendingScroll, focusPageTitle, notifyPageReady, pageSwapped } from './view'
 import type { Component } from 'vue'
@@ -73,7 +73,7 @@ onBeforeUnmount(() => { document.removeEventListener('keydown', onKey); stopPull
   <Sprite />
   <a class="skip-link" href="#main" @click.prevent="skip">跳到正文</a>
   <div class="topline" :class="{ 'is-on': loading }" aria-hidden="true" />
-  <SiteHeader />
+  <ThreadNav :items="site.nav.top" variant="side" label="主导航" />
   <div ref="stage" class="page-stage">
     <main id="main" tabindex="-1">
       <RouterView v-slot="{ route }">
@@ -87,7 +87,7 @@ onBeforeUnmount(() => { document.removeEventListener('keydown', onKey); stopPull
     <SiteFooter />
   </div>
   <TabBar />
-  <BackTop />
+  <ProgressTag />
   <SearchDialog />
   <Lightbox />
   <div class="sr-only" role="status" aria-live="polite">{{ announce }}</div>

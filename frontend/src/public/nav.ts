@@ -33,7 +33,6 @@ export function iconFor(item: NavItem, known: ReadonlySet<string>): string {
   if (item.url === '/blog') return 'book'
   if (item.url === '/moments') return 'chat'
   if (item.url === '/archive') return 'calendar'
-  if (/\.xml$|^\/feed\//.test(item.url)) return 'rss'
   if (item.kind === 'page') return 'smile'
   return item.external ? 'external' : 'link'
 }

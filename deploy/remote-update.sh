@@ -258,7 +258,7 @@ wait_healthy || rollback "the service did not answer /api/health within 45 s"
 health="$(http /api/health)" || rollback "GET /api/health failed"
 running="$(printf '%s' "$health" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("version","")+" "+d.get("build",""))')" || rollback "/api/health is not JSON: $health"
 [ "$running" = "$VERSION $BUILD" ] || rollback "the running service reports '$running', expected '$VERSION $BUILD' (an old process still answering?)"
-for path in / /blog /moments /archive /feed/posts.xml /sitemap.xml /robots.txt /api/site /admin/ /admin/preview-frame; do
+for path in / /blog /moments /archive /sitemap.xml /robots.txt /api/site /admin/ /admin/preview-frame; do
   code="$(http "$path" -o /dev/null -w '%{http_code}')"
   [ "$code" = 200 ] || rollback "GET $path answered ${code:-nothing}"
 done

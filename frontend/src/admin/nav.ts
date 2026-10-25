@@ -20,7 +20,7 @@ export const NAV: NavGroup[] = [
     { to: '/home', label: '首页配置', icon: 'home', keywords: 'home blocks 模块' },
     { to: '/navigation', label: '导航与页脚', icon: 'a-menu', keywords: 'navigation nav footer 页脚' },
     { to: '/appearance', label: '外观', icon: 'sparkle', keywords: 'appearance theme 主题 站点信息' },
-    { to: '/seo', label: 'SEO 与订阅', icon: 'rss', keywords: 'seo rss sitemap redirects 重定向' },
+    { to: '/seo', label: 'SEO', icon: 'search', keywords: 'seo sitemap robots redirects 重定向 搜索引擎' },
   ] },
   { id: 'data', label: '数据', items: [{ to: '/stats', label: '访问统计', icon: 'a-activity', keywords: 'stats visits 统计' }] },
   { id: 'system', label: '系统', items: [

@@ -58,7 +58,7 @@ def payload(session: Session) -> dict:
         "seo": {"title": seo["title"], "description": seo["description"], "keywords": seo["keywords"], "share_image": _media(session, seo["share_image_media_id"])},
         "footer": {"icp": footer["icp"], "copyright": copyright_text, "text": footer["text"]},
         "nav": {region: nav.resolve(session, region) for region in defaults.NAV_REGIONS},
-        "features": {"stats": groups["stats"]["enabled"], "search": True, "rss": True},
+        "features": {"stats": groups["stats"]["enabled"], "search": True},
         "moods": [{"id": k, "label": v} for k, v in defaults.MOODS.items()],
         "origin": origin(),
         "version": __version__,

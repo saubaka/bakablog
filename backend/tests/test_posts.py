@@ -101,11 +101,10 @@ def test_visibility_matrix(admin, api):
 
     # nothing but the one public post shows up in the other public places
     assert [p["slug"] for y in api.get("/api/archive").get_json()["years"] for m in y["months"] for p in m["posts"]] == [pub["slug"]]
-    feed = api.get("/feed/posts.xml").get_data(as_text=True)
     sitemap = api.get("/sitemap.xml").get_data(as_text=True)
     for hidden in (draft, private, unlisted, future, trashed):
-        assert hidden["slug"] not in feed and hidden["slug"] not in sitemap
-    assert pub["slug"] in feed and pub["slug"] in sitemap
+        assert hidden["slug"] not in sitemap
+    assert pub["slug"] in sitemap
     for title in ("草稿", "私密", "仅链接", "定时", "回收站里"):
         assert api.get(f"/api/search?q={title}正文").get_json()["groups"]["posts"] == []
 
