@@ -4,9 +4,9 @@
       "id": 1,
       "device": "浏览器",
       "ip_prefix": "127.0.0.0/24",
-      "created_at": "2026-10-25T00:47:38Z",
-      "last_seen_at": "2026-10-25T00:47:38Z",
-      "expires_at": "2026-11-24T00:47:38Z",
+      "created_at": "2026-10-25T14:42:15Z",
+      "last_seen_at": "2026-10-25T14:42:15Z",
+      "expires_at": "2026-11-24T14:42:15Z",
       "current": true
     }
   ]

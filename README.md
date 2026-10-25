@@ -30,6 +30,8 @@ make -C backend serve                                        # http://127.0.0.1:
 cd frontend && npm run dev                                   # http://127.0.0.1:5173  热更新，/api 代理到 :5300
 ```
 
+**本机一键面板（macOS）**：双击项目根目录的 `run-local.command`（或运行 `scripts/panel.sh`），用数字菜单启动 / 停止 / 重启 / 看状态和日志 / 打开浏览器 / 重新构建前端 / 灌示例内容 / 管理测试用的后台实例 / 登录后自动启动。`scripts/panel.sh start|stop|restart|status|logs|open|build|seed` 也可以直接当命令用。服务在后台运行，关掉终端窗口不会停。首选端口是 5300；被别的程序占着时自动顺延到 5301、5302 …（最多往后 20 个，跳过 5310 的测试实例和 5173 的前端热更新），实际用的端口显示在菜单顶部的“地址 / 端口”那一行，停止 / 状态 / 打开浏览器都按它走（`BAKA_PANEL_PORT` 可以换首选端口）。面板只管本机的开发 / 预览服务，线上服务器的更新是 `deploy/deploy.sh`。
+
 ## 检查
 
 ```bash
@@ -42,4 +44,4 @@ make rehearse    # 在临时目录里排练安装、更新、四种失败回滚�
 
 ## 版本与状态
 
-当前 0.5.0。P0 设计、P1 后端、P2 前台、P3 后台、P4 打磨、P5 部署材料已完成并自动化验证（Chromium + WebKit），已部署并对外开放。还没有在真实 Safari 和手机上验收（Playwright 的 WebKit 与 Safari 同源，但不是同一个构建）。详见各文档里的「局限」。
+当前 0.5.1。P0 设计、P1 后端、P2 前台、P3 后台、P4 打磨、P5 部署材料已完成并自动化验证（Chromium + WebKit），已部署并对外开放。还没有在真实 Safari 和手机上验收（Playwright 的 WebKit 与 Safari 同源，但不是同一个构建）。详见各文档里的「局限」。
