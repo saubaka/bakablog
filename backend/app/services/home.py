@@ -1,4 +1,4 @@
-"""The home page: an ordered list of blocks (hero, latest posts, shelf ...). No rows at all = the default layout."""
+"""The home page: an ordered list of blocks (hero, latest posts, latest moments ...). No rows at all = the default layout."""
 from __future__ import annotations
 
 import copy
@@ -9,20 +9,20 @@ from sqlalchemy.orm import Session
 
 from app import defaults
 from app.errors import ApiError, friendly_validation
-from app.models import HomeBlock, Media
+from app.models import HomeBlock
 from app.schemas.home import CONFIG_MODELS, parse_time
 from app.services import queries, refs, settings
-from app.services.out import media_out, moment_out, post_card
+from app.services.out import moment_out, post_card
 from app.timeutil import iso, utcnow
 
 
 def customized(session: Session) -> bool:
-    return session.scalar(select(HomeBlock.id).limit(1)) is not None
+    return session.scalar(select(HomeBlock.id).where(HomeBlock.type.notin_(defaults.RETIRED_HOME_BLOCKS)).limit(1)) is not None
 
 
 def _current(block_type: str, config: dict) -> dict:
     """A stored config as it is understood today: what was retired (the photo card and the typed title of the hero, a doodle that left the vocabulary,
-    the RSS button) is dropped instead of failing the next save or showing a dead link."""
+    the RSS button) is dropped instead of failing the next save or showing a dead link. (Whole modules that were retired are left out by `admin_blocks`.)"""
     if block_type != "hero":
         return config
     out = {k: v for k, v in config.items() if k not in ("polaroid", "title_lines")}
@@ -34,7 +34,7 @@ def _current(block_type: str, config: dict) -> dict:
 
 
 def admin_blocks(session: Session) -> list[dict]:
-    rows = list(session.scalars(select(HomeBlock).order_by(HomeBlock.sort_order, HomeBlock.id)))
+    rows = list(session.scalars(select(HomeBlock).where(HomeBlock.type.notin_(defaults.RETIRED_HOME_BLOCKS)).order_by(HomeBlock.sort_order, HomeBlock.id)))
     if not rows:
         return [{"id": None, "type": b["type"], "enabled": b["enabled"], "config": copy.deepcopy(b["config"])} for b in defaults.DEFAULT_HOME_BLOCKS]
     return [{"id": r.id, "type": r.type, "enabled": r.enabled, "config": _current(r.type, r.config)} for r in rows]
@@ -87,7 +87,6 @@ def _active_notice(config: dict) -> bool:
 def resolve_public(session: Session, blocks: list[dict] | None = None) -> list[dict]:
     """The home page as visitors get it: enabled blocks in order, each with the data it needs, in one response."""
     blocks = blocks if blocks is not None else admin_blocks(session)
-    author = settings.group(session, "author")
     out = []
     for block in blocks:
         if not block["enabled"]:
@@ -109,12 +108,6 @@ def resolve_public(session: Session, blocks: list[dict] | None = None) -> list[d
             data["posts"] = [post_card(p) for p in queries.latest_posts(session, config.get("count", 6))]
         elif kind == "latest_moments":
             data["moments"] = [moment_out(m) for m in queries.latest_moments(session, config.get("count", 3))]
-        elif kind == "shelf":
-            data = queries.shelf(session, config.get("tag_count", 14))
-        elif kind == "about":
-            avatar = session.get(Media, author.get("avatar_media_id") or 0)
-            data["author"] = {"name": author["name"], "bio": author["bio"], "links": author["links"],
-                              "avatar": media_out(avatar) if avatar is not None and avatar.deleted_at is None else None}
         out.append({"type": kind, "id": block.get("id"), "config": config, "data": data})
     return out
 

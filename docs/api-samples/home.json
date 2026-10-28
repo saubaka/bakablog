@@ -123,8 +123,8 @@
             "pinned": false,
             "featured": true,
             "card_style": "auto",
-            "published_at": "2026-10-21T14:42:15Z",
-            "updated_at": "2026-10-25T14:42:15Z",
+            "published_at": "2026-10-24T08:35:54Z",
+            "updated_at": "2026-10-28T08:35:54Z",
             "reading_minutes": 2,
             "word_count": 736
           },
@@ -170,8 +170,8 @@
             "pinned": false,
             "featured": false,
             "card_style": "auto",
-            "published_at": "2026-10-15T14:42:15Z",
-            "updated_at": "2026-10-25T14:42:15Z",
+            "published_at": "2026-10-18T08:35:54Z",
+            "updated_at": "2026-10-28T08:35:54Z",
             "reading_minutes": 1,
             "word_count": 264
           },
@@ -222,8 +222,8 @@
             "pinned": false,
             "featured": false,
             "card_style": "auto",
-            "published_at": "2026-10-08T14:42:15Z",
-            "updated_at": "2026-10-25T14:42:15Z",
+            "published_at": "2026-10-11T08:35:54Z",
+            "updated_at": "2026-10-28T08:35:54Z",
             "reading_minutes": 1,
             "word_count": 243
           },
@@ -266,8 +266,8 @@
             "pinned": false,
             "featured": false,
             "card_style": "auto",
-            "published_at": "2026-10-05T14:42:15Z",
-            "updated_at": "2026-10-25T14:42:15Z",
+            "published_at": "2026-10-08T08:35:54Z",
+            "updated_at": "2026-10-28T08:35:54Z",
             "reading_minutes": 1,
             "word_count": 168
           },
@@ -305,8 +305,8 @@
             "pinned": false,
             "featured": false,
             "card_style": "auto",
-            "published_at": "2026-10-01T14:42:15Z",
-            "updated_at": "2026-10-25T14:42:15Z",
+            "published_at": "2026-10-04T08:35:54Z",
+            "updated_at": "2026-10-28T08:35:54Z",
             "reading_minutes": 1,
             "word_count": 109
           },
@@ -344,8 +344,8 @@
             "pinned": false,
             "featured": false,
             "card_style": "auto",
-            "published_at": "2026-09-23T14:42:15Z",
-            "updated_at": "2026-10-25T14:42:15Z",
+            "published_at": "2026-09-26T08:35:54Z",
+            "updated_at": "2026-10-28T08:35:54Z",
             "reading_minutes": 1,
             "word_count": 187
           }
@@ -392,7 +392,7 @@
             "media": [],
             "link_card": null,
             "pinned": false,
-            "published_at": "2026-10-25T14:42:15Z"
+            "published_at": "2026-10-28T08:35:54Z"
           },
           {
             "id": 2,
@@ -481,7 +481,7 @@
             ],
             "link_card": null,
             "pinned": false,
-            "published_at": "2026-10-24T14:42:15Z"
+            "published_at": "2026-10-27T08:35:54Z"
           },
           {
             "id": 7,
@@ -505,265 +505,10 @@
             "media": [],
             "link_card": null,
             "pinned": false,
-            "published_at": "2026-10-23T14:42:15Z"
+            "published_at": "2026-10-26T08:35:54Z"
           }
         ]
       }
-    },
-    {
-      "type": "shelf",
-      "id": null,
-      "config": {
-        "title": "书架",
-        "intro": "按分类和标签翻一翻，找旧东西也方便。",
-        "tag_count": 14
-      },
-      "data": {
-        "categories": [
-          {
-            "id": 1,
-            "slug": "dai-ma",
-            "name": "代码",
-            "description": "",
-            "sticker": "code",
-            "url": "/category/dai-ma",
-            "count": 3,
-            "show_on_shelf": true
-          },
-          {
-            "id": 2,
-            "slug": "she-ji",
-            "name": "设计",
-            "description": "",
-            "sticker": "sparkle",
-            "url": "/category/she-ji",
-            "count": 2,
-            "show_on_shelf": true
-          },
-          {
-            "id": 3,
-            "slug": "ri-chang",
-            "name": "日常",
-            "description": "",
-            "sticker": "smile",
-            "url": "/category/ri-chang",
-            "count": 3,
-            "show_on_shelf": true
-          },
-          {
-            "id": 4,
-            "slug": "sui-bi",
-            "name": "随笔",
-            "description": "",
-            "sticker": "quote",
-            "url": "/category/sui-bi",
-            "count": 2,
-            "show_on_shelf": true
-          }
-        ],
-        "tags": [
-          {
-            "id": 5,
-            "slug": "css",
-            "name": "CSS",
-            "color": "white",
-            "sticker": null,
-            "url": "/tag/css",
-            "count": 1,
-            "moment_count": 2,
-            "size": 2
-          },
-          {
-            "id": 3,
-            "slug": "flask",
-            "name": "Flask",
-            "color": "sky",
-            "sticker": null,
-            "url": "/tag/flask",
-            "count": 2,
-            "moment_count": 0,
-            "size": 3
-          },
-          {
-            "id": 1,
-            "slug": "sqlite",
-            "name": "SQLite",
-            "color": "rose",
-            "sticker": null,
-            "url": "/tag/sqlite",
-            "count": 1,
-            "moment_count": 1,
-            "size": 2
-          },
-          {
-            "id": 7,
-            "slug": "vue",
-            "name": "Vue",
-            "color": "white",
-            "sticker": null,
-            "url": "/tag/vue",
-            "count": 1,
-            "moment_count": 0,
-            "size": 2
-          },
-          {
-            "id": 15,
-            "slug": "qian-duan",
-            "name": "前端",
-            "color": "mist",
-            "sticker": null,
-            "url": "/tag/qian-duan",
-            "count": 0,
-            "moment_count": 1,
-            "size": 1
-          },
-          {
-            "id": 8,
-            "slug": "dong-xiao",
-            "name": "动效",
-            "color": "sky",
-            "sticker": null,
-            "url": "/tag/dong-xiao",
-            "count": 1,
-            "moment_count": 0,
-            "size": 2
-          },
-          {
-            "id": 4,
-            "slug": "bo-ke",
-            "name": "博客",
-            "color": "white",
-            "sticker": null,
-            "url": "/tag/bo-ke",
-            "count": 2,
-            "moment_count": 1,
-            "size": 3
-          },
-          {
-            "id": 11,
-            "slug": "ka-fei",
-            "name": "咖啡",
-            "color": "white",
-            "sticker": null,
-            "url": "/tag/ka-fei",
-            "count": 1,
-            "moment_count": 1,
-            "size": 2
-          },
-          {
-            "id": 2,
-            "slug": "bei-fen",
-            "name": "备份",
-            "color": "mist",
-            "sticker": null,
-            "url": "/tag/bei-fen",
-            "count": 1,
-            "moment_count": 0,
-            "size": 2
-          },
-          {
-            "id": 13,
-            "slug": "ye-xiao",
-            "name": "夜宵",
-            "color": "white",
-            "sticker": null,
-            "url": "/tag/ye-xiao",
-            "count": 0,
-            "moment_count": 1,
-            "size": 1
-          },
-          {
-            "id": 10,
-            "slug": "an-quan",
-            "name": "安全",
-            "color": "mist",
-            "sticker": null,
-            "url": "/tag/an-quan",
-            "count": 1,
-            "moment_count": 0,
-            "size": 2
-          },
-          {
-            "id": 12,
-            "slug": "mao",
-            "name": "猫",
-            "color": "rose",
-            "sticker": null,
-            "url": "/tag/mao",
-            "count": 1,
-            "moment_count": 0,
-            "size": 2
-          },
-          {
-            "id": 6,
-            "slug": "she-ji",
-            "name": "设计",
-            "color": "white",
-            "sticker": null,
-            "url": "/tag/she-ji",
-            "count": 2,
-            "moment_count": 2,
-            "size": 3
-          },
-          {
-            "id": 9,
-            "slug": "sui-shou-ji",
-            "name": "随手记",
-            "color": "rose",
-            "sticker": null,
-            "url": "/tag/sui-shou-ji",
-            "count": 2,
-            "moment_count": 3,
-            "size": 3
-          }
-        ]
-      }
-    },
-    {
-      "type": "about",
-      "id": null,
-      "config": {
-        "title": "关于我",
-        "intro": "不是笨蛋，只是比较慢。",
-        "text": [
-          "写代码的人，偶尔画画，经常发呆。喜欢把东西做得安静一点——颜色浅一点，线条细一点，字号刚刚好。",
-          "站名里的 Baka 是日语里的“笨蛋”。别人这么叫我的时候我会生气，自己这么叫的时候不会。"
-        ]
-      },
-      "data": {
-        "author": {
-          "name": "sau_baka",
-          "bio": "写代码的人，偶尔画画，经常发呆。喜欢把东西做得安静一点——颜色浅一点，线条细一点，字号刚刚好。",
-          "links": [],
-          "avatar": null
-        }
-      }
-    },
-    {
-      "type": "now",
-      "id": null,
-      "config": {
-        "title": "近况",
-        "items": [
-          {
-            "icon": "code",
-            "text": "在做：重写这个博客"
-          },
-          {
-            "icon": "book",
-            "text": "在读：一本讲 SQLite 内部的小册子"
-          },
-          {
-            "icon": "heart",
-            "text": "在听：下雨的声音"
-          },
-          {
-            "icon": "smile",
-            "text": "在想：晚饭吃什么"
-          }
-        ]
-      },
-      "data": {}
     }
   ],
   "site_version": 26

@@ -8,6 +8,7 @@ import SearchDialog from './layout/SearchDialog.vue'
 import SiteFooter from './layout/SiteFooter.vue'
 import TabBar from './layout/TabBar.vue'
 import ThreadNav from './layout/ThreadNav.vue'
+import { startPrefetch } from './prefetch'
 import { viewKey } from './router'
 import { startPull, turning } from './pull'
 import { loading, page, site, type PageState } from './state'
@@ -35,6 +36,7 @@ const viewFor = (r: RouteLocationNormalizedLoaded): Component | null => (r.meta.
 const router = useRouter()
 const stage = ref<HTMLElement | null>(null)
 let stopPull: (() => void) | null = null
+let stopPrefetch: (() => void) | null = null
 const announce = ref('')
 watch(page, () => { window.setTimeout(() => { announce.value = document.title }, 60) })
 
@@ -65,8 +67,9 @@ function onKey(e: KeyboardEvent): void {
 onMounted(() => {
   document.addEventListener('keydown', onKey)
   if (stage.value) stopPull = startPull(stage.value, router)       // scrolling past the edge of a page turns to the next / previous entry of the menu
+  stopPrefetch = startPrefetch(router)                             // ... and the neighbouring pages are fetched beforehand, so that turning to one never waits
 })
-onBeforeUnmount(() => { document.removeEventListener('keydown', onKey); stopPull?.() })
+onBeforeUnmount(() => { document.removeEventListener('keydown', onKey); stopPull?.(); stopPrefetch?.() })
 </script>
 
 <template>

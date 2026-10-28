@@ -1,6 +1,7 @@
 <script setup lang="ts">
-/* /moments: the timeline. Filters (tag, mood, month) are part of the address, so a filtered view can be shared; "load more" follows the cursor. */
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+/* /moments: the timeline. Filters (tag, mood, month) are part of the address, so a filtered view can be shared; "load more" follows the cursor.
+   There is no list of tags or moods on the page: a tag is picked on a moment itself, and while a tag or mood filter is on, a chip says so and clears it. */
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import { isAbort } from '@/shared/api'
 import { monthLabel } from '@/shared/format'
@@ -8,9 +9,13 @@ import { vFx } from '@/fx/directive'
 import FxText from '@/fx/FxText.vue'
 import Icon from '@/ui/components/Icon'
 import EmptyState from '../components/EmptyState.vue'
+import Fold from '../components/Fold.vue'
 import MomentView from '../components/MomentView.vue'
+import SwapPane from '../components/SwapPane.vue'
 import { fetchMoments } from '../data'
 import { monthOf } from '../fmt'
+import { dirOf, motionOn, type Dir } from '../motion'
+import { useSlider } from '../slider'
 import type { Moment } from '@/shared/types'
 import type { PageState } from '../state'
 
@@ -73,7 +78,32 @@ function to(patch: Partial<Record<'tag' | 'mood' | 'month', string>>): RouteLoca
   const q = { tag: query.value.tag, mood: query.value.mood, month: query.value.month, ...patch }
   return { path: '/moments', query: { tag: q.tag || undefined, mood: q.mood || undefined, month: q.month || undefined } }
 }
-const toggle = (key: 'tag' | 'mood', value: string): RouteLocationRaw => to({ [key]: query.value[key] === value ? '' : value })
+
+/** The tag / mood filter that is on (it came from a link on a moment), named for the chip that clears it. */
+const active = computed(() => {
+  const out: { key: string; kind: string; label: string }[] = []
+  const q = query.value
+  if (q.tag) out.push({ key: 'tag', kind: '标签', label: meta.value?.tags.find((t) => t.slug === q.tag)?.name ?? q.tag })
+  if (q.mood) out.push({ key: 'mood', kind: '心情', label: meta.value?.moods.find((m) => m.id === q.mood)?.label ?? q.mood })
+  return out
+})
+
+/* ---- which way a change of month reads: a newer month comes in from the right, an older one from the left ("all months" counts as the newest) ---- */
+const NEWEST = '9999-99'
+const dir = ref<Dir>('none')
+watch(query, (now, before) => { dir.value = dirOf(now.month || NEWEST, before.month || NEWEST) })
+const listKey = computed(() => `${query.value.tag}|${query.value.mood}|${query.value.month}`)
+
+/* ---- the markers and the strip of months follow the month being looked at ---- */
+const monthList = ref<HTMLElement | null>(null)
+const chips = ref<HTMLElement | null>(null)
+useSlider(monthList, 'a.is-active', () => query.value.month)
+watch(() => query.value.month, async () => {
+  await nextTick()
+  const strip = chips.value
+  const at = strip?.querySelector<HTMLElement>('[aria-current]')
+  if (strip && at) strip.scrollTo({ left: at.offsetLeft - (strip.clientWidth - at.offsetWidth) / 2, behavior: motionOn() ? 'smooth' : 'auto' })
+})
 
 /* ---- the little calendar of the month being looked at ---- */
 const calMonth = computed(() => query.value.month || meta.value?.months[0]?.month || '')
@@ -89,6 +119,8 @@ const cal = computed(() => {
   const today = now.getFullYear() === year && now.getMonth() + 1 === month ? now.getDate() : 0
   return { label: `${year} 年 ${month} 月`, blanks: first, days: Array.from({ length: days }, (_, i) => ({ n: i + 1, has: has.has(i + 1), today: i + 1 === today })) }
 })
+const calDir = ref<Dir>('none')
+watch(calMonth, (now, before) => { calDir.value = dirOf(now, before) })
 </script>
 
 <template>
@@ -103,54 +135,56 @@ const cal = computed(() => {
       <aside v-if="meta && meta.months.length" class="month-nav" aria-label="按月份浏览">
         <div v-fx="'fade'">
           <h2>月份</h2>
-          <ol>
+          <ol ref="monthList">
+            <i class="slide slide--bar" aria-hidden="true" />
             <li><RouterLink :to="to({ month: '' })" :class="{ 'is-active': !query.month }" :aria-current="!query.month ? 'page' : undefined">全部</RouterLink></li>
             <li v-for="m in meta.months" :key="m.month"><RouterLink :to="to({ month: m.month })" :class="{ 'is-active': query.month === m.month }" :aria-current="query.month === m.month ? 'page' : undefined">{{ monthLabel(m.month) }}<span class="n">{{ m.count }}</span></RouterLink></li>
           </ol>
         </div>
         <div v-if="cal" v-fx="'fade'" class="minical" :aria-label="`${cal.label}的日历`">
-          <div class="minical__head"><span>{{ cal.label }}</span></div>
-          <div class="minical__grid" aria-hidden="true">
-            <span v-for="w in ['一', '二', '三', '四', '五', '六', '日']" :key="w">{{ w }}</span>
-            <span v-for="b in cal.blanks" :key="`b${b}`" />
-            <span v-for="d in cal.days" :key="d.n" :class="{ has: d.has, today: d.today }">{{ d.n }}</span>
-          </div>
+          <SwapPane :k="calMonth" :dir="calDir" pane-class="minical__pane">
+            <div class="minical__head"><span>{{ cal.label }}</span></div>
+            <div class="minical__grid" aria-hidden="true">
+              <span v-for="w in ['一', '二', '三', '四', '五', '六', '日']" :key="w">{{ w }}</span>
+              <span v-for="b in cal.blanks" :key="`b${b}`" />
+              <span v-for="d in cal.days" :key="d.n" :class="{ has: d.has, today: d.today }" :style="{ '--i': d.n }">{{ d.n }}</span>
+            </div>
+          </SwapPane>
         </div>
       </aside>
 
       <div class="moments-main">
-        <nav v-if="meta && meta.months.length" v-fx="'fade'" class="month-chips" aria-label="按月份浏览">
+        <nav v-if="meta && meta.months.length" ref="chips" v-fx="'fade'" class="month-chips" aria-label="按月份浏览">
           <RouterLink class="tag" :to="to({ month: '' })" :aria-current="!query.month ? 'page' : undefined">全部</RouterLink>
           <RouterLink v-for="m in meta.months" :key="m.month" class="tag" :to="to({ month: m.month })" :aria-current="query.month === m.month ? 'page' : undefined">{{ monthLabel(m.month) }}</RouterLink>
         </nav>
-        <div v-if="meta && (meta.tags.length || meta.moods.length)" class="moment-filters" v-fx="'fade'">
-          <RouterLink class="tag" to="/moments" :aria-current="!filtered ? 'true' : undefined">全部</RouterLink>
-          <template v-if="meta.tags.length">
-            <span class="label">标签</span>
-            <RouterLink v-for="t in meta.tags" :key="t.id" class="tag" :to="toggle('tag', t.slug)" :aria-current="query.tag === t.slug ? 'true' : undefined">{{ t.name }}<span class="n">{{ t.count }}</span></RouterLink>
-          </template>
-          <template v-if="meta.moods.length">
-            <span class="label">心情</span>
-            <RouterLink v-for="m in meta.moods" :key="m.id" class="tag" :to="toggle('mood', m.id)" :aria-current="query.mood === m.id ? 'true' : undefined">{{ m.label }}<span class="n">{{ m.count }}</span></RouterLink>
-          </template>
-        </div>
+        <Fold :show="active.length > 0">
+          <div class="moment-now" role="status" v-fx="'fade'">
+            <span v-for="f in active" :key="f.key" class="tag tag--rose"><span class="label">{{ f.kind }}</span>{{ f.label }}</span>
+            <RouterLink class="text-link" :to="to({ tag: '', mood: '' })">清除筛选</RouterLink>
+          </div>
+        </Fold>
 
-        <div v-if="pinned.length || items.length" class="timeline">
-          <div class="timeline__spine" v-fx="'spine'" aria-hidden="true" />
-          <MomentView v-for="m in pinned" :key="`pin${m.id}`" :moment="m" pinned />
-          <template v-for="g in groups" :key="g.key">
-            <div class="month-sep" :id="`m-${g.key}`" v-fx="'fade'"><span><Icon name="calendar" />{{ g.label }}</span></div>
-            <MomentView v-for="m in g.items" :key="m.id" :moment="m" />
-          </template>
-        </div>
-        <EmptyState v-else title="这里还没有动态" :text="filtered ? '换个筛选条件试试。' : '等我想到什么就来发。'">
-          <RouterLink v-if="filtered" class="btn btn--sm" to="/moments">看全部动态</RouterLink>
-        </EmptyState>
+        <SwapPane :k="listKey" :dir="dir">
+          <div v-if="pinned.length || items.length" class="timeline">
+            <div class="timeline__spine" v-fx="'spine'" aria-hidden="true" />
+            <MomentView v-for="m in pinned" :key="`pin${m.id}`" :moment="m" pinned />
+            <template v-for="g in groups" :key="g.key">
+              <div class="month-sep" :id="`m-${g.key}`" v-fx="'fade'"><span><Icon name="calendar" />{{ g.label }}</span></div>
+              <MomentView v-for="m in g.items" :key="m.id" :moment="m" />
+            </template>
+          </div>
+          <EmptyState v-else title="这里还没有动态" :text="filtered ? '换个筛选条件试试。' : '等我想到什么就来发。'">
+            <RouterLink v-if="filtered" class="btn btn--sm" to="/moments">看全部动态</RouterLink>
+          </EmptyState>
+        </SwapPane>
 
         <div ref="sentinel" class="moments-more">
-          <button v-if="cursor && !busy" v-fx="'fade'" class="btn" type="button" @click="more"><Icon name="arrow-d" />{{ failed ? '没加载出来，再试一次' : '加载更多' }}</button>
-          <p v-else-if="busy" role="status">正在加载……</p>
-          <p v-else-if="items.length > 3" class="moments-end">到底啦。</p>
+          <Transition name="tick" mode="out-in">
+            <button v-if="cursor && !busy" key="more" v-fx="'fade'" class="btn" type="button" @click="more"><Icon name="arrow-d" />{{ failed ? '没加载出来，再试一次' : '加载更多' }}</button>
+            <p v-else-if="busy" key="busy" role="status">正在加载……</p>
+            <p v-else-if="items.length > 3" key="end" class="moments-end">到底啦。</p>
+          </Transition>
         </div>
       </div>
     </div>

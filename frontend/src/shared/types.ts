@@ -175,9 +175,6 @@ export type HomeBlock =
   | { type: 'featured'; id: number | null; config: { title: string; mode: 'auto' | 'manual'; post_ids: number[]; count: number }; data: { posts: PostCard[] } }
   | { type: 'latest_posts'; id: number | null; config: { title: string; intro: string; count: number; layout: 'mixed' | 'list' | 'grid' }; data: { posts: PostCard[] } }
   | { type: 'latest_moments'; id: number | null; config: { title: string; intro: string; count: number }; data: { moments: Moment[] } }
-  | { type: 'shelf'; id: number | null; config: { title: string; intro: string; tag_count: number }; data: { categories: CategoryCount[]; tags: TagCount[] } }
-  | { type: 'about'; id: number | null; config: { title: string; intro: string; text: string[] }; data: { author: Author } }
-  | { type: 'now'; id: number | null; config: { title: string; items: { icon: string; text: string }[] }; data: Record<string, never> }
 export interface HomePayload { blocks: HomeBlock[]; site_version: number }
 
 /* ---- site ----------------------------------------------------------------------------------------------------------------- */

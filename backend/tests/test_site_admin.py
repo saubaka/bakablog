@@ -170,12 +170,10 @@ def block(api, kind):
 
 def test_default_home_layout(api):
     types = [b["type"] for b in api.get("/api/home").get_json()["blocks"]]
-    assert types == ["hero", "latest_posts", "latest_moments", "shelf", "about", "now"]  # notice and featured are off by default
+    assert types == ["hero", "latest_posts", "latest_moments"]  # notice and featured are off by default; the shelf, the about card and the now note are gone
     hero = block(api, "hero")
     assert [b["url"] for b in hero["config"]["buttons"]] == ["/blog", "/moments"]
     assert "title_lines" not in hero["config"] and "polaroid" not in hero["config"]   # the big title is the site's name now, and there is no photo card
-    about = block(api, "about")
-    assert about["data"]["author"]["name"] == defaults.AUTHOR_NAME and about["data"]["author"]["avatar"] is None
 
 
 def test_home_shows_latest_content(admin, api):
@@ -197,15 +195,15 @@ def test_home_customisation_validation_and_reset(admin, api, png):
     latest["config"]["title"] = "新标题"
     blocks.remove(latest)
     blocks.insert(0, latest)  # latest_posts first
-    blocks = [b for b in blocks if b["type"] != "shelf"]
+    blocks = [b for b in blocks if b["type"] != "latest_moments"]
     saved = admin.put(f"{A}/home", {"blocks": blocks})
     assert saved.status_code == 200 and saved.get_json()["customized"] is True
-    assert [b["type"] for b in api.get("/api/home").get_json()["blocks"]][:2] == ["latest_posts", "hero"] and block(api, "shelf") is None
+    assert [b["type"] for b in api.get("/api/home").get_json()["blocks"]][:2] == ["latest_posts", "hero"] and block(api, "latest_moments") is None
     assert block(api, "latest_posts")["config"]["title"] == "新标题"
     again = admin.get(f"{A}/home").get_json()
     assert again["customized"] is True and all(b["id"] for b in again["blocks"])
     reset = admin.post(f"{A}/home/reset", {}).get_json()
-    assert reset["customized"] is False and block(api, "shelf") is not None and block(api, "hero") is not None
+    assert reset["customized"] is False and block(api, "latest_moments") is not None and block(api, "hero") is not None
 
 
 @pytest.mark.parametrize("blocks,needle", [
@@ -216,8 +214,6 @@ def test_home_customisation_validation_and_reset(admin, api, png):
     ([{"type": "hero", "config": {"doodles": ["skull"]}}], "blocks.0.config.doodles.0"),
     ([{"type": "latest_posts", "config": {"count": 99}}], "blocks.0.config.count"),
     ([{"type": "latest_posts", "config": {"layout": "masonry"}}], "blocks.0.config.layout"),
-    ([{"type": "now", "config": {"items": [{"icon": "nope", "text": "x"}]}}], "blocks.0.config.items.0.icon"),
-    ([{"type": "about", "config": {"text": ["a"] * 9}}], "blocks.0.config.text"),
     ([{"type": "notice", "config": {"text": "x", "starts_at": "yesterday"}}], "blocks.0.config.starts_at"),
     ([{"type": "latest_posts", "config": {"colour": "pink"}}], "blocks.0.config.colour"),
 ])
@@ -227,8 +223,23 @@ def test_home_block_validation(admin, blocks, needle):
 
 
 def test_home_rejects_duplicates_and_unknown_types(admin):
-    assert admin.put(f"{A}/home", {"blocks": [{"type": "shelf"}, {"type": "shelf"}]}).get_json()["error"]["code"] == "duplicate"
+    assert admin.put(f"{A}/home", {"blocks": [{"type": "hero"}, {"type": "hero"}]}).get_json()["error"]["code"] == "duplicate"
     assert admin.put(f"{A}/home", {"blocks": [{"type": "comments"}]}).status_code == 422
+    for retired in ("shelf", "about", "now"):      # the modules that were taken off the home page cannot come back by a save either
+        assert admin.put(f"{A}/home", {"blocks": [{"type": retired}]}).status_code == 422
+
+
+def test_stored_rows_of_retired_modules_are_ignored(admin, api, app):
+    """A home page customised before the shelf, the about card and the now note were removed: those rows never show, never reach the editor, and the next save drops them."""
+    from app.db import session_scope
+    from app.models import HomeBlock
+    with session_scope(app) as session:
+        session.add_all([HomeBlock(type="hero", enabled=True, config={}, sort_order=0), HomeBlock(type="shelf", enabled=True, config={"title": "书架"}, sort_order=1),
+                         HomeBlock(type="about", enabled=True, config={"title": "关于我"}, sort_order=2), HomeBlock(type="now", enabled=True, config={"title": "近况"}, sort_order=3)])
+    assert [b["type"] for b in api.get("/api/home").get_json()["blocks"]] == ["hero"]
+    got = admin.get(f"{A}/home").get_json()
+    assert got["customized"] is True and [b["type"] for b in got["blocks"]] == ["hero"]
+    assert admin.put(f"{A}/home", {"blocks": [{"type": b["type"], "enabled": b["enabled"], "config": b["config"]} for b in got["blocks"]]}).status_code == 200
 
 
 def test_a_hero_stored_before_the_redesign_is_read_in_its_current_shape(admin, api, app):
@@ -303,16 +314,6 @@ def test_unsaved_layout_preview(admin, api):
     assert preview.get_json()["blocks"][0]["data"]["posts"][0]["title"] == "只是预览"
     assert block(api, "latest_posts")["config"]["title"] == "最近的文章"  # nothing was saved
     assert admin.post(f"{A}/home/preview", {"blocks": [{"type": "latest_posts", "config": {"count": 99}}]}).status_code == 422
-
-
-def test_shelf_shows_tag_cloud_sizes(admin, api):
-    for _ in range(4):
-        make_post(admin, f"热门{_}", tags=["大"])
-    for _ in range(2):
-        make_post(admin, f"中等{_}", tags=["中"])
-    make_post(admin, "冷门", tags=["小"])
-    tags = {t["name"]: t["size"] for t in block(api, "shelf")["data"]["tags"]}
-    assert tags == {"大": 3, "中": 2, "小": 1}
 
 
 # =====================================================================================================================================

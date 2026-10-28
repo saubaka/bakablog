@@ -6,18 +6,15 @@ import { fromLocalInput, toLocalInput } from '../../format'
 import type { AdminPostCard, ListPage } from '../../types'
 import AIcon from '../../ui/AIcon'
 import Field from '../../ui/Field.vue'
-import IconPicker from '../../ui/IconPicker.vue'
 import Segmented from '../../ui/Segmented.vue'
 import { DOODLES } from './blocks'
 
-type Cfg = Record<string, any>   // eslint-disable-line @typescript-eslint/no-explicit-any -- one form for eight shapes; the server validates each of them
+type Cfg = Record<string, any>   // eslint-disable-line @typescript-eslint/no-explicit-any -- one form for five shapes; the server validates each of them
 const props = defineProps<{ type: string; config: Cfg; errors: Record<string, string> }>()
 const err = (path: string): string | undefined => props.errors[path]
 
 const c = computed(() => props.config)
 const buttons = computed<{ label: string; url: string; style: string }[]>(() => c.value.buttons)
-const paras = computed<string[]>(() => c.value.text)
-const nowItems = computed<{ icon: string; text: string }[]>(() => c.value.items)
 function addButton(): void { if (c.value.buttons.length < 3) c.value.buttons.push({ label: '按钮', url: '/blog', style: 'line' }) }
 function toggleDoodle(name: string): void {
   const list: string[] = c.value.doodles
@@ -25,8 +22,6 @@ function toggleDoodle(name: string): void {
   if (at >= 0) list.splice(at, 1)
   else if (list.length < 3) list.push(name)
 }
-function addPara(): void { if (c.value.text.length < 4) c.value.text.push('') }
-function addNow(): void { if (c.value.items.length < 6) c.value.items.push({ icon: 'smile', text: '' }) }
 
 /* notice: the server wants UTC, the form shows local time */
 const startsAt = computed({ get: () => toLocalInput(c.value.starts_at), set: (v: string) => { c.value.starts_at = fromLocalInput(v) } })
@@ -102,42 +97,6 @@ const styles = [{ value: 'fill', label: '实心' }, { value: 'line', label: '描
       <Field v-slot="{ id }" label="标题" :error="err('title')"><input :id="id" v-model="c.title" class="input" maxlength="30"></Field>
       <Field v-slot="{ id }" label="数量" :error="err('count')" hint="1–8"><input :id="id" v-model.number="c.count" class="input" type="number" min="1" max="8"></Field>
       <Field v-slot="{ id }" label="一句话介绍" class="span-2" :error="err('intro')"><input :id="id" v-model="c.intro" class="input" maxlength="120"></Field>
-    </template>
-
-    <template v-else-if="type === 'shelf'">
-      <Field v-slot="{ id }" label="标题" :error="err('title')"><input :id="id" v-model="c.title" class="input" maxlength="30"></Field>
-      <Field v-slot="{ id }" label="显示的标签数" :error="err('tag_count')" hint="0–30，按文章数从多到少"><input :id="id" v-model.number="c.tag_count" class="input" type="number" min="0" max="30"></Field>
-      <Field v-slot="{ id }" label="一句话介绍" class="span-2" :error="err('intro')"><input :id="id" v-model="c.intro" class="input" maxlength="120"></Field>
-    </template>
-
-    <template v-else-if="type === 'about'">
-      <Field v-slot="{ id }" label="标题" :error="err('title')"><input :id="id" v-model="c.title" class="input" maxlength="30"></Field>
-      <Field v-slot="{ id }" label="一句话介绍" :error="err('intro')"><input :id="id" v-model="c.intro" class="input" maxlength="120"></Field>
-      <p class="span-2 adm-hint">头像、名字、简介和社交链接是作者资料，在 <RouterLink class="text-link" to="/appearance">外观与站点 → 作者</RouterLink> 里改；这里只管这一块的标题和正文。</p>
-      <div class="span-2 adm-sub">
-        <h3>正文（最多 4 段）</h3>
-        <div v-for="(_, i) in paras" :key="i" class="adm-lines__row">
-          <textarea v-model="paras[i]" class="textarea" rows="3" maxlength="400" :aria-label="`第 ${i + 1} 段`" />
-          <button class="icon-btn icon-btn--ghost" type="button" :aria-label="`删除第 ${i + 1} 段`" @click="c.text.splice(i, 1)"><AIcon name="a-trash" /></button>
-        </div>
-        <button v-if="c.text.length < 4" class="btn btn--sm btn--ghost" type="button" @click="addPara"><AIcon name="a-plus" />加一段</button>
-      </div>
-    </template>
-
-    <template v-else-if="type === 'now'">
-      <Field v-slot="{ id }" label="标题" class="span-2" :error="err('title')"><input :id="id" v-model="c.title" class="input" maxlength="20"></Field>
-      <div class="span-2 adm-sub">
-        <h3>便签条目（最多 6 条）</h3>
-        <div v-for="(it, i) in nowItems" :key="i" class="adm-nowrow">
-          <IconPicker v-model="it.icon" :label="`条目 ${i + 1} 的图标`" />
-          <div class="adm-lines__row">
-            <input v-model="it.text" class="input" maxlength="60" :aria-label="`条目 ${i + 1} 的文字`" placeholder="例如：正在读《……》">
-            <button class="icon-btn icon-btn--ghost" type="button" :aria-label="`删除条目 ${i + 1}`" @click="c.items.splice(i, 1)"><AIcon name="a-trash" /></button>
-          </div>
-          <small v-if="err(`items.${i}.text`)" class="adm-field__error" role="alert">{{ err(`items.${i}.text`) }}</small>
-        </div>
-        <button v-if="c.items.length < 6" class="btn btn--sm btn--ghost" type="button" @click="addNow"><AIcon name="a-plus" />加一条</button>
-      </div>
     </template>
   </div>
 </template>

@@ -6,7 +6,6 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app import defaults
 from app.timeutil import iso, parse_iso
 
 
@@ -55,40 +54,6 @@ class LatestMoments(_M):
     count: int = Field(default=3, ge=1, le=8)
 
 
-class Shelf(_M):
-    title: str = Field(default="书架", max_length=30)
-    intro: str = Field(default="", max_length=120)
-    tag_count: int = Field(default=14, ge=0, le=30)
-
-
-class About(_M):
-    title: str = Field(default="关于我", max_length=30)
-    intro: str = Field(default="", max_length=120)
-    text: list[str] = Field(default_factory=list, max_length=4)
-
-    @field_validator("text")
-    @classmethod
-    def _t(cls, v: list[str]) -> list[str]:
-        return [p.strip()[:400] for p in v if p.strip()]
-
-
-class NowItem(_M):
-    icon: str
-    text: str = Field(min_length=1, max_length=60)
-
-    @field_validator("icon")
-    @classmethod
-    def _i(cls, v: str) -> str:
-        if v not in defaults.ICONS:
-            raise ValueError("没有这个图标")
-        return v
-
-
-class Now(_M):
-    title: str = Field(default="近况", max_length=20)
-    items: list[NowItem] = Field(default_factory=list, max_length=6)
-
-
 class Notice(_M):
     text: str = Field(default="", max_length=160)
     starts_at: str | None = None
@@ -106,13 +71,12 @@ class Notice(_M):
 
 
 CONFIG_MODELS: dict[str, type[_M]] = {
-    "hero": Hero, "featured": Featured, "latest_posts": LatestPosts, "latest_moments": LatestMoments, "shelf": Shelf, "about": About,
-    "now": Now, "notice": Notice,
+    "hero": Hero, "featured": Featured, "latest_posts": LatestPosts, "latest_moments": LatestMoments, "notice": Notice,
 }
 
 
 class BlockIn(_M):
-    type: Literal["hero", "featured", "latest_posts", "latest_moments", "shelf", "about", "now", "notice"]
+    type: Literal["hero", "featured", "latest_posts", "latest_moments", "notice"]
     enabled: bool = True
     config: dict = Field(default_factory=dict)
 

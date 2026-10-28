@@ -210,9 +210,11 @@ await main(async (browser) => {
     await page.waitForSelector('.lightbox')
     const c1 = await page.locator('.lightbox__bar span').innerText()
     await page.keyboard.press('ArrowRight')
+    await page.waitForFunction((was) => document.querySelector('.lightbox__bar span')?.innerText !== was, c1, { timeout: 2000 }).catch(() => undefined)   // the old count leaves first
     const c2 = await page.locator('.lightbox__bar span').innerText()
     await check('lightbox moves to the next picture', c1 !== c2, `${c1} → ${c2}`)
     await page.keyboard.press('Escape')
+    await page.waitForSelector('.lightbox', { state: 'detached', timeout: 2000 }).catch(() => undefined)   // it fades out first
     await check('lightbox closes', (await page.locator('.lightbox').count()) === 0)
     await check('focus returns to the picture', page.evaluate(() => document.activeElement?.tagName === 'IMG'))
   })
@@ -256,19 +258,27 @@ await main(async (browser) => {
     await check('empty state', (await page.locator('.empty strong').first().innerText()).includes('没有找到'))
   })
 
-  await flow(browser, 'blog controls: category tab, tag chip, sort, view toggle, pager, live search field', 'blog', desktop, async ({ page, check }) => {
+  await flow(browser, 'blog controls: category tab, no tag chips, sort drop-down, view toggle, pager, live search field', 'blog', desktop, async ({ page, check }) => {
+    await check('no tag chips above the list', (await page.locator('.filters__tags').count()) === 0)
+    const pick = async (label) => { await page.click('.dd__btn'); await page.waitForSelector('.dd__list [role="option"]'); await page.click(`.dd__list [role="option"]:has-text("${label}")`) }
     await page.click('.tabs a.tab >> nth=1')
     await waitPath(page, /^\/category\//)
     await check('category page keeps the controls', (await page.locator('.filters').count()) === 1)
     await check('tab is current', (await page.locator('.tabs [aria-current]').count()) === 1)
     await page.click('.tabs a.tab >> nth=0')
     await waitPath(page, /^\/blog$/)
-    await page.selectOption('select.select', 'old')
+    const firstTitle = () => page.locator('main h2.card__title').first().innerText()
+    const newestFirst = await firstTitle()
+    const titleChanged = (was) => page.waitForFunction((t) => document.querySelector('main h2.card__title')?.innerText !== t, was, { timeout: 4000 }).catch(() => undefined)   // the old list leaves, then the new one comes in
+    await pick('最早优先')
     await waitPath(page, /sort=old/)
-    const oldest = await page.locator('main h2.card__title').first().innerText()
-    await page.selectOption('select.select', 'new')
+    await titleChanged(newestFirst)
+    await check('the drop-down shows the choice', (await page.locator('.dd__btn').innerText()).includes('最早优先'))
+    const oldest = await firstTitle()
+    await pick('最新优先')
     await waitPath(page, /^\/blog$/)
-    const newest = await page.locator('main h2.card__title').first().innerText()
+    await titleChanged(oldest)
+    const newest = await firstTitle()
     await check('sort changes the order', oldest !== newest)
     await page.click('.viewtoggle button[aria-label="列表"]')
     await page.waitForSelector('.postrow')
@@ -285,18 +295,22 @@ await main(async (browser) => {
     await check('live search narrows the list', (await page.locator('main .card').count()) >= 1 && (await page.locator('main .card').count()) < 9)
   })
 
-  await flow(browser, 'moments: tag filter, month filter, picture viewer, link card opens in a new tab safely', 'moments', desktop, async ({ page, check }) => {
-    await page.click('.moment-filters a:has-text("CSS")')
+  await flow(browser, 'moments: no tag list above the timeline, tag filter from a moment, month filter, picture viewer, link card opens in a new tab safely', 'moments', desktop, async ({ page, check }) => {
+    await check('no list of tags or moods above the timeline', (await page.locator('.moment-filters').count()) === 0)
+    await page.click('article.moment a.tag:has-text("CSS") >> nth=0')
     await waitPath(page, /tag=css/)
-    await sleep(400)
+    await page.waitForFunction(() => document.querySelector('.moment-now')?.innerText.includes('CSS'), null, { timeout: 2000 }).catch(() => undefined)   // it opens (fades in) first
+    await check('a chip says which filter is on', (await page.locator('.moment-now').innerText()).includes('CSS'))
+    await sleep(900)
     const filtered = await page.locator('article.moment').count()
     await check('filtered list is shorter', filtered >= 1 && filtered < 5, String(filtered))
     await page.click('.month-nav a:has-text("全部")')
     await sleep(300)
     await check('"all months" keeps the tag filter', decodeURIComponent(await path(page)) === '/moments?tag=css')
-    await page.click('.moment-filters a:has-text("全部")')
+    await page.click('.moment-now a:has-text("清除筛选")')
     await waitPath(page, /^\/moments$/)
-    await sleep(300)
+    await page.waitForSelector('.moment-now', { state: 'detached', timeout: 2000 })
+    await sleep(600)
     await page.locator('.moment__imgs button').first().click()
     await page.waitForSelector('.lightbox')
     await page.keyboard.press('Escape')

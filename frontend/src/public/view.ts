@@ -6,6 +6,8 @@
    it finds. The app therefore scrolls the moment the new page is inserted (`applyPendingScroll`, called from the transition's
    `enter` hook), not after the cross-fade like the router's own scroll step. */
 
+import { holdProgress } from './progress'
+
 let swapped = false
 let pending: { left: number; top: number } | null = null
 
@@ -27,6 +29,7 @@ let ready: Promise<void> | null = null
 export function pageSwapped(value?: boolean): boolean {
   if (value !== undefined) {
     swapped = value
+    if (value) holdProgress(true)
     if (value && !ready) ready = new Promise<void>((resolve) => { resolveReady = resolve })
     if (!value) notifyPageReady()
   }
@@ -42,6 +45,7 @@ export function whenPageReady(): Promise<void> {
 
 export function notifyPageReady(): void {
   swapped = false
+  holdProgress(false)
   resolveReady?.()
   ready = null
   resolveReady = null

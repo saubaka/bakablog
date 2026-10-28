@@ -36,7 +36,9 @@ ICONS = (
     "calendar", "clock", "tag", "folder", "copy", "check", "image", "star", "pin", "external", "list", "bulb", "alert",
     "heart", "quote", "code", "mail", "info", "sliders", "sparkle", "grid", "rows", "moon",
 )
-HOME_BLOCK_TYPES = ("hero", "featured", "latest_posts", "latest_moments", "shelf", "about", "now", "notice")
+HOME_BLOCK_TYPES = ("hero", "featured", "latest_posts", "latest_moments", "notice")
+# modules the home page used to have (the shelf, the "about me" card and its "now" note, removed 2026-10-28): a stored row of one of these types is ignored, never shown or saved again
+RETIRED_HOME_BLOCKS = ("shelf", "about", "now")
 NAV_REGIONS = ("top", "mobile", "footer")
 NAV_KINDS = ("route", "page", "category", "tag", "series", "link", "action")
 NAV_ACTIONS = ("search", "more", "top")
@@ -105,25 +107,6 @@ DEFAULT_HOME_BLOCKS: list[dict] = [
     }},
     {"type": "latest_moments", "enabled": True, "config": {
         "title": "最近的动态", "intro": "碎碎念、照片、链接，想到什么发什么。", "count": 3,
-    }},
-    {"type": "shelf", "enabled": True, "config": {
-        "title": "书架", "intro": "按分类和标签翻一翻，找旧东西也方便。", "tag_count": 14,
-    }},
-    {"type": "about", "enabled": True, "config": {
-        "title": "关于我", "intro": "不是笨蛋，只是比较慢。",
-        "text": [
-            AUTHOR_BIO,
-            "站名里的 Baka 是日语里的“笨蛋”。别人这么叫我的时候我会生气，自己这么叫的时候不会。",
-        ],
-    }},
-    {"type": "now", "enabled": True, "config": {
-        "title": "近况",
-        "items": [
-            {"icon": "code", "text": "在做：重写这个博客"},
-            {"icon": "book", "text": "在读：一本讲 SQLite 内部的小册子"},
-            {"icon": "heart", "text": "在听：下雨的声音"},
-            {"icon": "smile", "text": "在想：晚饭吃什么"},
-        ],
     }},
 ]
 

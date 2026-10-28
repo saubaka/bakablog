@@ -1,5 +1,5 @@
 import { chase, type Chase } from '@/fx/math'
-import { onFrame } from '@/shared/frame'
+import { onFrame, wake } from '@/shared/frame'
 
 /* How much of the page has been read, 0..1, for everything that shows it (the thread menu's stitch, the back-to-top ring).
    One job in the shared frame loop reads the scroll position once per frame and lets the shown value chase it softly: a progress indicator that
@@ -20,13 +20,30 @@ const state: ReadProgress = { raw: 0, shown: 0, scrollY: 0 }
 const c: Chase = { x: 0, v: 0 }
 let stopJob: (() => void) | null = null
 let fresh = true
+let held = false
+let heldTimer = 0
+
+/** What the menu reads each frame (the numbers `trackProgress` listeners get, without being one). */
+export const progressNow = (): ReadProgress => state
+
+/** While a page is being swapped, the page that is shown is the new one and starts at its beginning: the progress is 0 until it has been put there (the old page's value must
+    not be chased down from wherever it was: the menu would draw a thread under the new bead that is not there). Lets go by itself after a second and a half at the latest. */
+export function holdProgress(on: boolean): void {
+  window.clearTimeout(heldTimer)
+  const was = held
+  held = on
+  if (on) { c.x = 0; c.v = 0; state.shown = 0; heldTimer = window.setTimeout(() => holdProgress(false), 1500) }   // at once: the next read must already see 0
+  else if (was) fresh = true
+  wake()
+}
 
 function start(): void {
   stopJob = onFrame((_now, dt) => {
     const room = document.documentElement.scrollHeight - window.innerHeight
     const sy = window.scrollY
     const raw = room > 24 ? Math.min(1, Math.max(0, sy / room)) : 0
-    if (fresh) { c.x = raw; c.v = 0; fresh = false }
+    if (held) { c.x = 0; c.v = 0 }
+    else if (fresh) { c.x = raw; c.v = 0; fresh = false }
     else chase(c, raw, dt)
     return () => {
       state.raw = raw

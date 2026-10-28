@@ -49,19 +49,26 @@ const scrollBehavior: RouterScrollBehavior = async (to, from, saved) => {
 
 let controller: AbortController | null = null
 let appRouter: Router | null = null
-/** Pages that were asked for ahead of time (the page-turn gesture asks while the push is under way) and are still fresh. */
+/** Pages that were asked for ahead of time (the menu's neighbours when the browser is idle, the entry a visitor points at or pushes towards) and are still fresh. */
 const warm = new Map<string, { at: number; result: Promise<PageState | Redirect> }>()
-const WARM_MS = 20_000
+const WARM_MS = 60_000
 
 /** Start fetching what opening `path` will need, so that when the visitor really goes there the answer is already in. Costs one request; failures are ignored here
-    (the real navigation asks again). */
-export function warmRoute(path: string): void {
-  if (!appRouter) return
+    (the real navigation asks again). Resolves when the answer is in (or could not be had): a page change that must not stall waits for it before it starts to move. */
+export function warmRoute(path: string): Promise<void> {
+  if (!appRouter) return Promise.resolve()
   const hit = warm.get(path)
-  if (hit && Date.now() - hit.at < WARM_MS) return
+  if (hit && Date.now() - hit.at < WARM_MS) return hit.result.then(() => undefined, () => undefined)
   const result = loadRoute(appRouter.resolve(path) as unknown as RouteLocationNormalized, new AbortController().signal, null)
   result.catch(() => { warm.delete(path) })
   warm.set(path, { at: Date.now(), result })
+  return result.then(() => undefined, () => undefined)
+}
+
+/** Is the answer for `path` already being fetched or in (so asking again would cost nothing)? */
+export const isWarm = (path: string): boolean => {
+  const hit = warm.get(path)
+  return !!hit && Date.now() - hit.at < WARM_MS
 }
 let loadingTimer = 0
 let firstView = true

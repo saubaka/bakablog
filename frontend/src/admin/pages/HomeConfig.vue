@@ -88,7 +88,7 @@ const tabs = [{ value: 'edit' as const, label: '编辑' }, { value: 'view' as co
 
 <template>
   <div>
-    <PageHead title="首页配置" sub="首页由 8 个模块组成：拖动调整顺序，开关决定显不显示。右边是未保存也能看到的预览。">
+    <PageHead title="首页配置" sub="首页由 5 个模块组成：拖动调整顺序，开关决定显不显示。右边是未保存也能看到的预览。">
       <button class="btn btn--ghost" type="button" :disabled="!customized" @click="reset">恢复默认</button>
       <button class="btn btn--fill" type="button" :disabled="busy || !dirty" @click="save"><AIcon name="a-save" />保存首页</button>
     </PageHead>

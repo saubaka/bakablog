@@ -16,21 +16,6 @@
   },
   "views_series": [
     {
-      "day": "2026-10-19",
-      "views": 0,
-      "uniques": 0
-    },
-    {
-      "day": "2026-10-20",
-      "views": 0,
-      "uniques": 0
-    },
-    {
-      "day": "2026-10-21",
-      "views": 0,
-      "uniques": 0
-    },
-    {
       "day": "2026-10-22",
       "views": 0,
       "uniques": 0
@@ -47,6 +32,21 @@
     },
     {
       "day": "2026-10-25",
+      "views": 0,
+      "uniques": 0
+    },
+    {
+      "day": "2026-10-26",
+      "views": 0,
+      "uniques": 0
+    },
+    {
+      "day": "2026-10-27",
+      "views": 0,
+      "uniques": 0
+    },
+    {
+      "day": "2026-10-28",
       "views": 0,
       "uniques": 0
     }
@@ -85,7 +85,7 @@
   ],
   "recent": [
     {
-      "at": "2026-10-25T14:42:15Z",
+      "at": "2026-10-28T08:35:54Z",
       "action": "auth.login",
       "actor": "sample_owner",
       "target_type": "session",
@@ -95,7 +95,7 @@
       }
     },
     {
-      "at": "2026-10-25T14:42:15Z",
+      "at": "2026-10-28T08:35:54Z",
       "action": "auth.setup",
       "actor": "sample_owner",
       "target_type": "user",
@@ -105,7 +105,7 @@
       }
     },
     {
-      "at": "2026-10-25T14:42:15Z",
+      "at": "2026-10-28T08:35:54Z",
       "action": "moment.create",
       "actor": "system",
       "target_type": "moment",
@@ -115,7 +115,7 @@
       }
     },
     {
-      "at": "2026-10-25T14:42:15Z",
+      "at": "2026-10-28T08:35:54Z",
       "action": "moment.create",
       "actor": "system",
       "target_type": "moment",
@@ -125,7 +125,7 @@
       }
     },
     {
-      "at": "2026-10-25T14:42:15Z",
+      "at": "2026-10-28T08:35:54Z",
       "action": "moment.create",
       "actor": "system",
       "target_type": "moment",
@@ -135,7 +135,7 @@
       }
     },
     {
-      "at": "2026-10-25T14:42:15Z",
+      "at": "2026-10-28T08:35:54Z",
       "action": "moment.create",
       "actor": "system",
       "target_type": "moment",
@@ -145,7 +145,7 @@
       }
     },
     {
-      "at": "2026-10-25T14:42:15Z",
+      "at": "2026-10-28T08:35:54Z",
       "action": "moment.create",
       "actor": "system",
       "target_type": "moment",
@@ -155,7 +155,7 @@
       }
     },
     {
-      "at": "2026-10-25T14:42:15Z",
+      "at": "2026-10-28T08:35:54Z",
       "action": "moment.create",
       "actor": "system",
       "target_type": "moment",
@@ -165,7 +165,7 @@
       }
     },
     {
-      "at": "2026-10-25T14:42:15Z",
+      "at": "2026-10-28T08:35:54Z",
       "action": "moment.create",
       "actor": "system",
       "target_type": "moment",
@@ -175,7 +175,7 @@
       }
     },
     {
-      "at": "2026-10-25T14:42:15Z",
+      "at": "2026-10-28T08:35:54Z",
       "action": "moment.create",
       "actor": "system",
       "target_type": "moment",
@@ -186,10 +186,10 @@
     }
   ],
   "health": {
-    "version": "0.5.1",
+    "version": "0.6.0",
     "build": "dev",
     "db_bytes": 791048,
-    "disk_free": 222696210432,
+    "disk_free": 224403263488,
     "last_backup": null,
     "schema_ok": true
   }

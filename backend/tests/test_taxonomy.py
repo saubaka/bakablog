@@ -60,16 +60,15 @@ def test_category_counts_split_public_and_admin(admin, api):
     assert [c["count"] for c in api.get("/api/taxonomy").get_json()["categories"]] == [1]
 
 
-def test_empty_categories_are_not_shown_publicly_and_the_shelf_switch_works(admin, api):
+def test_empty_categories_are_not_shown_publicly_and_the_tab_switch_works(admin, api):
     a = admin.post(f"{T}/categories", {"name": "有文章"}).get_json()
     admin.post(f"{T}/categories", {"name": "没文章"})
     make_post(admin, "x", category_id=a["id"])
     cats = api.get("/api/taxonomy").get_json()["categories"]
     assert [c["name"] for c in cats] == ["有文章"] and cats[0]["show_on_shelf"] is True
-    shelf = lambda: next(b for b in api.get("/api/home").get_json()["blocks"] if b["type"] == "shelf")["data"]["categories"]  # noqa: E731
-    assert [c["name"] for c in shelf()] == ["有文章"]
-    admin.patch(f"{T}/categories/{a['id']}", {"show_on_shelf": False})
-    assert shelf() == [] and [c["name"] for c in api.get("/api/taxonomy").get_json()["categories"]] == ["有文章"]
+    admin.patch(f"{T}/categories/{a['id']}", {"show_on_shelf": False})      # ("on the shelf" is the old name of "has a tab on the blog page"; the field kept it)
+    cats = api.get("/api/taxonomy").get_json()["categories"]
+    assert [c["name"] for c in cats] == ["有文章"] and cats[0]["show_on_shelf"] is False
 
 
 # ---- tags ---------------------------------------------------------------------------------------------------------------------------

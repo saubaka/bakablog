@@ -33,7 +33,7 @@ describe('API samples match the front end types', () => {
     expect(_site.moods.length).toBe(10)
   })
   it('home blocks are the known types, in order', () => {
-    const known = ['hero', 'notice', 'featured', 'latest_posts', 'latest_moments', 'shelf', 'about', 'now']
+    const known = ['hero', 'notice', 'featured', 'latest_posts', 'latest_moments']
     for (const b of _home.blocks) expect(known).toContain(b.type)
     expect(_home.blocks[0]?.type).toBe('hero')
   })

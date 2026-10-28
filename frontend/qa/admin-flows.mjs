@@ -272,7 +272,7 @@ try {
   })
   await step('home: switch a module off and move another with the keyboard; the saved public home follows both', async () => {
     const { ctx, page } = await openAdmin(browser, '/home', 1440)
-    await page.locator('.adm-navrow', { hasText: '书架' }).getByRole('switch').uncheck({ force: true })
+    await page.locator('.adm-navrow', { hasText: '首屏名片' }).getByRole('switch').uncheck({ force: true })
     const before = await page.locator('.adm-navrow .adm-sortrow__main b').allInnerTexts()
     await page.getByRole('button', { name: '拖动调整「最近的动态」的位置' }).focus()
     await page.keyboard.press('ArrowUp')
@@ -283,7 +283,7 @@ try {
     await page.getByRole('button', { name: '保存首页' }).click()
     await toast(page, '首页已保存')
     const types = (await apiGet(ctx, '/home')).blocks.map((b) => b.type)
-    expect(!types.includes('shelf'), 'shelf still on the public home')
+    expect(!types.includes('hero'), 'the hero is still on the public home')
     expect(types.indexOf('latest_moments') < types.indexOf('latest_posts'), `public order ${types.join(',')}`)
     await page.getByRole('button', { name: '恢复默认' }).click()
     await page.getByRole('dialog').getByRole('button', { name: '恢复默认' }).click()

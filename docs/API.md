@@ -37,7 +37,7 @@
 |---|---|---|
 | `GET /api/health` | 版本、构建号、`site_version`、时间 | 不缓存 |
 | `GET /api/site` | 站点名、简介、作者、主题、动效默认值、导航（顶栏 / 手机底栏 / 页脚）、页脚、404 文案、心情词表 | [样例](api-samples/site.json) |
-| `GET /api/home` | 首页模块（已启用、按顺序）及各自的数据，一次返回 | 模块：`hero featured latest_posts latest_moments shelf about now notice` · [样例](api-samples/home.json) |
+| `GET /api/home` | 首页模块（已启用、按顺序）及各自的数据，一次返回 | 模块：`hero featured latest_posts latest_moments notice` · [样例](api-samples/home.json) |
 | `GET /api/posts` | 文章列表 | `page per(1–30) category tag series q sort(new/old/views)`；有 `series` 时按系列顺序；有 `q` 时按相关度并带 `snippet` · [样例](api-samples/posts.json) |
 | `GET /api/posts/{slug}` | 文章：正文 HTML、目录、上下篇、相关文章、系列导航、SEO | `?preview=<令牌>` 看草稿（`no-store` + `noindex`）；改过别名的旧地址返回 `404` + `code: "moved"` + `location` · [样例](api-samples/post.json) |
 | `GET /api/archive` | 按年 / 月分组 | [样例](api-samples/archive.json) |

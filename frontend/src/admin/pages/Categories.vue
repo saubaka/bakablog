@@ -82,7 +82,7 @@ void confirm
         <button class="adm-grip" type="button" :aria-label="`拖动调整「${c.name}」的顺序`" v-bind="sort.handle(i)"><AIcon name="a-grip" /></button>
         <span class="adm-sortrow__ico"><AIcon :name="c.sticker || 'folder'" /></span>
         <span class="adm-sortrow__main"><b>{{ c.name }}</b><small>/category/{{ c.slug }} · {{ c.count }} 篇<template v-if="c.public_count !== c.count">（公开 {{ c.public_count }}）</template></small></span>
-        <label class="switch adm-sortrow__switch" :title="c.show_on_shelf ? '首页书架上显示' : '首页书架上不显示'"><input type="checkbox" role="switch" :checked="c.show_on_shelf" :aria-label="`「${c.name}」出现在首页书架`" @change="toggleShelf(c)"><span class="switch__track" aria-hidden="true" /><span class="adm-sortrow__swl">书架</span></label>
+        <label class="switch adm-sortrow__switch" :title="c.show_on_shelf ? '博客页的分类页签上显示' : '博客页的分类页签上不显示'"><input type="checkbox" role="switch" :checked="c.show_on_shelf" :aria-label="`「${c.name}」出现在首页书架`" @change="toggleShelf(c)"><span class="switch__track" aria-hidden="true" /><span class="adm-sortrow__swl">书架</span></label>
         <button class="btn btn--sm btn--ghost" type="button" @click="open(c)"><AIcon name="a-edit" />编辑</button>
         <button class="icon-btn icon-btn--ghost" type="button" :aria-label="`删除「${c.name}」`" @click="ask(c)"><AIcon name="a-trash" /></button>
       </li>
@@ -95,7 +95,7 @@ void confirm
         <Field v-slot="{ id }" label="别名" :error="fields.slug" hint="网址的一部分，留空自动生成。改了别名，旧地址会自动跳到新地址。"><input :id="id" v-model="form.slug" class="input" spellcheck="false"></Field>
         <Field v-slot="{ id }" label="说明" :error="fields.description" hint="显示在分类页的标题下面。"><textarea :id="id" v-model="form.description" class="textarea" rows="2" maxlength="500" /></Field>
         <Field label="贴纸图标"><IconPicker v-model="form.sticker" label="分类图标" /></Field>
-        <SwitchField v-model="form.show_on_shelf" label="出现在首页的“书架”里" />
+        <SwitchField v-model="form.show_on_shelf" label="出现在博客页的分类页签里" />
       </form>
       <template #footer><button class="btn btn--ghost" type="button" @click="editing = null">取消</button><button class="btn btn--fill" type="button" :disabled="busy || !form.name.trim()" @click="save">保存</button></template>
     </Modal>

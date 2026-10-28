@@ -2,7 +2,7 @@
 import { PAGES, launch, open, main } from './common.mjs'
 import { scanLines } from './scans.mjs'
 
-const FLOATING = '.sheet, .toast, dialog, .tabbar, .lightbox, .scrim, .searchbox'
+const FLOATING = '.sheet, .toast, dialog, .tabbar, .lightbox, .scrim, .searchbox, .dd__list'
 
 await main(async (browser) => {
   let bad = 0

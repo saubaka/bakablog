@@ -1,8 +1,10 @@
 /* Turning the page by scrolling past its edge.
    At the very bottom of a page, keep pushing and the next entry of the menu opens; at the very top, keep pushing and the previous one does. Nothing before the first entry and
    nothing after the last. The page itself is the thing being pushed: it follows the finger / wheel like a stretched rubber band (it slows down and never goes far), a hint shows
-   where the push leads (the heart bead of the menu leans towards that entry; there is no label or card on the screen). Let go early and it springs back; push far enough and it is thrown off the screen, the next page
-   is already on its way (it was asked for while the push was under way) and rises from the other side with a little weight. All of it is spring physics (shared/spring.ts):
+   where the push leads (the heart bead of the menu leans towards that entry; there is no label or card on the screen). Let go early and it springs back; push far enough and the heart and
+   the pink thread of the menu start for the new entry AT ONCE, the page is thrown off the screen and the next one rises from the other side with a little weight. Its data is
+   fetched beforehand (public/prefetch.ts asks for the menu's neighbours when the browser is idle) and is waited for while the old page leaves; only when it is still not in (a cold
+   cache, a slow line) the page stays where the hand left it, alive, and leaves the moment it is. The tail of the push (trackpad momentum) is swallowed. All of it is spring physics (shared/spring.ts):
    the speed of the hand is kept, and nothing has a fixed duration.
 
    A push only counts when it starts at the edge: a wheel / trackpad burst that happened to scroll the page to its end (including its momentum) is an ordinary scroll, the next
@@ -11,13 +13,12 @@
 import { ref } from 'vue'
 import type { Router } from 'vue-router'
 import { rubber, spring, unrubber, type SpringRun } from '@/shared/spring'
-import type { NavItem } from '@/shared/types'
 import { lightbox } from './lightbox'
+import { activeMenu } from './menu'
 import { adjacentLink } from './nav'
 import { warmRoute } from './router'
-import { site } from './state'
+import { setLean, setPending } from './threadstate'
 import { moreOpen, searchOpen } from './ui'
-import { TABLET } from './viewport'
 
 /** True from the moment a page is let go until the new one has settled: the router swaps pages at once then (the page itself is already out of sight). */
 export const turning = ref(false)
@@ -27,6 +28,7 @@ const LIMIT = 120         // the most the page is ever pulled out of its place
 const WHEEL_GAIN = 0.85   // push per px of wheel travel
 const GAP = 90            // ms without a wheel event: the next one starts a new push
 const RELEASE = 260       // ms without a wheel event: the push is over, let go
+const HOLD_MAX = 2600     // ms the page waits where it was left for the next one's data (when it is not in yet) before it leaves anyway
 const TOUCH_SLACK = 6     // px of finger travel before it counts as a push
 
 let stage: HTMLElement | null = null
@@ -37,14 +39,15 @@ let run: SpringRun | null = null
 let busy = false
 let armed = false
 let lastWheel = -1e9
+let turnedAt = -1e9       // when the last page turn ended (performance.now)
 let releaseTimer = 0
 let finger: { y0: number; atTop: boolean; atBottom: boolean; active: boolean; dir: 1 | -1; y: number; t: number; v: number } | null = null
 
 const root = typeof document !== 'undefined' ? document.documentElement : (null as unknown as HTMLElement)
 const atTop = (): boolean => window.scrollY <= 0
 const atBottom = (): boolean => window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 1
-const menu = (): NavItem[] => (window.matchMedia(`(max-width: ${TABLET}px)`).matches ? site.value.nav.mobile : site.value.nav.top)
-const neighbour = (dir: 1 | -1): ReturnType<typeof adjacentLink> => (router ? adjacentLink(menu(), router.currentRoute.value.path, dir) : null)
+const neighbour = (dir: 1 | -1): ReturnType<typeof adjacentLink> => (router ? adjacentLink(activeMenu(), router.currentRoute.value.path, dir) : null)
+const delay = (ms: number): Promise<void> => new Promise((resolve) => { window.setTimeout(resolve, ms) })
 
 function allowed(): boolean {
   if (busy || !stage || !router) return false
@@ -82,13 +85,10 @@ function show(): void {
   const dir = raw > 0 ? 1 : raw < 0 ? -1 : 0
   const n = dir ? neighbour(dir) : null
   const progress = Math.min(Math.abs(raw) / THRESHOLD, 1)
-  // the heart bead of the menu leans towards the entry the push leads to
-  const lean = n ? dir * progress * 0.6 * Math.abs(n.index - n.from) : 0
-  root.style.setProperty('--pull-nav', lean.toFixed(3))
+  setLean(n ? { url: n.item.url, amount: progress * 0.6 } : null)          // the heart of the menu leans towards the entry the push leads to
   root.classList.toggle('is-pulling', dir !== 0)
-  root.removeAttribute('data-pull')
   place(visual())
-  if (n && progress > 0.3) warmRoute(n.item.url)
+  if (n && progress > 0.3) void warmRoute(n.item.url)
 }
 
 /** Let go without turning: the page and the heart spring back, keeping the speed of the hand. */
@@ -97,19 +97,19 @@ function snapBack(velocity = 0): void {
   const from = curY
   raw = 0
   armed = false
-  root.dataset.pull = 'back'
-  root.style.setProperty('--pull-nav', '0')
+  setLean(null)
   run?.stop()
   run = spring(from, 0, (y) => { place(y) }, { stiffness: 280, damping: 26, velocity })
   void run.done.then(() => {
     if (busy) return
     place(0)
     root.classList.remove('is-pulling')
-    root.removeAttribute('data-pull')
   })
 }
 
-/** Far enough: throw the page off the screen, open the next one while it is out of sight, bring that one up from the other side. */
+/** Far enough: the heart and the thread of the menu start for the new entry at once; the page is thrown off the screen, opened while it is out of sight, and the new one comes
+    up from the other side. The next page's data is asked for as early as possible and waited for *while* the old page leaves, so nothing stalls: if it is not in yet (the first
+    seconds after the page opened, a slow line) the page stays where the hand left it, still alive, and leaves the moment the answer is in. */
 async function turn(dir: 1 | -1, velocity = 0): Promise<void> {
   const n = neighbour(dir)
   if (!n || !router) { snapBack(velocity); return }
@@ -117,15 +117,24 @@ async function turn(dir: 1 | -1, velocity = 0): Promise<void> {
   busy = true
   turning.value = true
   root.classList.add('is-turning')
-  root.removeAttribute('data-pull')
-  warmRoute(n.item.url)
+  setLean(null)
+  setPending(n.item.url)
+  const ready = warmRoute(n.item.url)
   const vh = window.innerHeight
   run?.stop()
-  run = spring(curY, -dir * (vh + 60), (y) => { place(y); return Math.abs(y) >= vh }, { stiffness: 170, damping: 30, velocity: -dir * Math.max(Math.abs(velocity), 700) })
+  let hand = velocity
+  const early = await Promise.race([ready.then(() => true), delay(80).then(() => false)])
+  if (!early) {
+    run = spring(curY, -dir * LIMIT * 0.8, (y) => { place(y) }, { stiffness: 200, damping: 26, velocity })
+    hand = 0
+    await Promise.race([ready, delay(HOLD_MAX)])
+    run.stop()
+  }
+  run = spring(curY, -dir * (vh + 60), (y) => { place(y); return Math.abs(y) >= vh }, { stiffness: 170, damping: 30, velocity: -dir * Math.max(Math.abs(hand), 700) })
   await run.done
   try { await router.push(n.item.url) } catch { /* the page that opens reports its own trouble */ }
   await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))   // the new page is in the document now, hidden
-  root.style.setProperty('--pull-nav', '0')
+  setPending(null)
   const from = dir * vh * 0.55
   place(from)
   run = spring(from, 0, (y) => { place(y) }, { stiffness: 190, damping: 23 })
@@ -136,11 +145,19 @@ async function turn(dir: 1 | -1, velocity = 0): Promise<void> {
   raw = 0
   armed = false
   busy = false
+  turnedAt = performance.now()
 }
 
 /* ---- wheel and trackpad -------------------------------------------------------------------------------------------------------------- */
 function onWheel(e: WheelEvent): void {
-  if (e.ctrlKey || e.metaKey || !allowed()) return
+  if (e.ctrlKey || e.metaKey) return
+  // the rest of the push that turned the page (the finger lifts, the trackpad keeps going for a moment) must not carry on into the page that has just arrived: swallowed
+  if (busy || (e.timeStamp - turnedAt < 450 && e.timeStamp - lastWheel <= GAP)) {
+    lastWheel = e.timeStamp
+    if (e.cancelable) e.preventDefault()
+    return
+  }
+  if (!allowed()) return
   const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * window.innerHeight : e.deltaY
   if (dy === 0 || Math.abs(e.deltaX) > Math.abs(dy)) return
   const dir: 1 | -1 = dy > 0 ? 1 : -1

@@ -218,7 +218,7 @@
     }
   ],
   "origin": "https://blog.example",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "build": "dev",
   "site_version": 26
 }

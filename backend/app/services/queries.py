@@ -172,19 +172,6 @@ def public_taxonomy(session: Session) -> dict:
     return {"categories": categories, "tags": tags, "series": series, "total_posts": int(total)}
 
 
-def shelf(session: Session, tag_count: int = 14) -> dict:
-    """Home "bookshelf": categories (as folder tabs, with counts) and the most used tags with a size step 1..3."""
-    data = public_taxonomy(session)
-    categories = [c for c in data["categories"] if c["show_on_shelf"]]
-    tags = sorted(data["tags"], key=lambda t: (-t["count"], t["name"]))[:tag_count]
-    if tags:
-        top = max(t["count"] for t in tags) or 1
-        for t in tags:
-            ratio = t["count"] / top
-            t["size"] = 3 if ratio >= 0.75 else 2 if ratio >= 0.4 else 1
-    return {"categories": categories, "tags": sorted(tags, key=lambda t: t["name"])}
-
-
 # ---- moments ---------------------------------------------------------------------------------------------------------------------------
 MOMENT_LOADS = (selectinload(Moment.tags), selectinload(Moment.media).selectinload(MomentMedia.image))
 

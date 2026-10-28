@@ -228,9 +228,6 @@
       "featured",
       "latest_posts",
       "latest_moments",
-      "shelf",
-      "about",
-      "now",
       "notice"
     ],
     "mobile_nav_max": 5,

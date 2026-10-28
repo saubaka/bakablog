@@ -7,11 +7,16 @@ import FxText from '@/fx/FxText.vue'
 import Icon from '@/ui/components/Icon'
 import NavLink from '@/ui/components/NavLink.vue'
 import { planGrid } from '../cards'
+import Dropdown from '../components/Dropdown.vue'
 import EmptyState from '../components/EmptyState.vue'
+import Fold from '../components/Fold.vue'
 import Pager from '../components/Pager.vue'
 import PostCardView from '../components/PostCardView.vue'
 import PostRow from '../components/PostRow.vue'
-import { site, type PageState } from '../state'
+import SwapPane from '../components/SwapPane.vue'
+import { dirOf, type Dir } from '../motion'
+import { useSlider } from '../slider'
+import { loading, site, type PageState } from '../state'
 import { useViewport } from '../viewport'
 
 const props = defineProps<{ state: Extract<PageState, { kind: 'blog' | 'taxonomy' }> }>()
@@ -35,24 +40,42 @@ const head = computed(() => {
 
 const categories = computed(() => (props.state.taxonomy?.categories ?? []).filter((c) => c.show_on_shelf && c.count > 0))
 const total = computed(() => props.state.taxonomy?.total_posts ?? 0)
-const tags = computed(() => [...(props.state.taxonomy?.tags ?? [])].filter((t) => t.count > 0).sort((a, b) => b.count - a.count).slice(0, 12))
 
 /* ---- view: cards or rows (the visitor's choice is remembered; a series is always a numbered list) ---- */
 const stored = (() => { try { return localStorage.getItem('bb:view') } catch { return null } })()
 const view = ref<'grid' | 'list'>(stored === 'list' ? 'list' : 'grid')
 const asList = computed(() => view.value === 'list' || !!series.value)
+/** Which way the change of the list reads (see SwapPane): cards -> rows moves to the right, rows -> cards to the left, a later page to the right; a new search or order just fades. */
+const swapDir = ref<Dir>('none')
 function pickView(v: 'grid' | 'list'): void {
+  if (view.value === v) return
+  swapDir.value = v === 'list' ? 'next' : 'prev'
   view.value = v
   try { localStorage.setItem('bb:view', v) } catch { /* optional */ }
 }
+watch(() => props.state.data, (now, before) => { swapDir.value = dirOf(now.page, before.page) })
 
 const filtered = computed(() => !!(query.value.q || scoped.value))
 const { cols } = useViewport()
 const plan = computed(() => planGrid(data.value.items, filtered.value ? 'grid' : 'mixed', cols.value))
+/** Whatever makes the list a different list (a page, a search, an order, a category, cards or rows) replaces it as a whole. */
+const listKey = computed(() => [asList.value ? 'rows' : 'cards', category.value?.slug, tag.value?.slug, series.value?.slug, query.value.q, query.value.sort, data.value.page].join('|'))
+
+/* ---- the markers that slide to the current choice ---- */
+const tabsEl = ref<HTMLElement | null>(null)
+const toggleEl = ref<HTMLElement | null>(null)
+useSlider(tabsEl, '.tab[aria-current]', () => `${props.state.kind}|${category.value?.slug ?? ''}`)
+useSlider(toggleEl, 'button[aria-pressed="true"]', () => asList.value)
 
 /* ---- controls ---- */
 const qInput = ref(query.value.q)
+const field = ref<HTMLInputElement | null>(null)
 watch(() => query.value.q, (v) => { qInput.value = v })
+const sorts = computed(() => [
+  { value: 'new', label: '最新优先' },
+  { value: 'old', label: '最早优先' },
+  ...(site.value.features.stats ? [{ value: 'views', label: '最多阅读' }] : []),
+])
 let timer = 0
 function search(now: boolean): void {
   window.clearTimeout(timer)
@@ -65,8 +88,12 @@ function search(now: boolean): void {
   if (now) go()
   else timer = window.setTimeout(go, 380)
 }
-function sortBy(e: Event): void {
-  const v = (e.target as HTMLSelectElement).value
+function clear(): void {
+  qInput.value = ''
+  search(true)
+  field.value?.focus({ preventScroll: true })
+}
+function sortBy(v: string): void {
   void router.push({ path: route.path, query: { q: query.value.q || undefined, sort: v === 'new' ? undefined : v } })
 }
 const pageTo = (n: number): RouteLocationRaw => ({ path: route.path, query: { ...route.query, page: n > 1 ? String(n) : undefined } })
@@ -74,56 +101,56 @@ const pageTo = (n: number): RouteLocationRaw => ({ path: route.path, query: { ..
 
 <template>
   <div class="wrap" :class="{ 'is-list': asList, 'is-filtered': filtered }">
-    <header class="page-head">
+    <header class="page-head page-head--fold">
       <span class="kicker" v-fx="{ type: 'pop', intro: 0 }"><Icon :name="head.icon" />{{ head.kicker }}</span>
       <FxText tag="h1" :text="head.title" :intro="1" />
-      <p v-if="head.text" v-fx="{ type: 'fade', intro: 2 }">{{ head.text }}</p>
+      <Fold :show="!!head.text"><Transition name="tick" mode="out-in"><p :key="head.text" v-fx="{ type: 'fade', intro: 2 }">{{ head.text }}</p></Transition></Fold>
       <p v-if="series" class="series-status" v-fx="{ type: 'fade', intro: 3 }">
         <span class="tag tag--rose">{{ series.status === 'finished' ? '已完结' : '连载中' }} · {{ data.total }} 篇</span>
       </p>
     </header>
 
     <div class="filters" v-fx="'fade'">
-      <nav class="tabs" aria-label="分类">
+      <nav ref="tabsEl" class="tabs" aria-label="分类">
+        <i class="slide slide--tab" aria-hidden="true" />
         <NavLink class="tab" to="/blog" :current="!scoped">全部<span class="n">{{ total }}</span></NavLink>
         <NavLink v-for="c in categories" :key="c.id" class="tab" :to="c.url" :current="category?.slug === c.slug">{{ c.name }}<span class="n">{{ c.count }}</span></NavLink>
       </nav>
       <div class="filters__bar">
-        <form class="searchfield" role="search" @submit.prevent="search(true)">
+        <form class="searchfield searchfield--live" :class="{ 'is-busy': loading }" role="search" @submit.prevent="search(true)">
           <Icon name="search" />
-          <input v-model="qInput" class="input" type="search" name="q" placeholder="在博客里搜一搜……" aria-label="搜索文章" autocomplete="off" enterkeyhint="search" :disabled="!!series" @input="search(false)">
+          <input ref="field" v-model="qInput" class="input" type="search" name="q" placeholder="在博客里搜一搜……" aria-label="搜索文章" autocomplete="off" enterkeyhint="search" :disabled="!!series" @input="search(false)">
+          <Transition name="pop">
+            <button v-if="qInput && !series" class="searchfield__clear" type="button" aria-label="清除搜索词" @click="clear"><Icon name="close" /></button>
+          </Transition>
+          <span class="searchfield__busy" aria-hidden="true" />
         </form>
-        <select class="select" aria-label="排序" :value="query.sort" :disabled="!!series" @change="sortBy">
-          <option value="new">最新优先</option>
-          <option value="old">最早优先</option>
-          <option v-if="site.features.stats" value="views">最多阅读</option>
-        </select>
-        <div class="viewtoggle" role="group" aria-label="显示方式">
+        <Dropdown class="filters__sort" :model-value="query.sort" :options="sorts" label="排序" :disabled="!!series" @update:model-value="sortBy" />
+        <div ref="toggleEl" class="viewtoggle" role="group" aria-label="显示方式">
+          <i class="slide slide--thumb" aria-hidden="true" />
           <button type="button" :aria-pressed="!asList" aria-label="卡片" :disabled="!!series" @click="pickView('grid')"><Icon name="grid" /></button>
           <button type="button" :aria-pressed="asList" aria-label="列表" :disabled="!!series" @click="pickView('list')"><Icon name="rows" /></button>
         </div>
       </div>
-      <div v-if="tags.length" class="filters__tags">
-        <span class="label">标签</span>
-        <NavLink v-for="t in tags" :key="t.id" class="tag" :to="tag?.slug === t.slug ? '/blog' : t.url" :current="tag?.slug === t.slug">{{ t.name }}</NavLink>
-      </div>
       <div class="result-line">
-        <span role="status">共 {{ data.total }} 篇</span>
+        <Transition name="tick" mode="out-in"><span :key="data.total" role="status">共 {{ data.total }} 篇</span></Transition>
       </div>
     </div>
 
     <section class="list-section">
-      <template v-if="data.items.length">
-        <div v-if="asList" class="stack">
-          <PostRow v-for="p in data.items" :key="p.id" v-fx="'fade'" :post="p" :level="2" />
-        </div>
-        <div v-else class="grid-6" data-fx-stagger>
-          <PostCardView v-for="(p, i) in data.items" :key="p.id" v-fx="'rise'" :class="`span-${plan[i]?.span ?? 3}`" :post="p" :layout="plan[i]?.layout ?? 'cover'" :level="2" :eager="i < 2" />
-        </div>
-      </template>
-      <EmptyState v-else title="这里什么也没有" :text="query.q ? `没有找到和「${query.q}」有关的文章，换个词试试？` : '换个分类或者标签试试。'">
-        <NavLink class="btn btn--sm" to="/blog">看全部文章</NavLink>
-      </EmptyState>
+      <SwapPane :k="listKey" :dir="swapDir">
+        <template v-if="data.items.length">
+          <div v-if="asList" class="stack">
+            <PostRow v-for="p in data.items" :key="p.id" v-fx="'fade'" :post="p" :level="2" />
+          </div>
+          <div v-else class="grid-6" data-fx-stagger>
+            <PostCardView v-for="(p, i) in data.items" :key="p.id" v-fx="'rise'" :class="`span-${plan[i]?.span ?? 3}`" :post="p" :layout="plan[i]?.layout ?? 'cover'" :level="2" :eager="i < 2" />
+          </div>
+        </template>
+        <EmptyState v-else title="这里什么也没有" :text="query.q ? `没有找到和「${query.q}」有关的文章，换个词试试？` : '换个分类或者标签试试。'">
+          <NavLink class="btn btn--sm" to="/blog">看全部文章</NavLink>
+        </EmptyState>
+      </SwapPane>
     </section>
 
     <Pager class="list-pager" :page="data.page" :pages="data.pages" :to="pageTo" />

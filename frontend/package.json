@@ -1,6 +1,6 @@
 {
   "name": "baka-blog-frontend",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "private": true,
   "type": "module",
   "description": "saubakaの博客 / Baka Blog: public site, admin and preview frame (Vue 3).",

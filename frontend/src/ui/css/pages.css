@@ -26,18 +26,6 @@
   .posts-feature .grid-6 { gap: 24px; }
   .more-row { display: flex; justify-content: flex-end; margin-top: 8px; }
   .moments-strip { display: grid; gap: 22px; }
-  .shelf-panel { padding: 28px 28px 32px; background: var(--paper); border: 1px solid var(--line); border-top: 0; border-radius: 0 0 var(--r-md) var(--r-md); display: grid; gap: 18px; }
-  .shelf-panel p { color: var(--ink-2); font-size: 14.5px; }
-  .cloud { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 12px; }
-  .cloud .tag { font-size: 13px; }
-  .cloud .l2 { font-size: 15px; padding: .2em 1em; min-height: 34px; }
-  .cloud .l3 { font-size: 17px; padding: .3em 1.15em; min-height: 40px; }
-  .cloud .r1 { transform: rotate(-2deg); } .cloud .r2 { transform: rotate(1.5deg); } .cloud .r3 { transform: rotate(-1deg); }
-  .about { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 300px); gap: 28px; align-items: start; }
-  .about__card { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 24px; padding: 28px; background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-lg); }
-  .about__card h3 { font-size: 22px; margin-bottom: 2px; }
-  .about__card p { color: var(--ink-2); font-size: 15px; margin-top: 8px; }
-  .about__links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
   .closing { display: grid; justify-items: center; gap: 14px; padding: 72px 0 24px; text-align: center; border-top: 1px dashed var(--line); }
   .closing h2 { font-size: 26px; }
   .closing p { color: var(--ink-2); max-width: 30em; }
@@ -45,8 +33,6 @@
   /* =============== blog list =============== */
   .filters { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; }
   .filters__bar { display: grid; grid-template-columns: minmax(0, 1fr) 160px auto; gap: 12px; align-items: center; }
-  .filters__tags { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-  .filters__tags .label { margin-right: 6px; color: var(--ink-2); font-size: 13px; }
   .viewtoggle { display: inline-flex; padding: 4px; gap: 2px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--paper); }
   .viewtoggle button { display: grid; place-items: center; width: 40px; height: 38px; border-radius: 10px; color: var(--ink-2); }
   .viewtoggle button[aria-pressed="true"] { background: var(--fill); color: var(--ink); }
@@ -184,7 +170,7 @@
   .searchbox__top .input { min-height: 52px; padding-left: 3em; padding-right: 4.2em; border-radius: 16px; font-size: 16px; }
   .searchbox__top .i { position: absolute; left: 32px; top: 50%; translate: 0 -50%; color: var(--ink-2); pointer-events: none; }
   .searchbox__top kbd { position: absolute; right: 30px; top: 50%; translate: 0 -50%; padding: 2px 8px; border: 1px solid var(--line); border-radius: 8px; font: 12px var(--mono); color: var(--ink-2); background: var(--bg); }
-  .searchbox__list { display: grid; gap: 2px; max-height: 52vh; overflow-y: auto; padding: 10px; }
+  .searchbox__list { display: grid; gap: 0; max-height: 52vh; overflow-y: auto; padding: 10px; }
   .searchbox__group { padding: 10px 12px 4px; color: var(--ink-2); font-size: 12px; font-weight: 700; letter-spacing: .08em; }
   .searchbox__item { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 12px; align-items: center; padding: 10px 12px; border-radius: 14px; }
   .searchbox__item:hover, .searchbox__item[aria-selected="true"] { background: var(--fill); }
@@ -194,10 +180,8 @@
   .searchbox mark { background: var(--accent-strong); color: var(--ink); border-radius: 4px; padding: 0 2px; }
   .searchbox__foot { display: flex; justify-content: space-between; padding: 10px 16px; border-top: 1px solid var(--line); color: var(--ink-2); font-size: 12px; background: var(--bg); }
 
-  .lightbox { position: fixed; z-index: 120; inset: 0; display: grid; place-items: center; background: var(--bg); opacity: 0; pointer-events: none; transition: opacity var(--dur-2) var(--ease); touch-action: pan-y; }
-  .lightbox.is-open { opacity: 1; pointer-events: auto; }
-  .lightbox__img { max-width: min(92vw, 1100px); max-height: 78vh; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--fill); scale: .97; transition: scale var(--dur-3) var(--ease); }
-  .lightbox.is-open .lightbox__img { scale: 1; }
+  .lightbox { position: fixed; z-index: 120; inset: 0; display: grid; place-items: center; background: var(--bg); touch-action: pan-y; }
+  .lightbox__img { max-width: min(92vw, 1100px); max-height: 78vh; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--fill); }
   .lightbox__bar { position: absolute; left: 0; right: 0; top: 0; display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; font-size: 13.5px; color: var(--ink-2); font-weight: 700; }
   .lightbox__nav { position: absolute; top: 50%; translate: 0 -50%; }
   .lightbox__nav--prev { left: 16px; } .lightbox__nav--next { right: 16px; }
@@ -210,7 +194,7 @@
     .toc-fab { display: inline-flex; }
     .moments-layout { grid-template-columns: minmax(0, 640px); gap: 28px; }
     .month-nav { display: none; }
-    .month-chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+    .month-chips { position: relative; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
     .month-chips::-webkit-scrollbar { display: none; }
     .archive__year { grid-template-columns: minmax(0, 1fr); gap: 16px; }
     .archive__year > h2 { position: static; font-size: 44px; }
@@ -218,7 +202,6 @@
   @media (max-width: 1024px) {
     .hero__grid { grid-template-columns: minmax(0, 1fr); gap: 20px; }
     .hero__visual { order: -1; min-height: 76px; }
-    .about { grid-template-columns: minmax(0, 1fr); }
     .related { grid-template-columns: minmax(0, 1fr); }
     .filters__bar { grid-template-columns: minmax(0, 1fr) 140px auto; }
   }
@@ -227,12 +210,11 @@
     .hero__title { margin: 18px 0 16px; }
     .hero__lead { font-size: 16px; }
     .hero .doodle--b { right: 4%; top: 2%; }
-    .about__card { grid-template-columns: minmax(0, 1fr); padding: 22px; gap: 16px; }
     .post-head { padding: 36px 0 22px; }
     .post-cover .cover { aspect-ratio: 16 / 9; }
     .pn { grid-template-columns: minmax(0, 1fr); }
     .filters__bar { grid-template-columns: minmax(0, 1fr) auto; }
-    .filters__bar .select { display: none; }
+    .filters__bar .dd { display: none; }
     .moment { grid-template-columns: 36px minmax(0, 1fr); gap: 14px; }
     .moment .avatar { width: 36px; height: 36px; }
     .timeline__spine { left: 17px; }
@@ -240,7 +222,6 @@
     .archive__item { grid-template-columns: auto minmax(0, 1fr); }
     .archive__item .tags { display: none; }
     .archive__year > h2 { font-size: 38px; }
-    .shelf-panel { padding: 20px; }
     .lost { padding: 56px 0 40px; }
   }
 
@@ -275,5 +256,57 @@
   .page--wide .prose { max-width: 920px; }
   .page .page-head { padding-bottom: 28px; }
   .post-layout .page-head { padding-top: 52px; }
-}
 
+  /* =============== motion: the blog list, the months and the calendar, the search overlay, the picture viewer =============== */
+  /* the list's heading: the line under the title comes and goes with a search (Fold), so the gaps live inside the pieces and nothing jumps when it leaves */
+  .page-head--fold { gap: 0; }
+  .page-head--fold > * { margin-top: 14px; }
+  .page-head--fold > :first-child { margin-top: 0; }
+  .page-head--fold > .fold { margin-top: 0; }
+  .page-head--fold .fold__in > p { margin-top: 14px; }
+  .filters { position: relative; z-index: 3; }              /* the drop-down opens over the list below */
+  .viewtoggle { position: relative; }
+  .viewtoggle button { position: relative; z-index: 1; transition: color var(--dur-2) var(--ease), scale .3s var(--spring); }
+  .viewtoggle button:active { scale: .88; }
+  .viewtoggle[data-slide] button[aria-pressed="true"] { background: transparent; }
+  .viewtoggle[data-slide="set"] button[aria-pressed="true"] .i { animation: ico-pop .46s var(--spring); }
+  @keyframes ico-pop { from { scale: .6; rotate: -14deg; } }
+  .result-line span { display: inline-block; }
+  .month-nav a { transition: color var(--dur-2) var(--ease), background-color var(--dur-1) var(--ease); }
+  .minical__pane { display: grid; gap: 8px; }
+  .minical__grid .has::after { transition: scale .4s var(--spring); }
+  .swap-enter-active .minical__grid span { animation: cell-in .46s var(--ease) both; animation-delay: calc(var(--i, 0) * 10ms); }
+  .swap-enter-active .minical__grid .has::after { animation: cell-dot .5s var(--spring) both; animation-delay: calc(var(--i, 0) * 10ms + 160ms); }
+  @keyframes cell-in { from { opacity: 0; scale: .55; } }
+  @keyframes cell-dot { from { scale: 0; } }
+  .moment-now { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+  .moment-now .tag .label { color: inherit; font-size: inherit; font-weight: 600; opacity: .8; }
+  .moment-now .tag .label::after { content: " ·"; }
+
+  /* the search overlay opens by rising and fading in and closes by doing the same backwards (SearchDialog.vue waits CLOSE_MS for it); its rows are the .fold pieces of the motion kit */
+  dialog.dialog--search { opacity: 0; translate: 0 -14px; scale: .975; transform-origin: 50% 0; transition: opacity .17s var(--ease), translate .19s var(--ease), scale .19s var(--ease); }
+  dialog.dialog--search::backdrop { opacity: 0; transition: opacity .19s var(--ease); }
+  dialog.dialog--search.is-shown { opacity: 1; translate: 0 0; scale: 1; transition: opacity .26s var(--ease), translate .44s var(--ease), scale .44s var(--spring); }
+  dialog.dialog--search.is-shown::backdrop { opacity: 1; transition: opacity .32s var(--ease); }
+  .searchbox__busy { left: 16px; right: 16px; bottom: -1px; }
+  .searchbox__item { margin-bottom: 2px; transition: background-color var(--dur-1) var(--ease); }
+  html.fx-off dialog.dialog--search, html.fx-off dialog.dialog--search::backdrop { opacity: 1; translate: none; scale: none; transition: none; }
+  @media (prefers-reduced-motion: reduce) { dialog.dialog--search, dialog.dialog--search::backdrop { opacity: 1; translate: none; scale: none; transition: none; } }
+
+  /* the picture viewer fades and zooms in, and a picture is replaced by the next from the side the visitor is going to */
+  .lb-enter-active { transition: opacity .26s var(--ease); }
+  .lb-leave-active { transition: opacity .2s var(--ease); }
+  .lb-enter-from, .lb-leave-to { opacity: 0; }
+  .lb-enter-active .lightbox__img { transition: scale .46s var(--spring); }
+  .lb-enter-from .lightbox__img { scale: .92; }
+  .lb-leave-to .lightbox__img { scale: .97; transition: scale .2s var(--ease); }
+  .lbimg-enter-active { transition: opacity .3s var(--ease), translate .4s var(--ease), scale .4s var(--ease); }
+  .lbimg-leave-active { transition: opacity .14s var(--ease), translate .16s var(--ease); }
+  .lbimg-enter-from, .lbimg-leave-to { opacity: 0; }
+  .lightbox[data-dir="next"] .lbimg-enter-from { translate: calc(48px * var(--fx-k, 1)) 0; scale: .97; }
+  .lightbox[data-dir="next"] .lbimg-leave-to { translate: calc(-48px * var(--fx-k, 1)) 0; }
+  .lightbox[data-dir="prev"] .lbimg-enter-from { translate: calc(-48px * var(--fx-k, 1)) 0; scale: .97; }
+  .lightbox[data-dir="prev"] .lbimg-leave-to { translate: calc(48px * var(--fx-k, 1)) 0; }
+  html.fx-off :is(.lb-enter-active, .lb-leave-active, .lbimg-enter-active, .lbimg-leave-active, .lb-enter-active .lightbox__img, .lb-leave-to .lightbox__img) { transition: none !important; }
+  @media (prefers-reduced-motion: reduce) { :is(.lb-enter-active, .lb-leave-active, .lbimg-enter-active, .lbimg-leave-active, .lb-enter-active .lightbox__img, .lb-leave-to .lightbox__img) { transition: none !important; } }
+}
